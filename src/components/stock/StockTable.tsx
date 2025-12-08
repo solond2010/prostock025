@@ -19,9 +19,9 @@ interface StockTableProps {
 }
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('es-ES', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'EUR',
     minimumFractionDigits: 2,
   }).format(value);
 };
@@ -30,7 +30,7 @@ export function StockTable({ items, onEdit, onDelete }: StockTableProps) {
   if (items.length === 0) {
     return (
       <div className="flex h-48 items-center justify-center rounded-lg border border-dashed border-border bg-card text-muted-foreground">
-        No stock items found. Add your first item to get started.
+        No hay productos en stock. Añade tu primer producto para empezar.
       </div>
     );
   }
@@ -40,15 +40,15 @@ export function StockTable({ items, onEdit, onDelete }: StockTableProps) {
       <Table>
         <TableHeader>
           <TableRow className="bg-secondary/50 hover:bg-secondary/50">
-            <TableHead className="font-semibold">Name</TableHead>
-            <TableHead className="font-semibold">Category</TableHead>
-            <TableHead className="font-semibold">Purchase Date</TableHead>
-            <TableHead className="text-right font-semibold">Units</TableHead>
-            <TableHead className="text-right font-semibold">Buy Price</TableHead>
-            <TableHead className="text-right font-semibold">Sell Price</TableHead>
-            <TableHead className="text-right font-semibold">Invested</TableHead>
-            <TableHead className="text-right font-semibold">Revenue</TableHead>
-            <TableHead className="text-right font-semibold">Profit</TableHead>
+            <TableHead className="font-semibold">Nombre</TableHead>
+            <TableHead className="font-semibold">Categoría</TableHead>
+            <TableHead className="font-semibold">Fecha de Compra</TableHead>
+            <TableHead className="text-right font-semibold">Uds.</TableHead>
+            <TableHead className="text-right font-semibold">Precio Compra</TableHead>
+            <TableHead className="text-right font-semibold">Precio Venta</TableHead>
+            <TableHead className="text-right font-semibold">Invertido</TableHead>
+            <TableHead className="text-right font-semibold">Ingresos</TableHead>
+            <TableHead className="text-right font-semibold">Beneficio</TableHead>
             <TableHead className="w-24"></TableHead>
           </TableRow>
         </TableHeader>
@@ -62,7 +62,7 @@ export function StockTable({ items, onEdit, onDelete }: StockTableProps) {
                 </Badge>
               </TableCell>
               <TableCell className="text-muted-foreground">
-                {format(new Date(item.purchase_date), 'MMM d, yyyy')}
+                {format(new Date(item.purchase_date), 'd MMM yyyy')}
               </TableCell>
               <TableCell className="table-cell-numeric">{item.units_in_stock}</TableCell>
               <TableCell className="table-cell-numeric">

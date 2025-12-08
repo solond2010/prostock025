@@ -93,7 +93,7 @@ export function StockItemDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{item ? 'Edit Stock Item' : 'Add Stock Item'}</DialogTitle>
+          <DialogTitle>{item ? 'Editar Producto' : 'Añadir Producto'}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
@@ -102,9 +102,9 @@ export function StockItemDialog({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Product Name</FormLabel>
+                  <FormLabel>Nombre del Producto</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter product name" {...field} />
+                    <Input placeholder="Introduce el nombre del producto" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -115,9 +115,9 @@ export function StockItemDialog({
               name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Category</FormLabel>
+                  <FormLabel>Categoría</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter category" {...field} />
+                    <Input placeholder="Introduce la categoría" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -128,7 +128,7 @@ export function StockItemDialog({
               name="purchase_date"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Purchase Date</FormLabel>
+                  <FormLabel>Fecha de Compra</FormLabel>
                   <FormControl>
                     <Input type="date" {...field} />
                   </FormControl>
@@ -142,7 +142,7 @@ export function StockItemDialog({
                 name="units_in_stock"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Units</FormLabel>
+                    <FormLabel>Unidades</FormLabel>
                     <FormControl>
                       <Input type="number" min="0" {...field} />
                     </FormControl>
@@ -155,7 +155,7 @@ export function StockItemDialog({
                 name="purchase_price_per_unit"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Buy Price</FormLabel>
+                    <FormLabel>Precio Compra</FormLabel>
                     <FormControl>
                       <Input type="number" min="0" step="0.01" {...field} />
                     </FormControl>
@@ -168,7 +168,7 @@ export function StockItemDialog({
                 name="sale_price_per_unit"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Sell Price</FormLabel>
+                    <FormLabel>Precio Venta</FormLabel>
                     <FormControl>
                       <Input type="number" min="0" step="0.01" {...field} />
                     </FormControl>
@@ -182,9 +182,9 @@ export function StockItemDialog({
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notes (optional)</FormLabel>
+                  <FormLabel>Notas (opcional)</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Additional notes..." rows={2} {...field} />
+                    <Textarea placeholder="Notas adicionales..." rows={2} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -192,10 +192,10 @@ export function StockItemDialog({
             />
             <div className="flex justify-end gap-3 pt-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Cancel
+                Cancelar
               </Button>
               <Button type="submit" disabled={isLoading}>
-                {isLoading ? 'Saving...' : item ? 'Update' : 'Add Item'}
+                {isLoading ? 'Guardando...' : item ? 'Actualizar' : 'Añadir'}
               </Button>
             </div>
           </form>
