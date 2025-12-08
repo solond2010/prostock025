@@ -7,9 +7,9 @@ interface SummaryCardsProps {
 }
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('es-ES', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'EUR',
     minimumFractionDigits: 2,
   }).format(value);
 };
@@ -17,25 +17,25 @@ const formatCurrency = (value: number) => {
 export function SummaryCards({ summary }: SummaryCardsProps) {
   const cards = [
     {
-      title: 'Total Invested',
+      title: 'Total Invertido',
       value: formatCurrency(summary.totalInvested),
       icon: Wallet,
       className: 'text-foreground',
     },
     {
-      title: 'Expected Revenue',
+      title: 'Ingresos Esperados',
       value: formatCurrency(summary.totalExpectedRevenue),
       icon: DollarSign,
       className: 'text-primary',
     },
     {
-      title: 'Expected Profit',
+      title: 'Beneficio Esperado',
       value: formatCurrency(summary.totalExpectedProfit),
       icon: TrendingUp,
       className: summary.totalExpectedProfit >= 0 ? 'text-success' : 'text-destructive',
     },
     {
-      title: 'Profit Margin',
+      title: 'Margen de Beneficio',
       value: `${summary.profitMargin.toFixed(1)}%`,
       icon: Percent,
       className: summary.profitMargin >= 0 ? 'text-success' : 'text-destructive',

@@ -107,7 +107,7 @@ const Index = () => {
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="text-muted-foreground">Loading...</div>
+        <div className="text-muted-foreground">Cargando...</div>
       </div>
     );
   }
@@ -122,13 +122,13 @@ const Index = () => {
               <Package className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-2xl font-semibold text-foreground">Stock Manager</h1>
-              <p className="text-sm text-muted-foreground">Track your inventory and profits</p>
+              <h1 className="text-2xl font-semibold text-foreground">Gestor de Stock</h1>
+              <p className="text-sm text-muted-foreground">Controla tu inventario y beneficios</p>
             </div>
           </div>
           <Button onClick={handleAddClick}>
             <Plus className="mr-2 h-4 w-4" />
-            Add Item
+            Añadir Producto
           </Button>
         </div>
 
@@ -164,15 +164,15 @@ const Index = () => {
         <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete Item</AlertDialogTitle>
+              <AlertDialogTitle>Eliminar Producto</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to delete this item? This action cannot be undone.
+                ¿Estás seguro de que quieres eliminar este producto? Esta acción no se puede deshacer.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
               <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                Delete
+                Eliminar
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
