@@ -4,6 +4,7 @@ import { SummaryCards } from '@/components/stock/SummaryCards';
 import { StockFilters } from '@/components/stock/StockFilters';
 import { StockTable } from '@/components/stock/StockTable';
 import { StockItemDialog } from '@/components/stock/StockItemDialog';
+import { ProductDetailSheet } from '@/components/stock/ProductDetailSheet';
 import {
   useStockItems,
   useCreateStockItem,
@@ -34,6 +35,8 @@ const Index = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [detailItem, setDetailItem] = useState<StockItemWithCalculations | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   // Get unique categories
   const categories = useMemo(() => {
@@ -89,6 +92,11 @@ const Index = () => {
   const handleAddClick = () => {
     setEditingItem(null);
     setDialogOpen(true);
+  };
+
+  const handleItemClick = (item: StockItemWithCalculations) => {
+    setDetailItem(item);
+    setDetailOpen(true);
   };
 
   const handleEdit = (item: StockItemWithCalculations) => {
@@ -163,7 +171,16 @@ const Index = () => {
         </div>
 
         {/* Table */}
-        <StockTable items={processedItems} onEdit={handleEdit} onDelete={handleDelete} />
+        <StockTable items={processedItems} onItemClick={handleItemClick} />
+
+        {/* Product Detail Sheet */}
+        <ProductDetailSheet
+          item={detailItem}
+          open={detailOpen}
+          onOpenChange={setDetailOpen}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
 
         {/* Add/Edit Dialog */}
         <StockItemDialog
