@@ -3,6 +3,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { StockItem, StockItemFormData } from '@/types/stock';
 import { toast } from 'sonner';
 
+// Helper to convert empty strings to null for date fields
+function sanitizeDateFields(item: StockItemFormData) {
+  return {
+    ...item,
+    purchase_date: item.purchase_date || null,
+    fecha_venta: item.fecha_venta || null,
+  };
+}
+
 export function useStockItems() {
   return useQuery({
     queryKey: ['stock-items'],
@@ -23,9 +32,10 @@ export function useCreateStockItem() {
   
   return useMutation({
     mutationFn: async (item: StockItemFormData) => {
+      const sanitizedItem = sanitizeDateFields(item);
       const { data, error } = await supabase
         .from('stock_items')
-        .insert([item])
+        .insert([sanitizedItem])
         .select()
         .single();
       
@@ -34,10 +44,10 @@ export function useCreateStockItem() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stock-items'] });
-      toast.success('Item added successfully');
+      toast.success('Producto añadido correctamente');
     },
     onError: (error) => {
-      toast.error('Failed to add item: ' + error.message);
+      toast.error('Error al añadir producto: ' + error.message);
     },
   });
 }
@@ -47,9 +57,10 @@ export function useUpdateStockItem() {
   
   return useMutation({
     mutationFn: async ({ id, item }: { id: string; item: Partial<StockItemFormData> }) => {
+      const sanitizedItem = sanitizeDateFields(item as StockItemFormData);
       const { data, error } = await supabase
         .from('stock_items')
-        .update(item)
+        .update(sanitizedItem)
         .eq('id', id)
         .select()
         .single();
@@ -59,10 +70,10 @@ export function useUpdateStockItem() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stock-items'] });
-      toast.success('Item updated successfully');
+      toast.success('Producto actualizado correctamente');
     },
     onError: (error) => {
-      toast.error('Failed to update item: ' + error.message);
+      toast.error('Error al actualizar producto: ' + error.message);
     },
   });
 }
@@ -81,10 +92,10 @@ export function useDeleteStockItem() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stock-items'] });
-      toast.success('Item deleted successfully');
+      toast.success('Producto eliminado correctamente');
     },
     onError: (error) => {
-      toast.error('Failed to delete item: ' + error.message);
+      toast.error('Error al eliminar producto: ' + error.message);
     },
   });
 }
