@@ -41,14 +41,14 @@ export function StockTable({ items, onEdit, onDelete }: StockTableProps) {
         <TableHeader>
           <TableRow className="bg-secondary/50 hover:bg-secondary/50">
             <TableHead className="font-semibold">Nombre</TableHead>
+            <TableHead className="font-semibold">Estado</TableHead>
             <TableHead className="font-semibold">Categoría</TableHead>
-            <TableHead className="font-semibold">Fecha de Compra</TableHead>
             <TableHead className="text-right font-semibold">Uds.</TableHead>
-            <TableHead className="text-right font-semibold">Precio Compra</TableHead>
-            <TableHead className="text-right font-semibold">Precio Venta</TableHead>
-            <TableHead className="text-right font-semibold">Invertido</TableHead>
-            <TableHead className="text-right font-semibold">Ingresos</TableHead>
-            <TableHead className="text-right font-semibold">Beneficio</TableHead>
+            <TableHead className="text-right font-semibold">Coste Total</TableHead>
+            <TableHead className="text-right font-semibold">Precio Venta Esp.</TableHead>
+            <TableHead className="text-right font-semibold">Benef. Esperado</TableHead>
+            <TableHead className="text-right font-semibold">Precio Venta Real</TableHead>
+            <TableHead className="text-right font-semibold">Benef. Real</TableHead>
             <TableHead className="w-24"></TableHead>
           </TableRow>
         </TableHeader>
@@ -57,30 +57,45 @@ export function StockTable({ items, onEdit, onDelete }: StockTableProps) {
             <TableRow key={item.id} className="hover:bg-secondary/30">
               <TableCell className="font-medium">{item.name}</TableCell>
               <TableCell>
-                <Badge variant="secondary" className="font-normal">
+                <Badge 
+                  variant={item.estado === 'Vendido' ? 'default' : 'secondary'}
+                  className={item.estado === 'Vendido' ? 'bg-success text-success-foreground' : ''}
+                >
+                  {item.estado}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                <Badge variant="outline" className="font-normal">
                   {item.category}
                 </Badge>
               </TableCell>
-              <TableCell className="text-muted-foreground">
-                {format(new Date(item.purchase_date), 'd MMM yyyy')}
-              </TableCell>
               <TableCell className="table-cell-numeric">{item.units_in_stock}</TableCell>
               <TableCell className="table-cell-numeric">
-                {formatCurrency(item.purchase_price_per_unit)}
+                {formatCurrency(item.coste_total)}
               </TableCell>
-              <TableCell className="table-cell-numeric">
-                {formatCurrency(item.sale_price_per_unit)}
-              </TableCell>
-              <TableCell className="table-cell-numeric">{formatCurrency(item.invested)}</TableCell>
-              <TableCell className="table-cell-numeric text-primary">
-                {formatCurrency(item.expected_revenue)}
+              <TableCell className="table-cell-numeric text-muted-foreground">
+                {formatCurrency(item.sale_price_per_unit * item.units_in_stock)}
               </TableCell>
               <TableCell
                 className={`table-cell-numeric ${
-                  item.expected_profit >= 0 ? 'text-success' : 'text-destructive'
+                  item.beneficio_esperado >= 0 ? 'text-success' : 'text-destructive'
                 }`}
               >
-                {formatCurrency(item.expected_profit)}
+                {formatCurrency(item.beneficio_esperado)}
+              </TableCell>
+              <TableCell className="table-cell-numeric">
+                {item.estado === 'Vendido' ? formatCurrency(item.precio_venta_real) : '-'}
+              </TableCell>
+              <TableCell
+                className={`table-cell-numeric ${
+                  item.beneficio_real !== null
+                    ? item.beneficio_real >= 0
+                      ? 'text-success'
+                      : 'text-destructive'
+                    : ''
+                }`}
+              >
+                {item.beneficio_real !== null ? formatCurrency(item.beneficio_real) : '-'}
               </TableCell>
               <TableCell>
                 <div className="flex justify-end gap-1">

@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { StockSummary } from '@/types/stock';
-import { DollarSign, TrendingUp, Wallet, Percent } from 'lucide-react';
+import { DollarSign, TrendingUp, Wallet, Percent, CheckCircle } from 'lucide-react';
 
 interface SummaryCardsProps {
   summary: StockSummary;
@@ -35,6 +35,12 @@ export function SummaryCards({ summary }: SummaryCardsProps) {
       className: summary.totalExpectedProfit >= 0 ? 'text-success' : 'text-destructive',
     },
     {
+      title: 'Beneficio Real',
+      value: formatCurrency(summary.totalRealProfit),
+      icon: CheckCircle,
+      className: summary.totalRealProfit >= 0 ? 'text-success' : 'text-destructive',
+    },
+    {
       title: 'Margen de Beneficio',
       value: `${summary.profitMargin.toFixed(1)}%`,
       icon: Percent,
@@ -43,7 +49,7 @@ export function SummaryCards({ summary }: SummaryCardsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
       {cards.map((card) => (
         <Card key={card.title} className="border-border/50 shadow-sm">
           <CardContent className="p-5">

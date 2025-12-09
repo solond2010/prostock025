@@ -16,6 +16,13 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -29,6 +36,11 @@ const formSchema = z.object({
   purchase_price_per_unit: z.coerce.number().min(0, 'Must be 0 or more'),
   sale_price_per_unit: z.coerce.number().min(0, 'Must be 0 or more'),
   notes: z.string().max(500).optional(),
+  estado: z.enum(['En stock', 'Vendido']),
+  precio_envio: z.coerce.number().min(0, 'Must be 0 or more'),
+  coste_reparacion: z.coerce.number().min(0, 'Must be 0 or more'),
+  fecha_venta: z.string().optional(),
+  precio_venta_real: z.coerce.number().min(0, 'Must be 0 or more'),
 });
 
 interface StockItemDialogProps {
@@ -56,8 +68,15 @@ export function StockItemDialog({
       purchase_price_per_unit: 0,
       sale_price_per_unit: 0,
       notes: '',
+      estado: 'En stock',
+      precio_envio: 0,
+      coste_reparacion: 0,
+      fecha_venta: '',
+      precio_venta_real: 0,
     },
   });
+
+  const watchEstado = form.watch('estado');
 
   useEffect(() => {
     if (open) {
@@ -70,6 +89,11 @@ export function StockItemDialog({
           purchase_price_per_unit: item.purchase_price_per_unit,
           sale_price_per_unit: item.sale_price_per_unit,
           notes: item.notes || '',
+          estado: item.estado,
+          precio_envio: item.precio_envio,
+          coste_reparacion: item.coste_reparacion,
+          fecha_venta: item.fecha_venta || '',
+          precio_venta_real: item.precio_venta_real,
         });
       } else {
         form.reset({
@@ -80,6 +104,11 @@ export function StockItemDialog({
           purchase_price_per_unit: 0,
           sale_price_per_unit: 0,
           notes: '',
+          estado: 'En stock',
+          precio_envio: 0,
+          coste_reparacion: 0,
+          fecha_venta: '',
+          precio_venta_real: 0,
         });
       }
     }
@@ -91,7 +120,7 @@ export function StockItemDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{item ? 'Editar Producto' : 'Añadir Producto'}</DialogTitle>
         </DialogHeader>
@@ -110,19 +139,42 @@ export function StockItemDialog({
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="category"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Categoría</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Introduce la categoría" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-2 gap-3">
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Categoría</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Introduce la categoría" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="estado"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Estado</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona estado" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="En stock">En stock</SelectItem>
+                        <SelectItem value="Vendido">Vendido</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             <FormField
               control={form.control}
               name="purchase_date"
@@ -168,7 +220,7 @@ export function StockItemDialog({
                 name="sale_price_per_unit"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Precio Venta</FormLabel>
+                    <FormLabel>Precio Venta Esperado</FormLabel>
                     <FormControl>
                       <Input type="number" min="0" step="0.01" {...field} />
                     </FormControl>
@@ -177,6 +229,64 @@ export function StockItemDialog({
                 )}
               />
             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <FormField
+                control={form.control}
+                name="precio_envio"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Precio de Envío</FormLabel>
+                    <FormControl>
+                      <Input type="number" min="0" step="0.01" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="coste_reparacion"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Coste de Reparación</FormLabel>
+                    <FormControl>
+                      <Input type="number" min="0" step="0.01" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            {watchEstado === 'Vendido' && (
+              <div className="grid grid-cols-2 gap-3">
+                <FormField
+                  control={form.control}
+                  name="fecha_venta"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Fecha de Venta</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="precio_venta_real"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Precio Venta Real</FormLabel>
+                      <FormControl>
+                        <Input type="number" min="0" step="0.01" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
             <FormField
               control={form.control}
               name="notes"

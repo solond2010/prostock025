@@ -17,10 +17,15 @@ export type Database = {
       stock_items: {
         Row: {
           category: string
+          coste_reparacion: number
           created_at: string
+          estado: string
+          fecha_venta: string | null
           id: string
           name: string
           notes: string | null
+          precio_envio: number
+          precio_venta_real: number
           purchase_date: string
           purchase_price_per_unit: number
           sale_price_per_unit: number
@@ -29,10 +34,15 @@ export type Database = {
         }
         Insert: {
           category: string
+          coste_reparacion?: number
           created_at?: string
+          estado?: string
+          fecha_venta?: string | null
           id?: string
           name: string
           notes?: string | null
+          precio_envio?: number
+          precio_venta_real?: number
           purchase_date?: string
           purchase_price_per_unit?: number
           sale_price_per_unit?: number
@@ -41,10 +51,15 @@ export type Database = {
         }
         Update: {
           category?: string
+          coste_reparacion?: number
           created_at?: string
+          estado?: string
+          fecha_venta?: string | null
           id?: string
           name?: string
           notes?: string | null
+          precio_envio?: number
+          precio_venta_real?: number
           purchase_date?: string
           purchase_price_per_unit?: number
           sale_price_per_unit?: number

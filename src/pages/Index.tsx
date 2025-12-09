@@ -50,26 +50,40 @@ const Index = () => {
         return matchesSearch && matchesCategory;
       })
       .map((item) => {
-        const invested = item.units_in_stock * Number(item.purchase_price_per_unit);
-        const expected_revenue = item.units_in_stock * Number(item.sale_price_per_unit);
-        const expected_profit = expected_revenue - invested;
-        return { ...item, invested, expected_revenue, expected_profit };
+        const coste_total =
+          Number(item.purchase_price_per_unit) * item.units_in_stock +
+          Number(item.precio_envio) +
+          Number(item.coste_reparacion);
+        const beneficio_esperado = Number(item.sale_price_per_unit) * item.units_in_stock - coste_total;
+        const beneficio_real =
+          item.estado === 'Vendido' ? Number(item.precio_venta_real) - coste_total : null;
+        return { ...item, coste_total, beneficio_esperado, beneficio_real };
       });
   }, [items, searchQuery, categoryFilter]);
 
   // Calculate summary
   const summary = useMemo<StockSummary>(() => {
-    const allItems = items.map((item) => ({
-      invested: item.units_in_stock * Number(item.purchase_price_per_unit),
-      revenue: item.units_in_stock * Number(item.sale_price_per_unit),
-    }));
+    let totalInvested = 0;
+    let totalExpectedRevenue = 0;
+    let totalRealProfit = 0;
 
-    const totalInvested = allItems.reduce((sum, item) => sum + item.invested, 0);
-    const totalExpectedRevenue = allItems.reduce((sum, item) => sum + item.revenue, 0);
+    items.forEach((item) => {
+      const coste_total =
+        Number(item.purchase_price_per_unit) * item.units_in_stock +
+        Number(item.precio_envio) +
+        Number(item.coste_reparacion);
+      totalInvested += coste_total;
+      totalExpectedRevenue += Number(item.sale_price_per_unit) * item.units_in_stock;
+
+      if (item.estado === 'Vendido') {
+        totalRealProfit += Number(item.precio_venta_real) - coste_total;
+      }
+    });
+
     const totalExpectedProfit = totalExpectedRevenue - totalInvested;
     const profitMargin = totalExpectedRevenue > 0 ? (totalExpectedProfit / totalExpectedRevenue) * 100 : 0;
 
-    return { totalInvested, totalExpectedRevenue, totalExpectedProfit, profitMargin };
+    return { totalInvested, totalExpectedRevenue, totalExpectedProfit, totalRealProfit, profitMargin };
   }, [items]);
 
   const handleAddClick = () => {
