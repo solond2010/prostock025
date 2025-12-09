@@ -7,6 +7,11 @@ export interface StockItem {
   purchase_price_per_unit: number;
   sale_price_per_unit: number;
   notes: string | null;
+  estado: 'En stock' | 'Vendido';
+  precio_envio: number;
+  coste_reparacion: number;
+  fecha_venta: string | null;
+  precio_venta_real: number;
   created_at: string;
   updated_at: string;
 }
@@ -19,17 +24,23 @@ export interface StockItemFormData {
   purchase_price_per_unit: number;
   sale_price_per_unit: number;
   notes: string;
+  estado: 'En stock' | 'Vendido';
+  precio_envio: number;
+  coste_reparacion: number;
+  fecha_venta: string;
+  precio_venta_real: number;
 }
 
 export interface StockItemWithCalculations extends StockItem {
-  invested: number;
-  expected_revenue: number;
-  expected_profit: number;
+  coste_total: number;
+  beneficio_esperado: number;
+  beneficio_real: number | null;
 }
 
 export interface StockSummary {
   totalInvested: number;
   totalExpectedRevenue: number;
   totalExpectedProfit: number;
+  totalRealProfit: number;
   profitMargin: number;
 }
