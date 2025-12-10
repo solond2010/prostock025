@@ -182,9 +182,9 @@ export function StockItemDialog({
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="Telefonía">Telefonía</SelectItem>
+                        <SelectItem value="Ropa">Ropa</SelectItem>
+                        <SelectItem value="Perfumes">Perfumes</SelectItem>
                         <SelectItem value="Electrónica">Electrónica</SelectItem>
-                        <SelectItem value="Informática">Informática</SelectItem>
-                        <SelectItem value="Accesorios">Accesorios</SelectItem>
                         <SelectItem value="Otros">Otros</SelectItem>
                       </SelectContent>
                     </Select>
