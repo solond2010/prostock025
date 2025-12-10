@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { SummaryCards } from '@/components/stock/SummaryCards';
 import { StockFilters } from '@/components/stock/StockFilters';
@@ -12,7 +13,7 @@ import {
   useDeleteStockItem,
 } from '@/hooks/useStockItems';
 import { StockItem, StockItemFormData, StockItemWithCalculations, StockSummary } from '@/types/stock';
-import { Plus, Package } from 'lucide-react';
+import { Plus, Package, BarChart3 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -148,10 +149,18 @@ const Index = () => {
               <p className="text-sm text-muted-foreground">Controla tu inventario y beneficios</p>
             </div>
           </div>
-          <Button onClick={handleAddClick}>
-            <Plus className="mr-2 h-4 w-4" />
-            Añadir Producto
-          </Button>
+          <div className="flex items-center gap-2">
+            <Link to="/graficos">
+              <Button variant="outline">
+                <BarChart3 className="mr-2 h-4 w-4" />
+                Gráficos
+              </Button>
+            </Link>
+            <Button onClick={handleAddClick}>
+              <Plus className="mr-2 h-4 w-4" />
+              Añadir Producto
+            </Button>
+          </div>
         </div>
 
         {/* Summary Cards */}
