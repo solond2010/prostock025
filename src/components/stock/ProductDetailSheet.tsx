@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { StockItemWithCalculations } from '@/types/stock';
-import { Pencil, Trash2, Calendar, Package, TrendingUp, Clock } from 'lucide-react';
+import { Pencil, Trash2, Calendar, Package, TrendingUp, Smartphone } from 'lucide-react';
 import { format, differenceInDays, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -161,6 +161,45 @@ export function ProductDetailSheet({
               )}
             </div>
           </section>
+
+          {/* Detalles del Dispositivo (solo para Telefonía) */}
+          {item.category === 'Telefonía' && (item.almacenamiento || item.bateria_porcentaje !== null || (item.reparaciones && item.reparaciones.length > 0)) && (
+            <>
+              <Separator />
+              <section>
+                <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+                  <Smartphone className="h-4 w-4" />
+                  Detalles del Dispositivo
+                </h3>
+                <div className="space-y-2 text-sm">
+                  {item.almacenamiento && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Almacenamiento</span>
+                      <span className="font-medium">{item.almacenamiento}</span>
+                    </div>
+                  )}
+                  {item.bateria_porcentaje !== null && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Porcentaje de batería</span>
+                      <span className="font-medium">{item.bateria_porcentaje}%</span>
+                    </div>
+                  )}
+                  {item.reparaciones && item.reparaciones.length > 0 && (
+                    <div className="mt-2">
+                      <p className="text-muted-foreground mb-2">Reparaciones necesarias</p>
+                      <div className="flex flex-wrap gap-1">
+                        {item.reparaciones.map((rep) => (
+                          <Badge key={rep} variant="outline" className="text-xs">
+                            {rep}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </section>
+            </>
+          )}
 
           {/* Detalle de Venta (solo si está vendido) */}
           {isVendido && (

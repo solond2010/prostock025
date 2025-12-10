@@ -3,12 +3,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { StockItem, StockItemFormData } from '@/types/stock';
 import { toast } from 'sonner';
 
-// Helper to convert empty strings to null for date fields
-function sanitizeDateFields(item: StockItemFormData) {
+// Helper to sanitize form data before sending to DB
+function sanitizeFormData(item: StockItemFormData) {
   return {
     ...item,
     purchase_date: item.purchase_date || null,
     fecha_venta: item.fecha_venta || null,
+    almacenamiento: item.almacenamiento || null,
+    bateria_porcentaje: item.bateria_porcentaje ?? null,
+    reparaciones: item.reparaciones && item.reparaciones.length > 0 ? item.reparaciones : null,
   };
 }
 
@@ -32,7 +35,7 @@ export function useCreateStockItem() {
   
   return useMutation({
     mutationFn: async (item: StockItemFormData) => {
-      const sanitizedItem = sanitizeDateFields(item);
+      const sanitizedItem = sanitizeFormData(item);
       const { data, error } = await supabase
         .from('stock_items')
         .insert([sanitizedItem])
@@ -57,7 +60,7 @@ export function useUpdateStockItem() {
   
   return useMutation({
     mutationFn: async ({ id, item }: { id: string; item: Partial<StockItemFormData> }) => {
-      const sanitizedItem = sanitizeDateFields(item as StockItemFormData);
+      const sanitizedItem = sanitizeFormData(item as StockItemFormData);
       const { data, error } = await supabase
         .from('stock_items')
         .update(sanitizedItem)
