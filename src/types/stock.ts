@@ -14,6 +14,10 @@ export interface StockItem {
   precio_venta_real: number;
   created_at: string;
   updated_at: string;
+  // Campos específicos de telefonía
+  almacenamiento: string | null;
+  bateria_porcentaje: number | null;
+  reparaciones: string[] | null;
 }
 
 export interface StockItemFormData {
@@ -29,6 +33,10 @@ export interface StockItemFormData {
   coste_reparacion: number;
   fecha_venta: string;
   precio_venta_real: number;
+  // Campos específicos de telefonía
+  almacenamiento: string;
+  bateria_porcentaje: number | null;
+  reparaciones: string[];
 }
 
 export interface StockItemWithCalculations extends StockItem {

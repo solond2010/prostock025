@@ -26,21 +26,38 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { StockItem, StockItemFormData } from '@/types/stock';
 
+const STORAGE_OPTIONS = ['64GB', '128GB', '256GB', '512GB', '1TB'];
+const REPAIR_OPTIONS = [
+  'Pantalla',
+  'Parte trasera',
+  'Cámara',
+  'Face ID',
+  'Batería',
+  'Carga',
+  'Todo bien',
+  'Otros',
+];
+
 const formSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(100),
-  category: z.string().min(1, 'Category is required').max(50),
-  purchase_date: z.string().min(1, 'Purchase date is required'),
-  units_in_stock: z.coerce.number().int().min(0, 'Must be 0 or more'),
-  purchase_price_per_unit: z.coerce.number().min(0, 'Must be 0 or more'),
-  sale_price_per_unit: z.coerce.number().min(0, 'Must be 0 or more'),
+  name: z.string().min(1, 'El nombre es obligatorio').max(100),
+  category: z.string().min(1, 'La categoría es obligatoria').max(50),
+  purchase_date: z.string().min(1, 'La fecha de compra es obligatoria'),
+  units_in_stock: z.coerce.number().int().min(0, 'Debe ser 0 o más'),
+  purchase_price_per_unit: z.coerce.number().min(0, 'Debe ser 0 o más'),
+  sale_price_per_unit: z.coerce.number().min(0, 'Debe ser 0 o más'),
   notes: z.string().max(500).optional(),
   estado: z.enum(['En stock', 'Vendido']),
-  precio_envio: z.coerce.number().min(0, 'Must be 0 or more'),
-  coste_reparacion: z.coerce.number().min(0, 'Must be 0 or more'),
+  precio_envio: z.coerce.number().min(0, 'Debe ser 0 o más'),
+  coste_reparacion: z.coerce.number().min(0, 'Debe ser 0 o más'),
   fecha_venta: z.string().optional(),
-  precio_venta_real: z.coerce.number().min(0, 'Must be 0 or more'),
+  precio_venta_real: z.coerce.number().min(0, 'Debe ser 0 o más'),
+  // Campos de telefonía
+  almacenamiento: z.string().optional(),
+  bateria_porcentaje: z.coerce.number().int().min(0).max(100).nullable().optional(),
+  reparaciones: z.array(z.string()).optional(),
 });
 
 interface StockItemDialogProps {
@@ -73,10 +90,15 @@ export function StockItemDialog({
       coste_reparacion: 0,
       fecha_venta: '',
       precio_venta_real: 0,
+      almacenamiento: '',
+      bateria_porcentaje: null,
+      reparaciones: [],
     },
   });
 
   const watchEstado = form.watch('estado');
+  const watchCategory = form.watch('category');
+  const isTelefonia = watchCategory === 'Telefonía';
 
   useEffect(() => {
     if (open) {
@@ -94,6 +116,9 @@ export function StockItemDialog({
           coste_reparacion: item.coste_reparacion,
           fecha_venta: item.fecha_venta || '',
           precio_venta_real: item.precio_venta_real,
+          almacenamiento: item.almacenamiento || '',
+          bateria_porcentaje: item.bateria_porcentaje,
+          reparaciones: item.reparaciones || [],
         });
       } else {
         form.reset({
@@ -109,6 +134,9 @@ export function StockItemDialog({
           coste_reparacion: 0,
           fecha_venta: '',
           precio_venta_real: 0,
+          almacenamiento: '',
+          bateria_porcentaje: null,
+          reparaciones: [],
         });
       }
     }
@@ -146,9 +174,20 @@ export function StockItemDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Categoría</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Introduce la categoría" {...field} />
-                    </FormControl>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona categoría" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Telefonía">Telefonía</SelectItem>
+                        <SelectItem value="Electrónica">Electrónica</SelectItem>
+                        <SelectItem value="Informática">Informática</SelectItem>
+                        <SelectItem value="Accesorios">Accesorios</SelectItem>
+                        <SelectItem value="Otros">Otros</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -175,6 +214,95 @@ export function StockItemDialog({
                 )}
               />
             </div>
+
+            {/* Campos específicos de Telefonía */}
+            {isTelefonia && (
+              <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
+                <p className="text-sm font-medium text-muted-foreground">Detalles del Dispositivo</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <FormField
+                    control={form.control}
+                    name="almacenamiento"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Almacenamiento</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecciona" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {STORAGE_OPTIONS.map((opt) => (
+                              <SelectItem key={opt} value={opt}>
+                                {opt}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="bateria_porcentaje"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>% Batería</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min="0"
+                            max="100"
+                            placeholder="0-100"
+                            {...field}
+                            value={field.value ?? ''}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              field.onChange(val === '' ? null : Number(val));
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <FormField
+                  control={form.control}
+                  name="reparaciones"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Reparaciones necesarias</FormLabel>
+                      <div className="grid grid-cols-2 gap-2">
+                        {REPAIR_OPTIONS.map((option) => (
+                          <label
+                            key={option}
+                            className="flex items-center gap-2 text-sm cursor-pointer"
+                          >
+                            <Checkbox
+                              checked={field.value?.includes(option) || false}
+                              onCheckedChange={(checked) => {
+                                const current = field.value || [];
+                                if (checked) {
+                                  field.onChange([...current, option]);
+                                } else {
+                                  field.onChange(current.filter((v) => v !== option));
+                                }
+                              }}
+                            />
+                            {option}
+                          </label>
+                        ))}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+
             <FormField
               control={form.control}
               name="purchase_date"

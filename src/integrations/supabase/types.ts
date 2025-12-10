@@ -16,6 +16,8 @@ export type Database = {
     Tables: {
       stock_items: {
         Row: {
+          almacenamiento: string | null
+          bateria_porcentaje: number | null
           category: string
           coste_reparacion: number
           created_at: string
@@ -28,11 +30,14 @@ export type Database = {
           precio_venta_real: number
           purchase_date: string
           purchase_price_per_unit: number
+          reparaciones: string[] | null
           sale_price_per_unit: number
           units_in_stock: number
           updated_at: string
         }
         Insert: {
+          almacenamiento?: string | null
+          bateria_porcentaje?: number | null
           category: string
           coste_reparacion?: number
           created_at?: string
@@ -45,11 +50,14 @@ export type Database = {
           precio_venta_real?: number
           purchase_date?: string
           purchase_price_per_unit?: number
+          reparaciones?: string[] | null
           sale_price_per_unit?: number
           units_in_stock?: number
           updated_at?: string
         }
         Update: {
+          almacenamiento?: string | null
+          bateria_porcentaje?: number | null
           category?: string
           coste_reparacion?: number
           created_at?: string
@@ -62,6 +70,7 @@ export type Database = {
           precio_venta_real?: number
           purchase_date?: string
           purchase_price_per_unit?: number
+          reparaciones?: string[] | null
           sale_price_per_unit?: number
           units_in_stock?: number
           updated_at?: string
