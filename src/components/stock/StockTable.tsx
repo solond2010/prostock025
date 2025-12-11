@@ -39,7 +39,6 @@ export function StockTable({ items, onItemClick }: StockTableProps) {
             <TableHead className="font-semibold">Nombre</TableHead>
             <TableHead className="font-semibold">Estado</TableHead>
             <TableHead className="font-semibold">Categoría</TableHead>
-            <TableHead className="text-right font-semibold">Uds.</TableHead>
             <TableHead className="text-right font-semibold">Coste Total</TableHead>
             <TableHead className="text-right font-semibold">Beneficio</TableHead>
           </TableRow>
@@ -72,7 +71,6 @@ export function StockTable({ items, onItemClick }: StockTableProps) {
                     {item.category}
                   </Badge>
                 </TableCell>
-                <TableCell className="table-cell-numeric">{item.units_in_stock}</TableCell>
                 <TableCell className="table-cell-numeric">
                   {formatCurrency(item.coste_total)}
                 </TableCell>

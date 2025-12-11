@@ -48,7 +48,7 @@ const MonthlyCharts = () => {
         if (saleYear.toString() === selectedYear) {
           const precioVentaReal = Number(item.precio_venta_real) || 0;
           const costeTotal =
-            Number(item.purchase_price_per_unit) * item.units_in_stock +
+            Number(item.purchase_price_per_unit) +
             Number(item.precio_envio) +
             Number(item.coste_reparacion);
           const beneficioReal = precioVentaReal - costeTotal;

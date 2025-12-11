@@ -3,7 +3,6 @@ export interface StockItem {
   name: string;
   category: string;
   purchase_date: string;
-  units_in_stock: number;
   purchase_price_per_unit: number;
   sale_price_per_unit: number;
   notes: string | null;
@@ -18,13 +17,15 @@ export interface StockItem {
   almacenamiento: string | null;
   bateria_porcentaje: number | null;
   reparaciones: string[] | null;
+  color: string | null;
+  // Campos específicos de ropa
+  talla: string | null;
 }
 
 export interface StockItemFormData {
   name: string;
   category: string;
   purchase_date: string;
-  units_in_stock: number;
   purchase_price_per_unit: number;
   sale_price_per_unit: number;
   notes: string;
@@ -37,6 +38,9 @@ export interface StockItemFormData {
   almacenamiento: string;
   bateria_porcentaje: number | null;
   reparaciones: string[];
+  color: string;
+  // Campos específicos de ropa
+  talla: string;
 }
 
 export interface StockItemWithCalculations extends StockItem {

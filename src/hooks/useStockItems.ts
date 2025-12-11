@@ -12,6 +12,8 @@ function sanitizeFormData(item: StockItemFormData) {
     almacenamiento: item.almacenamiento || null,
     bateria_porcentaje: item.bateria_porcentaje ?? null,
     reparaciones: item.reparaciones && item.reparaciones.length > 0 ? item.reparaciones : null,
+    color: item.color || null,
+    talla: item.talla || null,
   };
 }
 

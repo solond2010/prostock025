@@ -45,7 +45,7 @@ const Index = () => {
     return Array.from(cats).sort();
   }, [items]);
 
-  // Calculate derived values and filter
+  // Calculate derived values and filter (assuming 1 unit per product)
   const processedItems = useMemo<StockItemWithCalculations[]>(() => {
     return items
       .filter((item) => {
@@ -55,17 +55,17 @@ const Index = () => {
       })
       .map((item) => {
         const coste_total =
-          Number(item.purchase_price_per_unit) * item.units_in_stock +
+          Number(item.purchase_price_per_unit) +
           Number(item.precio_envio) +
           Number(item.coste_reparacion);
-        const beneficio_esperado = Number(item.sale_price_per_unit) * item.units_in_stock - coste_total;
+        const beneficio_esperado = Number(item.sale_price_per_unit) - coste_total;
         const beneficio_real =
           item.estado === 'Vendido' ? Number(item.precio_venta_real) - coste_total : null;
         return { ...item, coste_total, beneficio_esperado, beneficio_real };
       });
   }, [items, searchQuery, categoryFilter]);
 
-  // Calculate summary
+  // Calculate summary (assuming 1 unit per product)
   const summary = useMemo<StockSummary>(() => {
     let totalInvested = 0;
     let totalExpectedRevenue = 0;
@@ -73,11 +73,11 @@ const Index = () => {
 
     items.forEach((item) => {
       const coste_total =
-        Number(item.purchase_price_per_unit) * item.units_in_stock +
+        Number(item.purchase_price_per_unit) +
         Number(item.precio_envio) +
         Number(item.coste_reparacion);
       totalInvested += coste_total;
-      totalExpectedRevenue += Number(item.sale_price_per_unit) * item.units_in_stock;
+      totalExpectedRevenue += Number(item.sale_price_per_unit);
 
       if (item.estado === 'Vendido') {
         totalRealProfit += Number(item.precio_venta_real) - coste_total;
