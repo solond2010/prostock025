@@ -6,6 +6,7 @@ import { StockFilters } from '@/components/stock/StockFilters';
 import { StockTable } from '@/components/stock/StockTable';
 import { StockItemDialog } from '@/components/stock/StockItemDialog';
 import { ProductDetailSheet } from '@/components/stock/ProductDetailSheet';
+import { InventorySidebar } from '@/components/stock/InventorySidebar';
 import {
   useStockItems,
   useCreateStockItem,
@@ -163,24 +164,33 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Summary Cards */}
-        <div className="mb-8">
-          <SummaryCards summary={summary} />
-        </div>
+        {/* Main Content with Sidebar */}
+        <div className="flex gap-6">
+          {/* Left: Main Content */}
+          <div className="flex-1 min-w-0">
+            {/* Summary Cards */}
+            <div className="mb-8">
+              <SummaryCards summary={summary} />
+            </div>
 
-        {/* Filters */}
-        <div className="mb-6">
-          <StockFilters
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            categoryFilter={categoryFilter}
-            onCategoryChange={setCategoryFilter}
-            categories={categories}
-          />
-        </div>
+            {/* Filters */}
+            <div className="mb-6">
+              <StockFilters
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                categoryFilter={categoryFilter}
+                onCategoryChange={setCategoryFilter}
+                categories={categories}
+              />
+            </div>
 
-        {/* Table */}
-        <StockTable items={processedItems} onItemClick={handleItemClick} />
+            {/* Table */}
+            <StockTable items={processedItems} onItemClick={handleItemClick} />
+          </div>
+
+          {/* Right: Inventory Sidebar */}
+          <InventorySidebar items={items} />
+        </div>
 
         {/* Product Detail Sheet */}
         <ProductDetailSheet
