@@ -19,6 +19,7 @@ export type Database = {
           almacenamiento: string | null
           bateria_porcentaje: number | null
           category: string
+          color: string | null
           coste_reparacion: number
           created_at: string
           estado: string
@@ -32,13 +33,14 @@ export type Database = {
           purchase_price_per_unit: number
           reparaciones: string[] | null
           sale_price_per_unit: number
-          units_in_stock: number
+          talla: string | null
           updated_at: string
         }
         Insert: {
           almacenamiento?: string | null
           bateria_porcentaje?: number | null
           category: string
+          color?: string | null
           coste_reparacion?: number
           created_at?: string
           estado?: string
@@ -52,13 +54,14 @@ export type Database = {
           purchase_price_per_unit?: number
           reparaciones?: string[] | null
           sale_price_per_unit?: number
-          units_in_stock?: number
+          talla?: string | null
           updated_at?: string
         }
         Update: {
           almacenamiento?: string | null
           bateria_porcentaje?: number | null
           category?: string
+          color?: string | null
           coste_reparacion?: number
           created_at?: string
           estado?: string
@@ -72,7 +75,7 @@ export type Database = {
           purchase_price_per_unit?: number
           reparaciones?: string[] | null
           sale_price_per_unit?: number
-          units_in_stock?: number
+          talla?: string | null
           updated_at?: string
         }
         Relationships: []

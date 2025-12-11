@@ -40,12 +40,26 @@ const REPAIR_OPTIONS = [
   'Todo bien',
   'Otros',
 ];
+const COLOR_OPTIONS = [
+  'Negro',
+  'Blanco',
+  'Gris',
+  'Plata',
+  'Dorado',
+  'Azul',
+  'Verde',
+  'Rojo',
+  'Morado',
+  'Rosa',
+  'Amarillo',
+  'Naranja',
+];
+const SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
 const formSchema = z.object({
   name: z.string().min(1, 'El nombre es obligatorio').max(100),
   category: z.string().min(1, 'La categoría es obligatoria').max(50),
   purchase_date: z.string().min(1, 'La fecha de compra es obligatoria'),
-  units_in_stock: z.coerce.number().int().min(0, 'Debe ser 0 o más'),
   purchase_price_per_unit: z.coerce.number().min(0, 'Debe ser 0 o más'),
   sale_price_per_unit: z.coerce.number().min(0, 'Debe ser 0 o más'),
   notes: z.string().max(500).optional(),
@@ -58,6 +72,9 @@ const formSchema = z.object({
   almacenamiento: z.string().optional(),
   bateria_porcentaje: z.coerce.number().int().min(0).max(100).nullable().optional(),
   reparaciones: z.array(z.string()).optional(),
+  color: z.string().optional(),
+  // Campos de ropa
+  talla: z.string().optional(),
 });
 
 interface StockItemDialogProps {
@@ -81,7 +98,6 @@ export function StockItemDialog({
       name: '',
       category: '',
       purchase_date: new Date().toISOString().split('T')[0],
-      units_in_stock: 0,
       purchase_price_per_unit: 0,
       sale_price_per_unit: 0,
       notes: '',
@@ -93,12 +109,15 @@ export function StockItemDialog({
       almacenamiento: '',
       bateria_porcentaje: null,
       reparaciones: [],
+      color: '',
+      talla: '',
     },
   });
 
   const watchEstado = form.watch('estado');
   const watchCategory = form.watch('category');
   const isTelefonia = watchCategory === 'Telefonía';
+  const isRopa = watchCategory === 'Ropa';
 
   useEffect(() => {
     if (open) {
@@ -107,7 +126,6 @@ export function StockItemDialog({
           name: item.name,
           category: item.category,
           purchase_date: item.purchase_date,
-          units_in_stock: item.units_in_stock,
           purchase_price_per_unit: item.purchase_price_per_unit,
           sale_price_per_unit: item.sale_price_per_unit,
           notes: item.notes || '',
@@ -119,13 +137,14 @@ export function StockItemDialog({
           almacenamiento: item.almacenamiento || '',
           bateria_porcentaje: item.bateria_porcentaje,
           reparaciones: item.reparaciones || [],
+          color: item.color || '',
+          talla: item.talla || '',
         });
       } else {
         form.reset({
           name: '',
           category: '',
           purchase_date: new Date().toISOString().split('T')[0],
-          units_in_stock: 0,
           purchase_price_per_unit: 0,
           sale_price_per_unit: 0,
           notes: '',
@@ -137,6 +156,8 @@ export function StockItemDialog({
           almacenamiento: '',
           bateria_porcentaje: null,
           reparaciones: [],
+          color: '',
+          talla: '',
         });
       }
     }
@@ -271,6 +292,30 @@ export function StockItemDialog({
                 </div>
                 <FormField
                   control={form.control}
+                  name="color"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Color</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecciona color" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {COLOR_OPTIONS.map((opt) => (
+                            <SelectItem key={opt} value={opt}>
+                              {opt}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
                   name="reparaciones"
                   render={({ field }) => (
                     <FormItem>
@@ -303,6 +348,37 @@ export function StockItemDialog({
               </div>
             )}
 
+            {/* Campos específicos de Ropa */}
+            {isRopa && (
+              <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
+                <p className="text-sm font-medium text-muted-foreground">Detalles de Ropa</p>
+                <FormField
+                  control={form.control}
+                  name="talla"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Talla</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecciona talla" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {SIZE_OPTIONS.map((opt) => (
+                            <SelectItem key={opt} value={opt}>
+                              {opt}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+
             <FormField
               control={form.control}
               name="purchase_date"
@@ -316,20 +392,7 @@ export function StockItemDialog({
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-3 gap-3">
-              <FormField
-                control={form.control}
-                name="units_in_stock"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Unidades</FormLabel>
-                    <FormControl>
-                      <Input type="number" min="0" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <div className="grid grid-cols-2 gap-3">
               <FormField
                 control={form.control}
                 name="purchase_price_per_unit"

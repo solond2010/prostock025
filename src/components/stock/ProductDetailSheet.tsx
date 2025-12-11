@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { StockItemWithCalculations } from '@/types/stock';
-import { Pencil, Trash2, Calendar, Package, TrendingUp, Smartphone } from 'lucide-react';
+import { Pencil, Trash2, Calendar, Package, TrendingUp, Smartphone, Shirt } from 'lucide-react';
 import { format, differenceInDays, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -42,6 +42,8 @@ export function ProductDetailSheet({
   if (!item) return null;
 
   const isVendido = item.estado === 'Vendido';
+  const isTelefonia = item.category === 'Telefonía';
+  const isRopa = item.category === 'Ropa';
   
   // Calculate days
   const today = new Date();
@@ -51,9 +53,9 @@ export function ProductDetailSheet({
   const diasEnStock = purchaseDate ? differenceInDays(today, purchaseDate) : null;
   const diasHastaVenta = purchaseDate && saleDate ? differenceInDays(saleDate, purchaseDate) : null;
 
-  // Price difference
+  // Price difference (assuming 1 unit)
   const diferenciaVenta = isVendido
-    ? item.precio_venta_real - (item.sale_price_per_unit * item.units_in_stock)
+    ? item.precio_venta_real - item.sale_price_per_unit
     : null;
 
   const handleEdit = () => {
@@ -138,11 +140,7 @@ export function ProductDetailSheet({
                 <span className="font-medium">{formatDate(item.purchase_date)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Unidades</span>
-                <span className="font-medium">{item.units_in_stock}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Precio compra (ud.)</span>
+                <span className="text-muted-foreground">Precio de compra</span>
                 <span className="font-medium">{formatCurrency(item.purchase_price_per_unit)}</span>
               </div>
               <div className="flex justify-between">
@@ -163,7 +161,7 @@ export function ProductDetailSheet({
           </section>
 
           {/* Detalles del Dispositivo (solo para Telefonía) */}
-          {item.category === 'Telefonía' && (item.almacenamiento || item.bateria_porcentaje !== null || (item.reparaciones && item.reparaciones.length > 0)) && (
+          {isTelefonia && (item.almacenamiento || item.bateria_porcentaje !== null || item.color || (item.reparaciones && item.reparaciones.length > 0)) && (
             <>
               <Separator />
               <section>
@@ -184,6 +182,12 @@ export function ProductDetailSheet({
                       <span className="font-medium">{item.bateria_porcentaje}%</span>
                     </div>
                   )}
+                  {item.color && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Color</span>
+                      <span className="font-medium">{item.color}</span>
+                    </div>
+                  )}
                   {item.reparaciones && item.reparaciones.length > 0 && (
                     <div className="mt-2">
                       <p className="text-muted-foreground mb-2">Reparaciones necesarias</p>
@@ -196,6 +200,25 @@ export function ProductDetailSheet({
                       </div>
                     </div>
                   )}
+                </div>
+              </section>
+            </>
+          )}
+
+          {/* Detalles de Ropa (solo para Ropa) */}
+          {isRopa && item.talla && (
+            <>
+              <Separator />
+              <section>
+                <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+                  <Shirt className="h-4 w-4" />
+                  Detalles de Ropa
+                </h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Talla</span>
+                    <span className="font-medium">{item.talla}</span>
+                  </div>
                 </div>
               </section>
             </>
@@ -218,7 +241,7 @@ export function ProductDetailSheet({
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Precio venta esperado</span>
                     <span className="font-medium">
-                      {formatCurrency(item.sale_price_per_unit * item.units_in_stock)}
+                      {formatCurrency(item.sale_price_per_unit)}
                     </span>
                   </div>
                   <div className="flex justify-between">
