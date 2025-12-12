@@ -165,9 +165,9 @@ const Index = () => {
         </div>
 
         {/* Main Content with Sidebar */}
-        <div className="flex gap-6">
+        <div className="flex justify-between gap-8">
           {/* Left: Main Content */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 max-w-5xl">
             {/* Summary Cards */}
             <div className="mb-8">
               <SummaryCards summary={summary} />
@@ -188,8 +188,10 @@ const Index = () => {
             <StockTable items={processedItems} onItemClick={handleItemClick} />
           </div>
 
-          {/* Right: Inventory Sidebar */}
-          <InventorySidebar items={items} />
+          {/* Right: Inventory Sidebar - aligned to right edge */}
+          <div className="shrink-0">
+            <InventorySidebar items={items} />
+          </div>
         </div>
 
         {/* Product Detail Sheet */}
