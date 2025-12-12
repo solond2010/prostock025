@@ -151,6 +151,10 @@ export function ProductDetailSheet({
                 <span className="text-muted-foreground">Coste de reparación</span>
                 <span className="font-medium">{formatCurrency(item.coste_reparacion)}</span>
               </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Precio venta esperado</span>
+                <span className="font-medium">{formatCurrency(item.sale_price_per_unit)}</span>
+              </div>
               {item.notes && (
                 <div className="mt-3 rounded-lg bg-muted/50 p-3">
                   <p className="text-xs text-muted-foreground mb-1">Notas</p>
