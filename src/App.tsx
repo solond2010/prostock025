@@ -3,8 +3,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { MainLayout } from "./components/layout/MainLayout";
 import Index from "./pages/Index";
 import MonthlyCharts from "./pages/MonthlyCharts";
+import GastoMaterial from "./pages/GastoMaterial";
+import EstadisticasAvanzadas from "./pages/EstadisticasAvanzadas";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -15,12 +18,16 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/graficos" element={<MonthlyCharts />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <MainLayout>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/graficos" element={<MonthlyCharts />} />
+            <Route path="/gasto-material" element={<GastoMaterial />} />
+            <Route path="/estadisticas" element={<EstadisticasAvanzadas />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </MainLayout>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
