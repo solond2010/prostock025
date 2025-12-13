@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      gastos_material: {
+        Row: {
+          categoria: string
+          concepto: string
+          coste: number
+          created_at: string
+          fecha: string
+          id: string
+          notas: string | null
+          updated_at: string
+        }
+        Insert: {
+          categoria: string
+          concepto: string
+          coste?: number
+          created_at?: string
+          fecha?: string
+          id?: string
+          notas?: string | null
+          updated_at?: string
+        }
+        Update: {
+          categoria?: string
+          concepto?: string
+          coste?: number
+          created_at?: string
+          fecha?: string
+          id?: string
+          notas?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       stock_items: {
         Row: {
           almacenamiento: string | null
