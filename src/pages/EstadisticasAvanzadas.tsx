@@ -1,24 +1,361 @@
-import { PieChart } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { PieChart, TrendingUp, TrendingDown, Package, DollarSign, Percent, ShoppingCart, Trophy, AlertTriangle } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useStockItems } from '@/hooks/useStockItems';
+import { format, parseISO } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 const EstadisticasAvanzadas = () => {
+  const currentDate = new Date();
+  const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
+  
+  const { data: stockItems = [], isLoading } = useStockItems();
+
+  const months = [
+    { value: 1, label: 'Enero' },
+    { value: 2, label: 'Febrero' },
+    { value: 3, label: 'Marzo' },
+    { value: 4, label: 'Abril' },
+    { value: 5, label: 'Mayo' },
+    { value: 6, label: 'Junio' },
+    { value: 7, label: 'Julio' },
+    { value: 8, label: 'Agosto' },
+    { value: 9, label: 'Septiembre' },
+    { value: 10, label: 'Octubre' },
+    { value: 11, label: 'Noviembre' },
+    { value: 12, label: 'Diciembre' },
+  ];
+
+  const years = Array.from({ length: 10 }, (_, i) => currentDate.getFullYear() - i);
+
+  const calculateBeneficioReal = (item: typeof stockItems[0]) => {
+    const costeTotal = item.purchase_price_per_unit + item.precio_envio + item.coste_reparacion;
+    return item.precio_venta_real - costeTotal;
+  };
+
+  const calculateMargen = (item: typeof stockItems[0]) => {
+    if (item.precio_venta_real === 0) return 0;
+    const beneficio = calculateBeneficioReal(item);
+    return (beneficio / item.precio_venta_real) * 100;
+  };
+
+  const filteredSoldItems = useMemo(() => {
+    return stockItems.filter(item => {
+      if (item.estado !== 'Vendido' || !item.fecha_venta) return false;
+      const saleDate = parseISO(item.fecha_venta);
+      return saleDate.getMonth() + 1 === selectedMonth && saleDate.getFullYear() === selectedYear;
+    });
+  }, [stockItems, selectedMonth, selectedYear]);
+
+  const purchasedThisMonth = useMemo(() => {
+    return stockItems.filter(item => {
+      const purchaseDate = parseISO(item.purchase_date);
+      return purchaseDate.getMonth() + 1 === selectedMonth && purchaseDate.getFullYear() === selectedYear;
+    });
+  }, [stockItems, selectedMonth, selectedYear]);
+
+  const metrics = useMemo(() => {
+    const totalProducts = filteredSoldItems.length;
+    const totalBeneficio = filteredSoldItems.reduce((sum, item) => sum + calculateBeneficioReal(item), 0);
+    const avgBeneficio = totalProducts > 0 ? totalBeneficio / totalProducts : 0;
+    const avgTicket = totalProducts > 0 
+      ? filteredSoldItems.reduce((sum, item) => sum + item.precio_venta_real, 0) / totalProducts 
+      : 0;
+    const avgMargen = totalProducts > 0 
+      ? filteredSoldItems.reduce((sum, item) => sum + calculateMargen(item), 0) / totalProducts 
+      : 0;
+
+    return {
+      totalProducts,
+      totalBeneficio,
+      avgBeneficio,
+      avgTicket,
+      avgMargen,
+      purchasedCount: purchasedThisMonth.length,
+    };
+  }, [filteredSoldItems, purchasedThisMonth]);
+
+  const ranking = useMemo(() => {
+    if (filteredSoldItems.length === 0) return { best: null, worst: null, top5: [] };
+
+    const itemsWithBeneficio = filteredSoldItems.map(item => ({
+      ...item,
+      beneficioReal: calculateBeneficioReal(item),
+    })).sort((a, b) => b.beneficioReal - a.beneficioReal);
+
+    return {
+      best: itemsWithBeneficio[0] || null,
+      worst: itemsWithBeneficio[itemsWithBeneficio.length - 1] || null,
+      top5: itemsWithBeneficio.slice(0, 5),
+    };
+  }, [filteredSoldItems]);
+
+  const categoryStats = useMemo(() => {
+    const stats: Record<string, { count: number; totalBeneficio: number }> = {};
+    
+    filteredSoldItems.forEach(item => {
+      if (!stats[item.category]) {
+        stats[item.category] = { count: 0, totalBeneficio: 0 };
+      }
+      stats[item.category].count += 1;
+      stats[item.category].totalBeneficio += calculateBeneficioReal(item);
+    });
+
+    return Object.entries(stats).map(([category, data]) => ({
+      category,
+      count: data.count,
+      totalBeneficio: data.totalBeneficio,
+      avgBeneficio: data.count > 0 ? data.totalBeneficio / data.count : 0,
+    })).sort((a, b) => b.totalBeneficio - a.totalBeneficio);
+  }, [filteredSoldItems]);
+
+  const formatCurrency = (value: number) => 
+    new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(value);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Cargando datos...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="rounded-lg bg-primary p-2">
-            <PieChart className="h-6 w-6 text-primary-foreground" />
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg bg-primary p-2">
+              <PieChart className="h-6 w-6 text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-semibold text-foreground">Estadísticas Avanzadas</h1>
+              <p className="text-sm text-muted-foreground">Métricas detalladas por mes</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-semibold text-foreground">Estadísticas Avanzadas</h1>
-            <p className="text-sm text-muted-foreground">Métricas detalladas de tu negocio</p>
+          
+          {/* Filtros */}
+          <div className="flex items-center gap-3">
+            <Select value={selectedMonth.toString()} onValueChange={(v) => setSelectedMonth(parseInt(v))}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="Mes" />
+              </SelectTrigger>
+              <SelectContent>
+                {months.map((month) => (
+                  <SelectItem key={month.value} value={month.value.toString()}>
+                    {month.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(parseInt(v))}>
+              <SelectTrigger className="w-[100px]">
+                <SelectValue placeholder="Año" />
+              </SelectTrigger>
+              <SelectContent>
+                {years.map((year) => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
-        
-        <div className="rounded-lg border border-border bg-card p-12 text-center">
-          <PieChart className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
-          <p className="text-muted-foreground">Esta sección estará disponible próximamente.</p>
-          <p className="text-sm text-muted-foreground/70 mt-2">Aquí encontrarás métricas avanzadas y análisis detallados.</p>
+
+        {/* Tarjetas de resumen */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Productos vendidos</CardTitle>
+              <Package className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{metrics.totalProducts}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Beneficio real total</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className={`text-2xl font-bold ${metrics.totalBeneficio >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {formatCurrency(metrics.totalBeneficio)}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Beneficio medio</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className={`text-2xl font-bold ${metrics.avgBeneficio >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {formatCurrency(metrics.avgBeneficio)}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Ticket medio</CardTitle>
+              <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{formatCurrency(metrics.avgTicket)}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Margen medio</CardTitle>
+              <Percent className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className={`text-2xl font-bold ${metrics.avgMargen >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {metrics.avgMargen.toFixed(1)}%
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Comprados este mes</CardTitle>
+              <Package className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{metrics.purchasedCount}</div>
+            </CardContent>
+          </Card>
         </div>
+
+        {/* Ranking de productos */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <Card>
+            <CardHeader className="flex flex-row items-center gap-2">
+              <Trophy className="h-5 w-5 text-yellow-500" />
+              <CardTitle>Producto más rentable del mes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {ranking.best ? (
+                <div className="space-y-2">
+                  <p className="text-lg font-semibold">{ranking.best.name}</p>
+                  <p className="text-sm text-muted-foreground">{ranking.best.category}</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {formatCurrency(ranking.best.beneficioReal)}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-muted-foreground">Sin datos para este periodo</p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-red-500" />
+              <CardTitle>Peor producto del mes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {ranking.worst ? (
+                <div className="space-y-2">
+                  <p className="text-lg font-semibold">{ranking.worst.name}</p>
+                  <p className="text-sm text-muted-foreground">{ranking.worst.category}</p>
+                  <p className={`text-2xl font-bold ${ranking.worst.beneficioReal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {formatCurrency(ranking.worst.beneficioReal)}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-muted-foreground">Sin datos para este periodo</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Top 5 productos */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Top 5 productos por beneficio</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {ranking.top5.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nombre</TableHead>
+                    <TableHead>Categoría</TableHead>
+                    <TableHead className="text-right">Beneficio real</TableHead>
+                    <TableHead className="text-right">Fecha de venta</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {ranking.top5.map((item, index) => (
+                    <TableRow key={item.id}>
+                      <TableCell className="font-medium">
+                        <span className="mr-2 text-muted-foreground">#{index + 1}</span>
+                        {item.name}
+                      </TableCell>
+                      <TableCell>{item.category}</TableCell>
+                      <TableCell className={`text-right font-semibold ${item.beneficioReal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {formatCurrency(item.beneficioReal)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {item.fecha_venta ? format(parseISO(item.fecha_venta), 'dd MMM yyyy', { locale: es }) : '-'}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <p className="text-muted-foreground text-center py-8">Sin productos vendidos en este periodo</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Resumen por categoría */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Resumen por categoría</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {categoryStats.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Categoría</TableHead>
+                    <TableHead className="text-right">Productos vendidos</TableHead>
+                    <TableHead className="text-right">Beneficio real total</TableHead>
+                    <TableHead className="text-right">Beneficio medio</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {categoryStats.map((stat) => (
+                    <TableRow key={stat.category}>
+                      <TableCell className="font-medium">{stat.category}</TableCell>
+                      <TableCell className="text-right">{stat.count}</TableCell>
+                      <TableCell className={`text-right font-semibold ${stat.totalBeneficio >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {formatCurrency(stat.totalBeneficio)}
+                      </TableCell>
+                      <TableCell className={`text-right ${stat.avgBeneficio >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {formatCurrency(stat.avgBeneficio)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <p className="text-muted-foreground text-center py-8">Sin datos para este periodo</p>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
