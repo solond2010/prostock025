@@ -7,11 +7,14 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Copy } from 'lucide-react';
 import { StockItemWithCalculations } from '@/types/stock';
 
 interface StockTableProps {
   items: StockItemWithCalculations[];
   onItemClick: (item: StockItemWithCalculations) => void;
+  onDuplicateClick: (item: StockItemWithCalculations) => void;
 }
 
 const formatCurrency = (value: number) => {
@@ -22,7 +25,7 @@ const formatCurrency = (value: number) => {
   }).format(value);
 };
 
-export function StockTable({ items, onItemClick }: StockTableProps) {
+export function StockTable({ items, onItemClick, onDuplicateClick }: StockTableProps) {
   if (items.length === 0) {
     return (
       <div className="flex h-48 items-center justify-center rounded-lg border border-dashed border-border bg-card text-muted-foreground">
@@ -41,6 +44,7 @@ export function StockTable({ items, onItemClick }: StockTableProps) {
             <TableHead className="font-semibold">Categoría</TableHead>
             <TableHead className="text-right font-semibold">Coste Total</TableHead>
             <TableHead className="text-right font-semibold">Beneficio</TableHead>
+            <TableHead className="w-[100px] text-center font-semibold">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -78,6 +82,20 @@ export function StockTable({ items, onItemClick }: StockTableProps) {
                   className={`table-cell-numeric ${isPositive ? 'text-success' : 'text-destructive'}`}
                 >
                   {beneficio !== null ? formatCurrency(beneficio) : '-'}
+                </TableCell>
+                <TableCell className="text-center">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDuplicateClick(item);
+                    }}
+                    title="Duplicar producto"
+                  >
+                    <Copy className="h-4 w-4 mr-1" />
+                    Duplicar
+                  </Button>
                 </TableCell>
               </TableRow>
             );
