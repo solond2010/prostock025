@@ -7,11 +7,13 @@ import { StockTable } from '@/components/stock/StockTable';
 import { StockItemDialog } from '@/components/stock/StockItemDialog';
 import { ProductDetailSheet } from '@/components/stock/ProductDetailSheet';
 import { InventorySidebar } from '@/components/stock/InventorySidebar';
+import { DuplicateProductDialog } from '@/components/stock/DuplicateProductDialog';
 import {
   useStockItems,
   useCreateStockItem,
   useUpdateStockItem,
   useDeleteStockItem,
+  useDuplicateStockItem,
 } from '@/hooks/useStockItems';
 import { StockItem, StockItemFormData, StockItemWithCalculations, StockSummary } from '@/types/stock';
 import { Plus, Package, BarChart3 } from 'lucide-react';
@@ -31,6 +33,7 @@ const Index = () => {
   const createMutation = useCreateStockItem();
   const updateMutation = useUpdateStockItem();
   const deleteMutation = useDeleteStockItem();
+  const duplicateMutation = useDuplicateStockItem();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<StockItem | null>(null);
@@ -39,6 +42,7 @@ const Index = () => {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [detailItem, setDetailItem] = useState<StockItemWithCalculations | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [duplicateItem, setDuplicateItem] = useState<StockItemWithCalculations | null>(null);
 
   // Get unique categories
   const categories = useMemo(() => {
@@ -108,6 +112,19 @@ const Index = () => {
 
   const handleDelete = (id: string) => {
     setDeleteId(id);
+  };
+
+  const handleDuplicateClick = (item: StockItemWithCalculations) => {
+    setDuplicateItem(item);
+  };
+
+  const handleDuplicateConfirm = (count: number) => {
+    if (duplicateItem) {
+      duplicateMutation.mutate(
+        { item: duplicateItem, count },
+        { onSuccess: () => setDuplicateItem(null) }
+      );
+    }
   };
 
   const confirmDelete = () => {
@@ -185,7 +202,7 @@ const Index = () => {
             </div>
 
             {/* Table */}
-            <StockTable items={processedItems} onItemClick={handleItemClick} />
+            <StockTable items={processedItems} onItemClick={handleItemClick} onDuplicateClick={handleDuplicateClick} />
           </div>
 
           {/* Right: Inventory Sidebar - aligned to right edge */}
@@ -229,6 +246,15 @@ const Index = () => {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Duplicate Product Dialog */}
+        <DuplicateProductDialog
+          open={!!duplicateItem}
+          onOpenChange={(open) => !open && setDuplicateItem(null)}
+          productName={duplicateItem?.name || ''}
+          onConfirm={handleDuplicateConfirm}
+          isLoading={duplicateMutation.isPending}
+        />
       </div>
     </div>
   );

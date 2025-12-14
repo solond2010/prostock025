@@ -57,6 +57,48 @@ export function useCreateStockItem() {
   });
 }
 
+export function useDuplicateStockItem() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ item, count }: { item: StockItem; count: number }) => {
+      const copies = Array.from({ length: count }, () => ({
+        name: item.name,
+        category: item.category,
+        purchase_date: item.purchase_date,
+        purchase_price_per_unit: item.purchase_price_per_unit,
+        sale_price_per_unit: item.sale_price_per_unit,
+        notes: item.notes,
+        estado: 'En stock',
+        precio_envio: item.precio_envio,
+        coste_reparacion: item.coste_reparacion,
+        fecha_venta: null,
+        precio_venta_real: 0,
+        almacenamiento: item.almacenamiento,
+        bateria_porcentaje: item.bateria_porcentaje,
+        reparaciones: item.reparaciones,
+        color: item.color,
+        talla: item.talla,
+      }));
+      
+      const { data, error } = await supabase
+        .from('stock_items')
+        .insert(copies)
+        .select();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['stock-items'] });
+      toast.success(`${variables.count} ${variables.count === 1 ? 'copia creada' : 'copias creadas'} correctamente`);
+    },
+    onError: (error) => {
+      toast.error('Error al duplicar producto: ' + error.message);
+    },
+  });
+}
+
 export function useUpdateStockItem() {
   const queryClient = useQueryClient();
   
