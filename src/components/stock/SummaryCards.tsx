@@ -77,23 +77,23 @@ export function SummaryCards({ summary, currentSummary }: SummaryCardsProps) {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Resumen Actual (Stock) */}
       <div>
-        <h3 className="mb-3 text-sm font-medium text-muted-foreground uppercase tracking-wide">
+        <h3 className="mb-2 sm:mb-3 text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wide">
           Resumen Actual (Stock)
         </h3>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-4">
           {currentCards.map((card) => (
             <Card key={card.title} className="border-border/50 shadow-sm">
-              <CardContent className="p-5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">{card.title}</p>
-                    <p className={`mt-1 text-2xl font-semibold ${card.className}`}>{card.value}</p>
+              <CardContent className="p-3 sm:p-5">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">{card.title}</p>
+                    <p className={`mt-0.5 sm:mt-1 text-base sm:text-2xl font-semibold ${card.className}`}>{card.value}</p>
                   </div>
-                  <div className="rounded-lg bg-secondary p-2.5">
-                    <card.icon className="h-5 w-5 text-muted-foreground" />
+                  <div className="rounded-lg bg-secondary p-1.5 sm:p-2.5 shrink-0 hidden sm:block">
+                    <card.icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                   </div>
                 </div>
               </CardContent>
@@ -104,20 +104,20 @@ export function SummaryCards({ summary, currentSummary }: SummaryCardsProps) {
 
       {/* Histórico Total */}
       <div>
-        <h3 className="mb-3 text-sm font-medium text-muted-foreground uppercase tracking-wide">
+        <h3 className="mb-2 sm:mb-3 text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wide">
           Histórico Total
         </h3>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-5">
           {historicCards.map((card) => (
             <Card key={card.title} className="border-border/50 shadow-sm">
-              <CardContent className="p-5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">{card.title}</p>
-                    <p className={`mt-1 text-2xl font-semibold ${card.className}`}>{card.value}</p>
+              <CardContent className="p-3 sm:p-5">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-[10px] sm:text-sm font-medium text-muted-foreground truncate">{card.title}</p>
+                    <p className={`mt-0.5 sm:mt-1 text-base sm:text-2xl font-semibold ${card.className}`}>{card.value}</p>
                   </div>
-                  <div className="rounded-lg bg-secondary p-2.5">
-                    <card.icon className="h-5 w-5 text-muted-foreground" />
+                  <div className="rounded-lg bg-secondary p-1.5 sm:p-2.5 shrink-0 hidden sm:block">
+                    <card.icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                   </div>
                 </div>
               </CardContent>
