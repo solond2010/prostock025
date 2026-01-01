@@ -29,25 +29,25 @@ export function StockFilters({
   onStatusChange,
 }: StockFiltersProps) {
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+    <div className="flex flex-col gap-2 sm:gap-3 sm:flex-row sm:items-center">
       <div className="relative flex-1">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Buscar por nombre de producto..."
+          placeholder="Buscar producto..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="pl-9"
+          className="pl-9 h-9 sm:h-10 text-sm"
         />
       </div>
       
       {/* Status Filter Pills */}
-      <div className="flex items-center rounded-lg border border-border bg-muted/50 p-1">
+      <div className="flex items-center rounded-lg border border-border bg-muted/50 p-0.5 sm:p-1 order-first sm:order-none">
         {statusOptions.map((option) => (
           <button
             key={option.value}
             onClick={() => onStatusChange(option.value)}
             className={cn(
-              'px-3 py-1.5 text-sm font-medium rounded-md transition-all',
+              'px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all',
               statusFilter === option.value
                 ? 'bg-primary text-primary-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
@@ -59,11 +59,11 @@ export function StockFilters({
       </div>
 
       <Select value={categoryFilter} onValueChange={onCategoryChange}>
-        <SelectTrigger className="w-full sm:w-48">
-          <SelectValue placeholder="Todas las Categorías" />
+        <SelectTrigger className="w-full sm:w-48 h-9 sm:h-10 text-sm">
+          <SelectValue placeholder="Categorías" />
         </SelectTrigger>
         <SelectContent className="bg-popover">
-          <SelectItem value="all">Todas las Categorías</SelectItem>
+          <SelectItem value="all">Todas</SelectItem>
           {categories.map((category) => (
             <SelectItem key={category} value={category}>
               {category}

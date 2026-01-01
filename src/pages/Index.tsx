@@ -16,7 +16,7 @@ import {
   useDuplicateStockItem,
 } from '@/hooks/useStockItems';
 import { StockItem, StockItemFormData, StockItemWithCalculations, StockSummary, CurrentStockSummary } from '@/types/stock';
-import { Plus, Package, BarChart3 } from 'lucide-react';
+import { Plus, Package, BarChart3, TrendingUp } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -179,43 +179,72 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-3 py-4 sm:px-6 sm:py-8 lg:px-8">
         {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-primary p-2">
-              <Package className="h-6 w-6 text-primary-foreground" />
+        <div className="mb-4 sm:mb-8 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="rounded-lg bg-primary p-1.5 sm:p-2 shrink-0">
+              <Package className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground" />
             </div>
-            <div>
-              <h1 className="text-2xl font-semibold text-foreground">Gestor de Stock</h1>
-              <p className="text-sm text-muted-foreground">Controla tu inventario y beneficios</p>
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-2xl font-semibold text-foreground truncate">Gestor de Stock</h1>
+              <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Controla tu inventario y beneficios</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Link to="/graficos">
+          <div className="flex items-center gap-2 shrink-0">
+            <Link to="/graficos" className="hidden sm:block">
               <Button variant="outline">
                 <BarChart3 className="mr-2 h-4 w-4" />
                 Gráficos
               </Button>
             </Link>
-            <Button onClick={handleAddClick}>
-              <Plus className="mr-2 h-4 w-4" />
-              Añadir Producto
+            <Button onClick={handleAddClick} size="sm" className="sm:size-default">
+              <Plus className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Añadir Producto</span>
             </Button>
           </div>
         </div>
 
+        {/* Mobile Inventory Stats */}
+        <div className="mb-4 grid grid-cols-2 gap-2 sm:hidden">
+          <div className="rounded-lg border border-border bg-card/50 p-3 flex items-center gap-2">
+            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-secondary shrink-0">
+              <Package className="h-3.5 w-3.5 text-muted-foreground" />
+            </div>
+            <div>
+              <p className="text-[10px] text-muted-foreground">En stock</p>
+              <p className="text-base font-semibold text-foreground">{items.filter(i => i.estado === 'En stock').length}</p>
+            </div>
+          </div>
+          <div className="rounded-lg border border-border bg-card/50 p-3 flex items-center gap-2">
+            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-secondary shrink-0">
+              <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
+            </div>
+            <div>
+              <p className="text-[10px] text-muted-foreground">Vendidos mes</p>
+              <p className="text-base font-semibold text-foreground">
+                {items.filter((item) => {
+                  if (item.estado !== 'Vendido' || !item.fecha_venta) return false;
+                  const now = new Date();
+                  const saleDate = new Date(item.fecha_venta);
+                  return saleDate.getMonth() === now.getMonth() && saleDate.getFullYear() === now.getFullYear();
+                }).length}
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Main Content with Sidebar */}
-        <div className="flex justify-between gap-8">
+        <div className="flex flex-col lg:flex-row lg:justify-between gap-4 lg:gap-8">
           {/* Left: Main Content */}
-          <div className="flex-1 min-w-0 max-w-5xl">
+          <div className="flex-1 min-w-0 lg:max-w-5xl">
             {/* Summary Cards */}
-            <div className="mb-8">
+            <div className="mb-4 sm:mb-8">
               <SummaryCards summary={summary} currentSummary={currentSummary} />
             </div>
 
             {/* Filters */}
-            <div className="mb-6">
+            <div className="mb-4 sm:mb-6">
               <StockFilters
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
@@ -231,8 +260,8 @@ const Index = () => {
             <StockTable items={processedItems} onItemClick={handleItemClick} onDuplicateClick={handleDuplicateClick} />
           </div>
 
-          {/* Right: Inventory Sidebar - aligned to right edge */}
-          <div className="shrink-0">
+          {/* Right: Inventory Sidebar - hidden on mobile, shown on lg+ */}
+          <div className="hidden lg:block shrink-0">
             <InventorySidebar items={items} />
           </div>
         </div>
