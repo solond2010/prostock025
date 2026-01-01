@@ -178,20 +178,6 @@
   }
 }
 
-/* Premium floating button */
-.floating-btn-premium {
-  box-shadow: 0 4px 14px 0 hsl(var(--primary) / 0.35);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.floating-btn-premium:hover {
-  box-shadow: 0 6px 20px 0 hsl(var(--primary) / 0.45);
-  transform: scale(1.05);
-}
-
-.floating-btn-premium:active {
-  transform: scale(0.98);
-}
 
 /* Premium button transitions */
 .btn-premium {
