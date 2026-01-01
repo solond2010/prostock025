@@ -51,6 +51,7 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'En stock' | 'Vendido'>('all');
+  const [daysInStockFilter, setDaysInStockFilter] = useState<'all' | 'recent' | 'atrisk' | 'dead'>('all');
   const [detailItem, setDetailItem] = useState<StockItemWithCalculations | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [duplicateItem, setDuplicateItem] = useState<StockItemWithCalculations | null>(null);
@@ -385,6 +386,8 @@ const Index = () => {
                 onDuplicateClick={handleDuplicateClick}
                 onSellClick={handleSellClick}
                 recentlySoldId={recentlySoldId}
+                daysInStockFilter={daysInStockFilter}
+                onDaysInStockFilterChange={setDaysInStockFilter}
               />
             </div>
 

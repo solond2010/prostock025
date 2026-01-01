@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import {
   Table,
   TableBody,
@@ -8,9 +9,17 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Copy, ShoppingCart } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Copy, ShoppingCart, ChevronDown, CheckCircle, AlertTriangle, Flame, Circle } from 'lucide-react';
 import { StockItemWithCalculations } from '@/types/stock';
 import { differenceInDays } from 'date-fns';
+
+export type DaysInStockFilter = 'all' | 'recent' | 'atrisk' | 'dead';
 
 const getDaysInStock = (purchaseDate: string | null | undefined, estado: string): number | null => {
   if (estado !== 'En stock' || !purchaseDate) return null;
@@ -25,12 +34,21 @@ const getDaysInStockVariant = (days: number | null): 'success' | 'warning' | 'de
   return 'destructive';
 };
 
+const getDaysFilterCategory = (days: number | null): DaysInStockFilter | null => {
+  if (days === null) return null;
+  if (days <= 10) return 'recent';
+  if (days <= 20) return 'atrisk';
+  return 'dead';
+};
+
 interface StockTableProps {
   items: StockItemWithCalculations[];
   onItemClick: (item: StockItemWithCalculations) => void;
   onDuplicateClick: (item: StockItemWithCalculations) => void;
   onSellClick?: (item: StockItemWithCalculations) => void;
   recentlySoldId?: string | null;
+  daysInStockFilter?: DaysInStockFilter;
+  onDaysInStockFilterChange?: (filter: DaysInStockFilter) => void;
 }
 
 const formatCurrency = (value: number) => {
@@ -41,7 +59,37 @@ const formatCurrency = (value: number) => {
   }).format(value);
 };
 
-export function StockTable({ items, onItemClick, onDuplicateClick, onSellClick, recentlySoldId }: StockTableProps) {
+const filterOptions: { value: DaysInStockFilter; label: string; shortLabel: string; icon: typeof Circle; colorClass: string }[] = [
+  { value: 'all', label: 'Todos', shortLabel: 'Todos', icon: Circle, colorClass: 'text-muted-foreground' },
+  { value: 'recent', label: 'Recientes (0–10 días)', shortLabel: 'Recientes', icon: CheckCircle, colorClass: 'text-success' },
+  { value: 'atrisk', label: 'En riesgo (11–20 días)', shortLabel: 'En riesgo', icon: AlertTriangle, colorClass: 'text-warning' },
+  { value: 'dead', label: 'Muerto (21+ días)', shortLabel: 'Muerto', icon: Flame, colorClass: 'text-destructive' },
+];
+
+export function StockTable({ 
+  items, 
+  onItemClick, 
+  onDuplicateClick, 
+  onSellClick, 
+  recentlySoldId,
+  daysInStockFilter = 'all',
+  onDaysInStockFilterChange 
+}: StockTableProps) {
+  
+  // Filter items based on days in stock filter
+  const filteredItems = useMemo(() => {
+    if (daysInStockFilter === 'all') return items;
+    
+    return items.filter((item) => {
+      const days = getDaysInStock(item.purchase_date, item.estado);
+      const category = getDaysFilterCategory(days);
+      return category === daysInStockFilter;
+    });
+  }, [items, daysInStockFilter]);
+
+  const selectedOption = filterOptions.find(o => o.value === daysInStockFilter) || filterOptions[0];
+  const SelectedIcon = selectedOption.icon;
+
   if (items.length === 0) {
     return (
       <div className="flex h-48 items-center justify-center rounded-lg border border-dashed border-border bg-card text-muted-foreground">
@@ -58,107 +106,156 @@ export function StockTable({ items, onItemClick, onDuplicateClick, onSellClick, 
             <TableHead className="font-semibold text-foreground/80">Nombre</TableHead>
             <TableHead className="font-semibold text-foreground/80">Estado</TableHead>
             <TableHead className="font-semibold text-foreground/80">Categoría</TableHead>
-            <TableHead className="text-center font-semibold text-foreground/80">Días en stock</TableHead>
+            <TableHead className="text-center font-semibold text-foreground/80">
+              <div className="flex items-center justify-center gap-2">
+                <span>Días en stock</span>
+                {onDaysInStockFilterChange && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md border border-border/60 bg-background/50 hover:bg-muted/80 transition-colors backdrop-blur-sm">
+                        {daysInStockFilter !== 'all' && (
+                          <span className={`w-1.5 h-1.5 rounded-full ${
+                            daysInStockFilter === 'recent' ? 'bg-success' :
+                            daysInStockFilter === 'atrisk' ? 'bg-warning' :
+                            'bg-destructive'
+                          }`} />
+                        )}
+                        <span className="text-foreground/70">{selectedOption.shortLabel}</span>
+                        <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="center" className="min-w-[180px] bg-popover border border-border/60 backdrop-blur-sm">
+                      {filterOptions.map((option) => {
+                        const Icon = option.icon;
+                        return (
+                          <DropdownMenuItem
+                            key={option.value}
+                            onClick={() => onDaysInStockFilterChange(option.value)}
+                            className={`flex items-center gap-2 cursor-pointer ${
+                              daysInStockFilter === option.value ? 'bg-muted/50' : ''
+                            }`}
+                          >
+                            <Icon className={`h-3.5 w-3.5 ${option.colorClass}`} />
+                            <span className="text-sm">{option.label}</span>
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </div>
+            </TableHead>
             <TableHead className="text-right font-semibold text-foreground/80">Coste Total</TableHead>
             <TableHead className="text-right font-semibold text-foreground/80">Beneficio</TableHead>
             <TableHead className="w-[150px] text-center font-semibold text-foreground/80">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {items.map((item) => {
-            const beneficio = item.estado === 'Vendido' ? item.beneficio_real : item.beneficio_esperado;
-            const isPositive = beneficio !== null && beneficio >= 0;
-            const isEnStock = item.estado === 'En stock';
-            const isRecentlySold = item.id === recentlySoldId;
-            const daysInStock = getDaysInStock(item.purchase_date, item.estado);
-            const daysVariant = getDaysInStockVariant(daysInStock);
-            
-            return (
-              <TableRow 
-                key={item.id} 
-                className={`border-b border-border/50 last:border-b-0 ${isRecentlySold ? 'sale-highlight' : ''}`}
-              >
-                <TableCell>
-                  <button
-                    onClick={() => onItemClick(item)}
-                    className="font-medium text-primary hover:underline text-left"
-                  >
-                    {item.name}
-                  </button>
-                </TableCell>
-                <TableCell>
-                  <Badge 
-                    variant={item.estado === 'Vendido' ? 'default' : 'secondary'}
-                    className={`badge-animated ${item.estado === 'Vendido' ? 'bg-success text-success-foreground' : ''}`}
-                  >
-                    {item.estado}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="font-normal">
-                    {item.category}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-center">
-                  {daysInStock !== null ? (
-                    <Badge 
-                      variant="outline"
-                      className={`font-medium ${
-                        daysVariant === 'success' 
-                          ? 'bg-success/15 text-success border-success/30' 
-                          : daysVariant === 'warning'
-                          ? 'bg-warning/15 text-warning border-warning/30'
-                          : 'bg-destructive/15 text-destructive border-destructive/30'
-                      }`}
-                    >
-                      {daysInStock}d
-                    </Badge>
-                  ) : (
-                    <span className="text-muted-foreground">—</span>
-                  )}
-                </TableCell>
-                <TableCell className="table-cell-numeric">
-                  {formatCurrency(item.coste_total)}
-                </TableCell>
-                <TableCell
-                  className={`table-cell-numeric ${isPositive ? 'text-success' : 'text-destructive'}`}
+          {filteredItems.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={7} className="h-32 text-center">
+                <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                  <SelectedIcon className={`h-8 w-8 ${selectedOption.colorClass} opacity-50`} />
+                  <span>No hay productos en este rango de días.</span>
+                </div>
+              </TableCell>
+            </TableRow>
+          ) : (
+            filteredItems.map((item) => {
+              const beneficio = item.estado === 'Vendido' ? item.beneficio_real : item.beneficio_esperado;
+              const isPositive = beneficio !== null && beneficio >= 0;
+              const isEnStock = item.estado === 'En stock';
+              const isRecentlySold = item.id === recentlySoldId;
+              const daysInStock = getDaysInStock(item.purchase_date, item.estado);
+              const daysVariant = getDaysInStockVariant(daysInStock);
+              
+              return (
+                <TableRow 
+                  key={item.id} 
+                  className={`border-b border-border/50 last:border-b-0 ${isRecentlySold ? 'sale-highlight' : ''}`}
                 >
-                  {beneficio !== null ? formatCurrency(beneficio) : '-'}
-                </TableCell>
-                <TableCell className="text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    {isEnStock && onSellClick && (
+                  <TableCell>
+                    <button
+                      onClick={() => onItemClick(item)}
+                      className="font-medium text-primary hover:underline text-left"
+                    >
+                      {item.name}
+                    </button>
+                  </TableCell>
+                  <TableCell>
+                    <Badge 
+                      variant={item.estado === 'Vendido' ? 'default' : 'secondary'}
+                      className={`badge-animated ${item.estado === 'Vendido' ? 'bg-success text-success-foreground' : ''}`}
+                    >
+                      {item.estado}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="font-normal">
+                      {item.category}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {daysInStock !== null ? (
+                      <Badge 
+                        variant="outline"
+                        className={`font-medium ${
+                          daysVariant === 'success' 
+                            ? 'bg-success/15 text-success border-success/30' 
+                            : daysVariant === 'warning'
+                            ? 'bg-warning/15 text-warning border-warning/30'
+                            : 'bg-destructive/15 text-destructive border-destructive/30'
+                        }`}
+                      >
+                        {daysInStock}d
+                      </Badge>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="table-cell-numeric">
+                    {formatCurrency(item.coste_total)}
+                  </TableCell>
+                  <TableCell
+                    className={`table-cell-numeric ${isPositive ? 'text-success' : 'text-destructive'}`}
+                  >
+                    {beneficio !== null ? formatCurrency(beneficio) : '-'}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <div className="flex items-center justify-center gap-1">
+                      {isEnStock && onSellClick && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSellClick(item);
+                          }}
+                          title="Vender producto"
+                          className="text-success hover:text-success hover:bg-success/10"
+                        >
+                          <ShoppingCart className="h-4 w-4 mr-1" />
+                          Vender
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
-                          onSellClick(item);
+                          onDuplicateClick(item);
                         }}
-                        title="Vender producto"
-                        className="text-success hover:text-success hover:bg-success/10"
+                        title="Duplicar producto"
                       >
-                        <ShoppingCart className="h-4 w-4 mr-1" />
-                        Vender
+                        <Copy className="h-4 w-4 mr-1" />
+                        Duplicar
                       </Button>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDuplicateClick(item);
-                      }}
-                      title="Duplicar producto"
-                    >
-                      <Copy className="h-4 w-4 mr-1" />
-                      Duplicar
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            );
-          })}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })
+          )}
         </TableBody>
       </Table>
     </div>
