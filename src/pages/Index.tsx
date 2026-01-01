@@ -40,6 +40,7 @@ const Index = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'En stock' | 'Vendido'>('all');
   const [detailItem, setDetailItem] = useState<StockItemWithCalculations | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [duplicateItem, setDuplicateItem] = useState<StockItemWithCalculations | null>(null);
@@ -56,7 +57,8 @@ const Index = () => {
       .filter((item) => {
         const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesCategory = categoryFilter === 'all' || item.category === categoryFilter;
-        return matchesSearch && matchesCategory;
+        const matchesStatus = statusFilter === 'all' || item.estado === statusFilter;
+        return matchesSearch && matchesCategory && matchesStatus;
       })
       .map((item) => {
         const coste_total =
@@ -68,7 +70,7 @@ const Index = () => {
           item.estado === 'Vendido' ? Number(item.precio_venta_real) - coste_total : null;
         return { ...item, coste_total, beneficio_esperado, beneficio_real };
       });
-  }, [items, searchQuery, categoryFilter]);
+  }, [items, searchQuery, categoryFilter, statusFilter]);
 
   // Calculate summary (assuming 1 unit per product)
   const summary = useMemo<StockSummary>(() => {
@@ -220,6 +222,8 @@ const Index = () => {
                 categoryFilter={categoryFilter}
                 onCategoryChange={setCategoryFilter}
                 categories={categories}
+                statusFilter={statusFilter}
+                onStatusChange={setStatusFilter}
               />
             </div>
 
