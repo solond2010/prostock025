@@ -8,6 +8,7 @@ import { StockItemDialog } from '@/components/stock/StockItemDialog';
 import { ProductDetailSheet } from '@/components/stock/ProductDetailSheet';
 import { InventorySidebar } from '@/components/stock/InventorySidebar';
 import { DuplicateProductDialog } from '@/components/stock/DuplicateProductDialog';
+import { SellProductDialog } from '@/components/stock/SellProductDialog';
 import {
   useStockItems,
   useCreateStockItem,
@@ -47,6 +48,7 @@ const Index = () => {
   const [detailItem, setDetailItem] = useState<StockItemWithCalculations | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [duplicateItem, setDuplicateItem] = useState<StockItemWithCalculations | null>(null);
+  const [sellItem, setSellItem] = useState<StockItemWithCalculations | null>(null);
 
   // Get unique categories
   const categories = useMemo(() => {
@@ -152,6 +154,32 @@ const Index = () => {
         { onSuccess: () => setDuplicateItem(null) }
       );
     }
+  };
+
+  const handleSellClick = (item: StockItemWithCalculations) => {
+    setSellItem(item);
+  };
+
+  const handleSellConfirm = (id: string, fechaVenta: string, precioVentaReal: number) => {
+    updateMutation.mutate(
+      {
+        id,
+        item: {
+          estado: 'Vendido',
+          fecha_venta: fechaVenta,
+          precio_venta_real: precioVentaReal,
+        } as Partial<StockItemFormData>,
+      },
+      {
+        onSuccess: () => {
+          setSellItem(null);
+          toast({
+            title: '✅ Producto marcado como vendido',
+            description: `La venta se ha registrado correctamente`,
+          });
+        },
+      }
+    );
   };
 
   const confirmDelete = () => {
@@ -323,7 +351,12 @@ const Index = () => {
             </div>
 
             {/* Table */}
-            <StockTable items={processedItems} onItemClick={handleItemClick} onDuplicateClick={handleDuplicateClick} />
+            <StockTable 
+              items={processedItems} 
+              onItemClick={handleItemClick} 
+              onDuplicateClick={handleDuplicateClick}
+              onSellClick={handleSellClick}
+            />
           </div>
 
           {/* Right: Inventory Sidebar - hidden on mobile, shown on lg+ */}
@@ -375,6 +408,15 @@ const Index = () => {
           productName={duplicateItem?.name || ''}
           onConfirm={handleDuplicateConfirm}
           isLoading={duplicateMutation.isPending}
+        />
+
+        {/* Sell Product Dialog */}
+        <SellProductDialog
+          open={!!sellItem}
+          onOpenChange={(open) => !open && setSellItem(null)}
+          item={sellItem}
+          onConfirm={handleSellConfirm}
+          isLoading={updateMutation.isPending}
         />
 
         {/* Floating Export Button */}
