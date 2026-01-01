@@ -227,7 +227,7 @@ export function StockTable({
                     {beneficio !== null ? formatCurrency(beneficio) : '-'}
                   </TableCell>
                   <TableCell className="text-center">
-                    <div className="flex items-center justify-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-200 md:translate-x-2 md:group-hover:translate-x-0">
+                    <div className="flex items-center justify-center gap-1 opacity-60 group-hover:opacity-100 transition-all duration-200">
                       {isEnStock && onSellClick && (
                         <Tooltip>
                           <TooltipTrigger asChild>
