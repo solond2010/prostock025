@@ -99,12 +99,35 @@ export function useDuplicateStockItem() {
   });
 }
 
+// Helper to sanitize partial updates (only sanitize fields that are present)
+function sanitizePartialUpdate(item: Partial<StockItemFormData>) {
+  const sanitized: Record<string, unknown> = {};
+  
+  for (const [key, value] of Object.entries(item)) {
+    if (key === 'purchase_date' || key === 'fecha_venta') {
+      // Only include date fields if they are explicitly provided
+      sanitized[key] = value || null;
+    } else if (key === 'almacenamiento' || key === 'color' || key === 'talla') {
+      sanitized[key] = value || null;
+    } else if (key === 'bateria_porcentaje') {
+      sanitized[key] = value ?? null;
+    } else if (key === 'reparaciones') {
+      sanitized[key] = Array.isArray(value) && value.length > 0 ? value : null;
+    } else {
+      sanitized[key] = value;
+    }
+  }
+  
+  return sanitized;
+}
+
 export function useUpdateStockItem() {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: async ({ id, item }: { id: string; item: Partial<StockItemFormData> }) => {
-      const sanitizedItem = sanitizeFormData(item as StockItemFormData);
+      // Use partial sanitization to avoid overwriting fields not included in the update
+      const sanitizedItem = sanitizePartialUpdate(item);
       const { data, error } = await supabase
         .from('stock_items')
         .update(sanitizedItem)
@@ -117,7 +140,6 @@ export function useUpdateStockItem() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stock-items'] });
-      toast.success('Producto actualizado correctamente');
     },
     onError: (error) => {
       toast.error('Error al actualizar producto: ' + error.message);
