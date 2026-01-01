@@ -36,10 +36,10 @@ export function StockTable({ items, onItemClick, onDuplicateClick, onSellClick }
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-card lg:shadow-sm">
+    <div className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm">
       <Table className="crm-table">
         <TableHeader>
-          <TableRow className="bg-secondary/70 hover:bg-secondary/70 border-b border-border">
+          <TableRow className="bg-muted/50 hover:bg-muted/50 border-b border-border/60">
             <TableHead className="font-semibold text-foreground/80">Nombre</TableHead>
             <TableHead className="font-semibold text-foreground/80">Estado</TableHead>
             <TableHead className="font-semibold text-foreground/80">Categoría</TableHead>

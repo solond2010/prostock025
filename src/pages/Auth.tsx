@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Package } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { z } from 'zod';
 
 const authSchema = z.object({
@@ -82,17 +82,19 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
+      <Card className="w-full max-w-md border-border/60 shadow-lg">
+        <CardHeader className="text-center pb-2">
           <div className="flex justify-center mb-4">
-            <div className="p-3 rounded-full bg-primary/10">
-              <Package className="h-8 w-8 text-primary" />
-            </div>
+            <img 
+              src="/logo.jpg" 
+              alt="ProStock Logo" 
+              className="h-16 w-16 rounded-full border-2 border-border/50 shadow-md object-cover"
+            />
           </div>
-          <CardTitle className="text-2xl">Gestor de Stock</CardTitle>
+          <CardTitle className="text-2xl font-semibold">ProStock</CardTitle>
           <CardDescription>Inicia sesión para acceder al sistema</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-4">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -103,6 +105,7 @@ export default function Auth() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
+                className="h-11"
               />
               {errors.email && (
                 <p className="text-sm text-destructive">{errors.email}</p>
@@ -117,12 +120,13 @@ export default function Auth() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
+                className="h-11"
               />
               {errors.password && (
                 <p className="text-sm text-destructive">{errors.password}</p>
               )}
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full h-11 font-medium" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -122,17 +122,17 @@ export function SummaryCards({ summary, currentSummary, stockItems }: SummaryCar
                 <Tooltip key={card.title}>
                   <TooltipTrigger asChild>
                     <Card 
-                      className="border-border/50 bg-card cursor-pointer transition-all hover:shadow-md hover:border-primary/30 active:scale-[0.98] lg:metric-card"
+                      className="border-border/60 bg-card cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5 active:scale-[0.98] lg:metric-card"
                       onClick={() => handleCardClick(card.type)}
                     >
-                      <CardContent className="p-3 sm:p-4 lg:p-5">
+                      <CardContent className="p-3 sm:p-4 lg:p-6">
                         <div className="flex items-center justify-between gap-2">
                           <div className="min-w-0 flex-1">
-                            <p className="text-[10px] sm:text-xs lg:text-xs font-medium text-muted-foreground leading-snug">{card.title}</p>
-                            <p className={`mt-0.5 sm:mt-1 lg:mt-1.5 text-base sm:text-lg lg:text-xl xl:text-2xl font-bold tracking-tight ${card.className}`}>{card.value}</p>
+                            <p className="text-[10px] sm:text-xs lg:text-sm font-medium text-muted-foreground leading-snug line-clamp-2">{card.title}</p>
+                            <p className={`mt-0.5 sm:mt-1 lg:mt-2 text-base sm:text-lg lg:text-2xl xl:text-3xl font-bold tracking-tight ${card.className}`}>{card.value}</p>
                           </div>
-                          <div className="rounded-lg bg-primary/10 p-1.5 sm:p-2 lg:p-2.5 shrink-0 hidden sm:block">
-                            <card.icon className="h-4 w-4 sm:h-4 sm:w-4 lg:h-5 lg:w-5 text-primary" />
+                          <div className="rounded-xl bg-primary/10 p-1.5 sm:p-2 lg:p-3 shrink-0 hidden sm:block">
+                            <card.icon className="h-4 w-4 sm:h-4 sm:w-4 lg:h-6 lg:w-6 text-primary" />
                           </div>
                         </div>
                       </CardContent>
@@ -155,15 +155,15 @@ export function SummaryCards({ summary, currentSummary, stockItems }: SummaryCar
               {historicCards.map((card) => (
                 <Tooltip key={card.title}>
                   <TooltipTrigger asChild>
-                    <Card className="border-border/50 bg-card lg:metric-card">
-                      <CardContent className="p-3 sm:p-4 lg:p-5">
+                    <Card className="border-border/60 bg-card transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 lg:metric-card">
+                      <CardContent className="p-3 sm:p-4 lg:p-6">
                         <div className="flex items-center justify-between gap-2">
                           <div className="min-w-0 flex-1">
-                            <p className="text-[10px] sm:text-xs lg:text-xs font-medium text-muted-foreground leading-snug">{card.title}</p>
-                            <p className={`mt-0.5 sm:mt-1 lg:mt-1.5 text-base sm:text-lg lg:text-xl xl:text-2xl font-bold tracking-tight ${card.className}`}>{card.value}</p>
+                            <p className="text-[10px] sm:text-xs lg:text-sm font-medium text-muted-foreground leading-snug line-clamp-2">{card.title}</p>
+                            <p className={`mt-0.5 sm:mt-1 lg:mt-2 text-base sm:text-lg lg:text-2xl xl:text-3xl font-bold tracking-tight ${card.className}`}>{card.value}</p>
                           </div>
-                          <div className="rounded-lg bg-secondary p-1.5 sm:p-2 lg:p-2.5 shrink-0 hidden sm:block">
-                            <card.icon className="h-4 w-4 sm:h-4 sm:w-4 lg:h-5 lg:w-5 text-muted-foreground" />
+                          <div className="rounded-xl bg-secondary p-1.5 sm:p-2 lg:p-3 shrink-0 hidden sm:block">
+                            <card.icon className="h-4 w-4 sm:h-4 sm:w-4 lg:h-6 lg:w-6 text-muted-foreground" />
                           </div>
                         </div>
                       </CardContent>

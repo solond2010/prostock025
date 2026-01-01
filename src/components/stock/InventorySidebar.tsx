@@ -24,9 +24,9 @@ export function InventorySidebar({ items }: InventorySidebarProps) {
   }, [items]);
 
   return (
-    <aside className="w-48 shrink-0 sticky top-6">
-      <div className="rounded-xl border border-border/60 bg-card p-5 inventory-card">
-        <h3 className="mb-4 text-sm font-semibold text-foreground tracking-tight">Inventario</h3>
+    <aside className="w-52 shrink-0 sticky top-24">
+      <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm">
+        <h3 className="mb-5 text-sm font-semibold text-foreground tracking-tight">Inventario</h3>
         <div className="space-y-4">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
