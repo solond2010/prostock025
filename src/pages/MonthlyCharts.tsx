@@ -113,7 +113,7 @@ const MonthlyCharts = () => {
               <BarChart3 className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-2xl font-semibold text-foreground">Gráficos Mensuales</h1>
+              <h1 className="text-2xl font-semibold text-foreground">Gráficos Anuales</h1>
               <p className="text-sm text-muted-foreground">Análisis de ventas y beneficios</p>
             </div>
           </div>
