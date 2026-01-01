@@ -10,6 +10,20 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Copy, ShoppingCart } from 'lucide-react';
 import { StockItemWithCalculations } from '@/types/stock';
+import { differenceInDays } from 'date-fns';
+
+const getDaysInStock = (purchaseDate: string | null | undefined, estado: string): number | null => {
+  if (estado !== 'En stock' || !purchaseDate) return null;
+  const days = differenceInDays(new Date(), new Date(purchaseDate));
+  return Math.max(0, days);
+};
+
+const getDaysInStockVariant = (days: number | null): 'success' | 'warning' | 'destructive' | null => {
+  if (days === null) return null;
+  if (days <= 10) return 'success';
+  if (days <= 20) return 'warning';
+  return 'destructive';
+};
 
 interface StockTableProps {
   items: StockItemWithCalculations[];
@@ -44,6 +58,7 @@ export function StockTable({ items, onItemClick, onDuplicateClick, onSellClick, 
             <TableHead className="font-semibold text-foreground/80">Nombre</TableHead>
             <TableHead className="font-semibold text-foreground/80">Estado</TableHead>
             <TableHead className="font-semibold text-foreground/80">Categoría</TableHead>
+            <TableHead className="text-center font-semibold text-foreground/80">Días en stock</TableHead>
             <TableHead className="text-right font-semibold text-foreground/80">Coste Total</TableHead>
             <TableHead className="text-right font-semibold text-foreground/80">Beneficio</TableHead>
             <TableHead className="w-[150px] text-center font-semibold text-foreground/80">Acciones</TableHead>
@@ -54,8 +69,9 @@ export function StockTable({ items, onItemClick, onDuplicateClick, onSellClick, 
             const beneficio = item.estado === 'Vendido' ? item.beneficio_real : item.beneficio_esperado;
             const isPositive = beneficio !== null && beneficio >= 0;
             const isEnStock = item.estado === 'En stock';
-            
             const isRecentlySold = item.id === recentlySoldId;
+            const daysInStock = getDaysInStock(item.purchase_date, item.estado);
+            const daysVariant = getDaysInStockVariant(daysInStock);
             
             return (
               <TableRow 
@@ -82,6 +98,24 @@ export function StockTable({ items, onItemClick, onDuplicateClick, onSellClick, 
                   <Badge variant="outline" className="font-normal">
                     {item.category}
                   </Badge>
+                </TableCell>
+                <TableCell className="text-center">
+                  {daysInStock !== null ? (
+                    <Badge 
+                      variant="outline"
+                      className={`font-medium ${
+                        daysVariant === 'success' 
+                          ? 'bg-success/15 text-success border-success/30' 
+                          : daysVariant === 'warning'
+                          ? 'bg-warning/15 text-warning border-warning/30'
+                          : 'bg-destructive/15 text-destructive border-destructive/30'
+                      }`}
+                    >
+                      {daysInStock}d
+                    </Badge>
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
                 </TableCell>
                 <TableCell className="table-cell-numeric">
                   {formatCurrency(item.coste_total)}
