@@ -16,6 +16,7 @@ interface StockTableProps {
   onItemClick: (item: StockItemWithCalculations) => void;
   onDuplicateClick: (item: StockItemWithCalculations) => void;
   onSellClick?: (item: StockItemWithCalculations) => void;
+  recentlySoldId?: string | null;
 }
 
 const formatCurrency = (value: number) => {
@@ -26,7 +27,7 @@ const formatCurrency = (value: number) => {
   }).format(value);
 };
 
-export function StockTable({ items, onItemClick, onDuplicateClick, onSellClick }: StockTableProps) {
+export function StockTable({ items, onItemClick, onDuplicateClick, onSellClick, recentlySoldId }: StockTableProps) {
   if (items.length === 0) {
     return (
       <div className="flex h-48 items-center justify-center rounded-lg border border-dashed border-border bg-card text-muted-foreground">
@@ -54,8 +55,13 @@ export function StockTable({ items, onItemClick, onDuplicateClick, onSellClick }
             const isPositive = beneficio !== null && beneficio >= 0;
             const isEnStock = item.estado === 'En stock';
             
+            const isRecentlySold = item.id === recentlySoldId;
+            
             return (
-              <TableRow key={item.id} className="border-b border-border/50 last:border-b-0">
+              <TableRow 
+                key={item.id} 
+                className={`border-b border-border/50 last:border-b-0 ${isRecentlySold ? 'sale-highlight' : ''}`}
+              >
                 <TableCell>
                   <button
                     onClick={() => onItemClick(item)}
@@ -67,7 +73,7 @@ export function StockTable({ items, onItemClick, onDuplicateClick, onSellClick }
                 <TableCell>
                   <Badge 
                     variant={item.estado === 'Vendido' ? 'default' : 'secondary'}
-                    className={item.estado === 'Vendido' ? 'bg-success text-success-foreground' : ''}
+                    className={`badge-animated ${item.estado === 'Vendido' ? 'bg-success text-success-foreground' : ''}`}
                   >
                     {item.estado}
                   </Badge>

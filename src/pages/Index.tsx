@@ -55,6 +55,7 @@ const Index = () => {
   const [detailOpen, setDetailOpen] = useState(false);
   const [duplicateItem, setDuplicateItem] = useState<StockItemWithCalculations | null>(null);
   const [sellItem, setSellItem] = useState<StockItemWithCalculations | null>(null);
+  const [recentlySoldId, setRecentlySoldId] = useState<string | null>(null);
 
   // Get unique categories
   const categories = useMemo(() => {
@@ -179,10 +180,13 @@ const Index = () => {
       {
         onSuccess: () => {
           setSellItem(null);
+          setRecentlySoldId(id);
           toast({
-            title: '✅ Producto marcado como vendido',
-            description: `La venta se ha registrado correctamente`,
+            title: '✅ Venta registrada',
+            description: `El producto se ha marcado como vendido correctamente`,
           });
+          // Clear highlight after animation
+          setTimeout(() => setRecentlySoldId(null), 1200);
         },
       }
     );
@@ -380,6 +384,7 @@ const Index = () => {
                 onItemClick={handleItemClick} 
                 onDuplicateClick={handleDuplicateClick}
                 onSellClick={handleSellClick}
+                recentlySoldId={recentlySoldId}
               />
             </div>
 
