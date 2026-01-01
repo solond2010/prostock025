@@ -16,7 +16,9 @@ import {
   useDuplicateStockItem,
 } from '@/hooks/useStockItems';
 import { StockItem, StockItemFormData, StockItemWithCalculations, StockSummary, CurrentStockSummary } from '@/types/stock';
-import { Plus, Package, BarChart3, TrendingUp } from 'lucide-react';
+import { Plus, Package, BarChart3, TrendingUp, FileSpreadsheet } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,6 +36,7 @@ const Index = () => {
   const updateMutation = useUpdateStockItem();
   const deleteMutation = useDeleteStockItem();
   const duplicateMutation = useDuplicateStockItem();
+  const { toast } = useToast();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<StockItem | null>(null);
@@ -167,6 +170,69 @@ const Index = () => {
     } else {
       createMutation.mutate(data, { onSuccess: () => setDialogOpen(false) });
     }
+  };
+
+  const handleExportCSV = () => {
+    const headers = [
+      'Nombre',
+      'Estado',
+      'Categoría',
+      'Coste total (€)',
+      'Precio venta esperado (€)',
+      'Beneficio (€)',
+      'Fecha compra',
+      'Fecha venta',
+      'Notas',
+      'Color',
+      'Talla',
+    ];
+
+    const csvRows = [headers.join(',')];
+
+    items.forEach((item) => {
+      const costeTotal =
+        Number(item.purchase_price_per_unit) +
+        Number(item.precio_envio) +
+        Number(item.coste_reparacion);
+      
+      const beneficio =
+        item.estado === 'Vendido'
+          ? Number(item.precio_venta_real) - costeTotal
+          : Number(item.sale_price_per_unit) - costeTotal;
+
+      const row = [
+        `"${item.name.replace(/"/g, '""')}"`,
+        item.estado,
+        item.category,
+        costeTotal.toFixed(2),
+        item.sale_price_per_unit ? Number(item.sale_price_per_unit).toFixed(2) : '',
+        beneficio.toFixed(2),
+        item.purchase_date || '',
+        item.fecha_venta || '',
+        item.notes ? `"${item.notes.replace(/"/g, '""')}"` : '',
+        item.color || '',
+        item.talla || '',
+      ];
+
+      csvRows.push(row.join(','));
+    });
+
+    const csvContent = '\uFEFF' + csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const today = format(new Date(), 'yyyy-MM-dd');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `stock_export_${today}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: 'Exportación generada ✅',
+      description: `Se han exportado ${items.length} productos a CSV`,
+    });
   };
 
   if (isLoading) {
@@ -310,6 +376,17 @@ const Index = () => {
           onConfirm={handleDuplicateConfirm}
           isLoading={duplicateMutation.isPending}
         />
+
+        {/* Floating Export Button */}
+        <Button
+          onClick={handleExportCSV}
+          className="fixed bottom-6 right-6 z-50 shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95"
+          size="lg"
+        >
+          <FileSpreadsheet className="mr-2 h-5 w-5" />
+          <span className="hidden sm:inline">Exportar Excel</span>
+          <span className="sm:hidden">Exportar</span>
+        </Button>
       </div>
     </div>
   );
