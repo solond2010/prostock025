@@ -17,7 +17,7 @@ import { useNavigate } from 'react-router-dom';
 
 const menuItems = [
   { title: 'Gestor de Stock', url: '/', icon: Package },
-  { title: 'Gráficos Mensuales', url: '/graficos', icon: BarChart3 },
+  { title: 'Gráficos Anuales', url: '/graficos', icon: BarChart3 },
   { title: 'Gasto en Material', url: '/gasto-material', icon: Receipt },
   { title: 'Estadísticas Avanzadas', url: '/estadisticas', icon: PieChart },
 ];
