@@ -101,21 +101,21 @@ export function SummaryCards({ summary, currentSummary, stockItems }: SummaryCar
           <h3 className="mb-2 sm:mb-3 text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wide">
             Resumen Actual (Stock)
           </h3>
-          <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-4 lg:gap-6">
+          <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-4">
             {currentCards.map((card) => (
               <Card 
                 key={card.title} 
-                className="border-border/50 shadow-sm cursor-pointer transition-all hover:shadow-md hover:border-primary/30 hover:scale-[1.02] active:scale-[0.98] lg:min-h-[110px]"
+                className="border-border/50 shadow-sm cursor-pointer transition-all hover:shadow-md hover:border-primary/30 hover:scale-[1.02] active:scale-[0.98]"
                 onClick={() => handleCardClick(card.type)}
               >
-                <CardContent className="p-3 sm:p-5 lg:p-6">
-                  <div className="flex items-center justify-between gap-2 lg:gap-4">
+                <CardContent className="p-3 sm:p-5">
+                  <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      <p className="text-[10px] sm:text-sm lg:text-base font-medium text-muted-foreground leading-tight lg:leading-snug line-clamp-2">{card.title}</p>
-                      <p className={`mt-0.5 sm:mt-1 lg:mt-2 text-base sm:text-2xl lg:text-3xl font-semibold ${card.className}`}>{card.value}</p>
+                      <p className="text-[10px] sm:text-xs lg:text-sm font-medium text-muted-foreground leading-tight line-clamp-2">{card.title}</p>
+                      <p className={`mt-0.5 sm:mt-1 text-base sm:text-xl lg:text-2xl font-semibold ${card.className}`}>{card.value}</p>
                     </div>
-                    <div className="rounded-lg bg-secondary p-1.5 sm:p-2.5 lg:p-3 shrink-0 hidden sm:block">
-                      <card.icon className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-muted-foreground" />
+                    <div className="rounded-lg bg-secondary p-1.5 sm:p-2 shrink-0 hidden sm:block">
+                      <card.icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                     </div>
                   </div>
                 </CardContent>
@@ -129,17 +129,17 @@ export function SummaryCards({ summary, currentSummary, stockItems }: SummaryCar
           <h3 className="mb-2 sm:mb-3 text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wide">
             Histórico Total
           </h3>
-          <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-5 lg:gap-6">
+          <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-5">
             {historicCards.map((card) => (
-              <Card key={card.title} className="border-border/50 shadow-sm lg:min-h-[110px]">
-                <CardContent className="p-3 sm:p-5 lg:p-6">
-                  <div className="flex items-center justify-between gap-2 lg:gap-4">
+              <Card key={card.title} className="border-border/50 shadow-sm">
+                <CardContent className="p-3 sm:p-5">
+                  <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      <p className="text-[10px] sm:text-sm lg:text-base font-medium text-muted-foreground leading-tight lg:leading-snug line-clamp-2">{card.title}</p>
-                      <p className={`mt-0.5 sm:mt-1 lg:mt-2 text-base sm:text-2xl lg:text-3xl font-semibold ${card.className}`}>{card.value}</p>
+                      <p className="text-[10px] sm:text-xs lg:text-sm font-medium text-muted-foreground leading-tight line-clamp-2">{card.title}</p>
+                      <p className={`mt-0.5 sm:mt-1 text-base sm:text-xl lg:text-2xl font-semibold ${card.className}`}>{card.value}</p>
                     </div>
-                    <div className="rounded-lg bg-secondary p-1.5 sm:p-2.5 lg:p-3 shrink-0 hidden sm:block">
-                      <card.icon className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-muted-foreground" />
+                    <div className="rounded-lg bg-secondary p-1.5 sm:p-2 shrink-0 hidden sm:block">
+                      <card.icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                     </div>
                   </div>
                 </CardContent>
