@@ -1,4 +1,4 @@
-import { Package, Receipt, PieChart, BarChart3, Menu, LogOut } from 'lucide-react';
+import { Package, Receipt, PieChart, BarChart3, Menu, LogOut, Moon, Sun } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import {
   Sheet,
@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from '@/hooks/useTheme';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
@@ -24,6 +25,7 @@ const menuItems = [
 export function AppSidebar() {
   const [open, setOpen] = useState(false);
   const { signOut, user } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -48,14 +50,24 @@ export function AppSidebar() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="shrink-0">
+        <Button variant="ghost" size="icon" className="shrink-0 hover:bg-secondary/80">
           <Menu className="h-5 w-5" />
           <span className="sr-only">Abrir menú</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-72 p-0 flex flex-col">
-        <SheetHeader className="border-b border-border px-6 py-4">
-          <SheetTitle className="text-left text-lg font-semibold">Menú</SheetTitle>
+      <SheetContent side="left" className="w-72 p-0 flex flex-col bg-card">
+        <SheetHeader className="border-b border-border/60 px-6 py-5">
+          <div className="flex items-center gap-3">
+            <img 
+              src="/logo.jpg" 
+              alt="ProStock Logo" 
+              className="h-10 w-10 rounded-full border border-border/50 shadow-sm object-cover"
+            />
+            <div>
+              <SheetTitle className="text-left text-lg font-semibold">ProStock</SheetTitle>
+              <p className="text-xs text-muted-foreground">Gestión de Inventario</p>
+            </div>
+          </div>
         </SheetHeader>
         <nav className="flex flex-col gap-1 p-4 flex-1">
           {menuItems.map((item) => (
@@ -63,27 +75,50 @@ export function AppSidebar() {
               key={item.url}
               to={item.url}
               onClick={() => setOpen(false)}
-              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-              activeClassName="bg-secondary text-foreground"
+              className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-secondary hover:text-foreground"
+              activeClassName="bg-primary/10 text-primary hover:bg-primary/15"
             >
-              <item.icon className="h-4 w-4" />
+              <item.icon className="h-5 w-5" />
               {item.title}
             </NavLink>
           ))}
         </nav>
-        {user && (
-          <div className="p-4 border-t border-border">
-            <p className="text-xs text-muted-foreground mb-3 truncate">{user.email}</p>
-            <Button
-              variant="outline"
-              className="w-full justify-start gap-3"
-              onClick={handleSignOut}
-            >
-              <LogOut className="h-4 w-4" />
-              Cerrar sesión
-            </Button>
-          </div>
-        )}
+        
+        <div className="p-4 border-t border-border/60 space-y-3">
+          {/* Theme Toggle */}
+          <Button
+            variant="outline"
+            className="w-full justify-start gap-3 rounded-xl"
+            onClick={toggleTheme}
+          >
+            {theme === 'light' ? (
+              <>
+                <Moon className="h-4 w-4" />
+                Modo oscuro
+              </>
+            ) : (
+              <>
+                <Sun className="h-4 w-4" />
+                Modo claro
+              </>
+            )}
+          </Button>
+          
+          {user && (
+            <>
+              <Separator className="my-2" />
+              <p className="text-xs text-muted-foreground truncate px-1">{user.email}</p>
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-3 rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10"
+                onClick={handleSignOut}
+              >
+                <LogOut className="h-4 w-4" />
+                Cerrar sesión
+              </Button>
+            </>
+          )}
+        </div>
       </SheetContent>
     </Sheet>
   );

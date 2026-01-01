@@ -280,7 +280,7 @@ const Index = () => {
   return (
     <TooltipProvider>
       <div className="min-h-screen bg-background">
-        <div className="mx-auto max-w-7xl px-3 py-4 sm:px-6 sm:py-8 lg:max-w-[1350px] lg:px-6 lg:py-10">
+        <div className="mx-auto max-w-[1600px] px-3 py-4 sm:px-6 sm:py-8 lg:px-10 xl:px-12 lg:py-10">
           {/* Header */}
           <div className="mb-4 sm:mb-8 lg:mb-10 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -288,7 +288,7 @@ const Index = () => {
                 <Package className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-lg sm:text-2xl lg:text-3xl font-bold text-foreground tracking-tight">Gestor de Stock</h1>
+                <h1 className="text-lg sm:text-2xl lg:text-3xl font-bold text-foreground tracking-tight">Panel de Stock</h1>
                 <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Controla tu inventario y beneficios</p>
               </div>
             </div>
