@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
+    --background: 228 25% 97%;
     --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
@@ -18,13 +18,13 @@
     --primary: 221 83% 53%;
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 210 40% 96%;
+    --secondary: 220 20% 96%;
     --secondary-foreground: 222 47% 11%;
 
-    --muted: 210 40% 96%;
+    --muted: 220 20% 96%;
     --muted-foreground: 215 16% 47%;
 
-    --accent: 210 40% 96%;
+    --accent: 220 20% 96%;
     --accent-foreground: 222 47% 11%;
 
     --destructive: 0 84% 60%;
@@ -36,11 +36,17 @@
     --warning: 38 92% 50%;
     --warning-foreground: 222 47% 11%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
+    --border: 220 20% 88%;
+    --input: 220 20% 88%;
     --ring: 221 83% 53%;
 
-    --radius: 0.5rem;
+    --radius: 0.625rem;
+
+    /* CRM specific tokens */
+    --app-shell: 0 0% 100%;
+    --table-row-alt: 220 25% 98%;
+    --shadow-card: 0 1px 3px 0 hsl(220 20% 20% / 0.06), 0 1px 2px -1px hsl(220 20% 20% / 0.06);
+    --shadow-card-hover: 0 10px 15px -3px hsl(220 20% 20% / 0.08), 0 4px 6px -4px hsl(220 20% 20% / 0.08);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -112,5 +118,45 @@
 @layer utilities {
   .table-cell-numeric {
     @apply text-right font-medium tabular-nums;
+  }
+}
+
+/* CRM Table Styles - Desktop only */
+@media (min-width: 1024px) {
+  .crm-table tbody tr:nth-child(even) {
+    background-color: hsl(var(--table-row-alt));
+  }
+  
+  .crm-table tbody tr {
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  
+  .crm-table tbody tr:hover {
+    background-color: hsl(var(--secondary));
+  }
+}
+
+/* App Shell for desktop */
+@media (min-width: 1024px) {
+  .app-shell {
+    background-color: hsl(var(--app-shell));
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    border: 1px solid hsl(var(--border));
+  }
+}
+
+/* Enhanced card styles for desktop */
+@media (min-width: 1024px) {
+  .metric-card {
+    box-shadow: var(--shadow-card);
+    border: 1px solid hsl(var(--border));
+    transition: all 0.2s ease;
+  }
+  
+  .metric-card:hover {
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-2px);
+    border-color: hsl(var(--primary) / 0.3);
   }
 }
