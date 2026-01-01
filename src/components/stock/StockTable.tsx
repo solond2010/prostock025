@@ -18,6 +18,7 @@ import {
 import { Copy, ShoppingCart, ChevronDown, CheckCircle, AlertTriangle, Flame, Circle } from 'lucide-react';
 import { StockItemWithCalculations } from '@/types/stock';
 import { differenceInDays } from 'date-fns';
+import { ProductNameTooltip } from './ProductNameTooltip';
 
 export type DaysInStockFilter = 'all' | 'recent' | 'atrisk' | 'dead';
 
@@ -175,12 +176,7 @@ export function StockTable({
                   className={`border-b border-border/50 last:border-b-0 ${isRecentlySold ? 'sale-highlight' : ''}`}
                 >
                   <TableCell>
-                    <button
-                      onClick={() => onItemClick(item)}
-                      className="font-medium text-primary hover:underline text-left"
-                    >
-                      {item.name}
-                    </button>
+                    <ProductNameTooltip item={item} onClick={() => onItemClick(item)} />
                   </TableCell>
                   <TableCell>
                     <Badge 
