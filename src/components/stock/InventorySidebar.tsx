@@ -1,8 +1,7 @@
-import { Package, TrendingUp, Clock } from 'lucide-react';
+import { Package, TrendingUp, CheckCircle, AlertTriangle, Flame } from 'lucide-react';
 import { StockItem } from '@/types/stock';
 import { useMemo } from 'react';
 import { differenceInDays } from 'date-fns';
-import { Badge } from '@/components/ui/badge';
 
 interface InventorySidebarProps {
   items: StockItem[];
@@ -66,30 +65,35 @@ export function InventorySidebar({ items }: InventorySidebarProps) {
           
           {/* Alertas de Stock */}
           <div className="h-px bg-border/50" />
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Alertas de Stock</p>
+          <h4 className="text-sm font-semibold text-foreground tracking-tight">Alertas de stock</h4>
+          
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-success/10">
+              <CheckCircle className="h-4 w-4 text-success" />
             </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">🟢 Reciente (0–10d)</span>
-                <Badge variant="outline" className="h-5 min-w-[28px] justify-center bg-success/15 text-success border-success/30 text-xs font-medium">
-                  {stats.reciente}
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">🟡 En riesgo (11–20d)</span>
-                <Badge variant="outline" className="h-5 min-w-[28px] justify-center bg-warning/15 text-warning border-warning/30 text-xs font-medium">
-                  {stats.enRiesgo}
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">🔴 Muerto (21+d)</span>
-                <Badge variant="outline" className="h-5 min-w-[28px] justify-center bg-destructive/15 text-destructive border-destructive/30 text-xs font-medium">
-                  {stats.muerto}
-                </Badge>
-              </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Reciente</p>
+              <p className="text-xl font-bold text-foreground tracking-tight">{stats.reciente}</p>
+            </div>
+          </div>
+          <div className="h-px bg-border/50" />
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-warning/10">
+              <AlertTriangle className="h-4 w-4 text-warning" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">En riesgo</p>
+              <p className="text-xl font-bold text-foreground tracking-tight">{stats.enRiesgo}</p>
+            </div>
+          </div>
+          <div className="h-px bg-border/50" />
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-destructive/10">
+              <Flame className="h-4 w-4 text-destructive" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Muerto</p>
+              <p className="text-xl font-bold text-foreground tracking-tight">{stats.muerto}</p>
             </div>
           </div>
         </div>
