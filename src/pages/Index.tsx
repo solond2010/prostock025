@@ -443,38 +443,6 @@ const Index = () => {
           isLoading={updateMutation.isPending}
         />
 
-          {/* Floating Export Button - Mobile only visible, Desktop hidden */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                onClick={handleExportCSV}
-                className="fixed bottom-6 right-6 z-50 lg:hidden shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95"
-                size="lg"
-              >
-                <Download className="mr-2 h-5 w-5" />
-                Exportar
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Exportar a Excel/CSV</p>
-            </TooltipContent>
-          </Tooltip>
-
-          {/* Desktop: Small circular floating button */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                onClick={handleExportCSV}
-                size="icon"
-                className="fixed bottom-6 right-6 z-50 hidden lg:flex h-12 w-12 rounded-full floating-btn-premium"
-              >
-                <Download className="h-5 w-5" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="left">
-              <p>Exportar Excel</p>
-            </TooltipContent>
-          </Tooltip>
         </div>
       </div>
     </TooltipProvider>
