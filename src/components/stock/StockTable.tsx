@@ -227,7 +227,7 @@ export function StockTable({
                     {beneficio !== null ? formatCurrency(beneficio) : '-'}
                   </TableCell>
                   <TableCell className="text-center">
-                    <div className="flex items-center justify-center gap-1 opacity-60 group-hover:opacity-100 transition-all duration-200">
+                    <div className="flex items-center justify-center gap-0.5">
                       {isEnStock && onSellClick && (
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -238,7 +238,7 @@ export function StockTable({
                                 e.stopPropagation();
                                 onSellClick(item);
                               }}
-                              className="h-8 w-8 text-success hover:text-success hover:bg-success/15 hover:shadow-[0_0_8px_hsl(var(--success)/0.4)] transition-all"
+                              className="h-9 w-9 text-success/90 hover:text-success hover:bg-success/20 hover:scale-110 hover:shadow-[0_0_12px_hsl(var(--success)/0.5)] hover:backdrop-blur-sm transition-all duration-200 rounded-full"
                             >
                               <ShoppingCart className="h-4 w-4" />
                             </Button>
@@ -258,7 +258,7 @@ export function StockTable({
                                 e.stopPropagation();
                                 onEditClick(item);
                               }}
-                              className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/15 hover:shadow-[0_0_8px_hsl(var(--primary)/0.4)] transition-all"
+                              className="h-9 w-9 text-primary/90 hover:text-primary hover:bg-primary/20 hover:scale-110 hover:shadow-[0_0_12px_hsl(var(--primary)/0.5)] hover:backdrop-blur-sm transition-all duration-200 rounded-full"
                             >
                               <Pencil className="h-4 w-4" />
                             </Button>
@@ -278,7 +278,7 @@ export function StockTable({
                                 e.stopPropagation();
                                 onDeleteClick(item);
                               }}
-                              className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/15 hover:shadow-[0_0_8px_hsl(var(--destructive)/0.4)] transition-all"
+                              className="h-9 w-9 text-destructive/90 hover:text-destructive hover:bg-destructive/20 hover:scale-110 hover:shadow-[0_0_12px_hsl(var(--destructive)/0.5)] hover:backdrop-blur-sm transition-all duration-200 rounded-full"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -297,7 +297,7 @@ export function StockTable({
                               e.stopPropagation();
                               onDuplicateClick(item);
                             }}
-                            className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+                            className="h-9 w-9 text-muted-foreground/90 hover:text-foreground hover:bg-muted/60 hover:scale-110 hover:shadow-[0_0_8px_hsl(var(--muted-foreground)/0.3)] hover:backdrop-blur-sm transition-all duration-200 rounded-full"
                           >
                             <Copy className="h-4 w-4" />
                           </Button>
