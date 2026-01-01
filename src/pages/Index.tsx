@@ -17,9 +17,15 @@ import {
   useDuplicateStockItem,
 } from '@/hooks/useStockItems';
 import { StockItem, StockItemFormData, StockItemWithCalculations, StockSummary, CurrentStockSummary } from '@/types/stock';
-import { Plus, Package, BarChart3, TrendingUp, FileSpreadsheet } from 'lucide-react';
+import { Plus, Package, BarChart3, TrendingUp, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -272,98 +278,116 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background lg:py-6 lg:px-6 xl:px-8">
-      <div className="mx-auto max-w-7xl px-3 py-4 sm:px-6 sm:py-8 lg:max-w-[1550px] lg:px-8 xl:px-10 app-shell lg:py-8">
-        {/* Header */}
-        <div className="mb-4 sm:mb-8 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <div className="rounded-lg bg-primary p-1.5 sm:p-2 shrink-0">
-              <Package className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground" />
+    <TooltipProvider>
+      <div className="min-h-screen bg-background">
+        <div className="mx-auto max-w-7xl px-3 py-4 sm:px-6 sm:py-8 lg:max-w-[1350px] lg:px-6 lg:py-10">
+          {/* Header */}
+          <div className="mb-4 sm:mb-8 lg:mb-10 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <div className="rounded-xl bg-primary p-1.5 sm:p-2.5 shrink-0 shadow-sm">
+                <Package className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-2xl lg:text-3xl font-bold text-foreground tracking-tight">Gestor de Stock</h1>
+                <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Controla tu inventario y beneficios</p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <h1 className="text-lg sm:text-2xl font-semibold text-foreground truncate">Gestor de Stock</h1>
-              <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Controla tu inventario y beneficios</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <Link to="/graficos" className="hidden sm:block">
-              <Button variant="outline">
-                <BarChart3 className="mr-2 h-4 w-4" />
-                Gráficos
+            <div className="flex items-center gap-2 shrink-0">
+              {/* Desktop Export Button in header */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    onClick={handleExportCSV} 
+                    variant="outline" 
+                    size="sm"
+                    className="hidden lg:flex"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Exportar
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Exportar productos a Excel/CSV</p>
+                </TooltipContent>
+              </Tooltip>
+              <Link to="/graficos" className="hidden sm:block">
+                <Button variant="outline">
+                  <BarChart3 className="mr-2 h-4 w-4" />
+                  Gráficos
+                </Button>
+              </Link>
+              <Button onClick={handleAddClick} size="sm" className="sm:size-default">
+                <Plus className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Añadir Producto</span>
               </Button>
-            </Link>
-            <Button onClick={handleAddClick} size="sm" className="sm:size-default">
-              <Plus className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Añadir Producto</span>
-            </Button>
-          </div>
-        </div>
-
-        {/* Mobile Inventory Stats */}
-        <div className="mb-4 grid grid-cols-2 gap-2 sm:hidden">
-          <div className="rounded-lg border border-border bg-card/50 p-3 flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-secondary shrink-0">
-              <Package className="h-3.5 w-3.5 text-muted-foreground" />
-            </div>
-            <div>
-              <p className="text-[10px] text-muted-foreground">En stock</p>
-              <p className="text-base font-semibold text-foreground">{items.filter(i => i.estado === 'En stock').length}</p>
             </div>
           </div>
-          <div className="rounded-lg border border-border bg-card/50 p-3 flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-secondary shrink-0">
-              <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
+
+          {/* Mobile Inventory Stats */}
+          <div className="mb-4 grid grid-cols-2 gap-2 sm:hidden">
+            <div className="rounded-lg border border-border bg-card/50 p-3 flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-secondary shrink-0">
+                <Package className="h-3.5 w-3.5 text-muted-foreground" />
+              </div>
+              <div>
+                <p className="text-[10px] text-muted-foreground">En stock</p>
+                <p className="text-base font-semibold text-foreground">{items.filter(i => i.estado === 'En stock').length}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-[10px] text-muted-foreground">Vendidos mes</p>
-              <p className="text-base font-semibold text-foreground">
-                {items.filter((item) => {
-                  if (item.estado !== 'Vendido' || !item.fecha_venta) return false;
-                  const now = new Date();
-                  const saleDate = new Date(item.fecha_venta);
-                  return saleDate.getMonth() === now.getMonth() && saleDate.getFullYear() === now.getFullYear();
-                }).length}
-              </p>
+            <div className="rounded-lg border border-border bg-card/50 p-3 flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-secondary shrink-0">
+                <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
+              </div>
+              <div>
+                <p className="text-[10px] text-muted-foreground">Vendidos mes</p>
+                <p className="text-base font-semibold text-foreground">
+                  {items.filter((item) => {
+                    if (item.estado !== 'Vendido' || !item.fecha_venta) return false;
+                    const now = new Date();
+                    const saleDate = new Date(item.fecha_venta);
+                    return saleDate.getMonth() === now.getMonth() && saleDate.getFullYear() === now.getFullYear();
+                  }).length}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Main Content with Sidebar */}
-        <div className="flex flex-col lg:flex-row lg:justify-between gap-4 lg:gap-8">
-          {/* Left: Main Content */}
-          <div className="flex-1 min-w-0 lg:max-w-5xl">
-            {/* Summary Cards */}
-            <div className="mb-4 sm:mb-8">
-              <SummaryCards summary={summary} currentSummary={currentSummary} stockItems={items} />
-            </div>
+          {/* Main Content with Sidebar */}
+          <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
+            {/* Left: Main Content */}
+            <div className="flex-1 min-w-0">
+              {/* Summary Cards */}
+              <div className="mb-6 sm:mb-8 lg:mb-10">
+                <SummaryCards summary={summary} currentSummary={currentSummary} stockItems={items} />
+              </div>
 
-            {/* Filters */}
-            <div className="mb-4 sm:mb-6">
-              <StockFilters
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                categoryFilter={categoryFilter}
-                onCategoryChange={setCategoryFilter}
-                categories={categories}
-                statusFilter={statusFilter}
-                onStatusChange={setStatusFilter}
+              {/* Filters */}
+              <div className="mb-4 sm:mb-6">
+                <StockFilters
+                  searchQuery={searchQuery}
+                  onSearchChange={setSearchQuery}
+                  categoryFilter={categoryFilter}
+                  onCategoryChange={setCategoryFilter}
+                  categories={categories}
+                  statusFilter={statusFilter}
+                  onStatusChange={setStatusFilter}
+                />
+              </div>
+
+              {/* Table */}
+              <StockTable 
+                items={processedItems} 
+                onItemClick={handleItemClick} 
+                onDuplicateClick={handleDuplicateClick}
+                onSellClick={handleSellClick}
               />
             </div>
 
-            {/* Table */}
-            <StockTable 
-              items={processedItems} 
-              onItemClick={handleItemClick} 
-              onDuplicateClick={handleDuplicateClick}
-              onSellClick={handleSellClick}
-            />
+            {/* Right: Inventory Sidebar - hidden on mobile, shown on lg+ */}
+            <div className="hidden lg:block">
+              <InventorySidebar items={items} />
+            </div>
           </div>
-
-          {/* Right: Inventory Sidebar - hidden on mobile, shown on lg+ */}
-          <div className="hidden lg:block shrink-0">
-            <InventorySidebar items={items} />
-          </div>
-        </div>
 
         {/* Product Detail Sheet */}
         <ProductDetailSheet
@@ -419,18 +443,41 @@ const Index = () => {
           isLoading={updateMutation.isPending}
         />
 
-        {/* Floating Export Button */}
-        <Button
-          onClick={handleExportCSV}
-          className="fixed bottom-6 right-6 z-50 shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95"
-          size="lg"
-        >
-          <FileSpreadsheet className="mr-2 h-5 w-5" />
-          <span className="hidden sm:inline">Exportar Excel</span>
-          <span className="sm:hidden">Exportar</span>
-        </Button>
+          {/* Floating Export Button - Mobile only visible, Desktop hidden */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={handleExportCSV}
+                className="fixed bottom-6 right-6 z-50 lg:hidden shadow-lg hover:shadow-xl transition-all hover:scale-105 active:scale-95"
+                size="lg"
+              >
+                <Download className="mr-2 h-5 w-5" />
+                Exportar
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Exportar a Excel/CSV</p>
+            </TooltipContent>
+          </Tooltip>
+
+          {/* Desktop: Small circular floating button */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={handleExportCSV}
+                size="icon"
+                className="fixed bottom-6 right-6 z-50 hidden lg:flex h-12 w-12 rounded-full floating-btn-premium"
+              >
+                <Download className="h-5 w-5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="left">
+              <p>Exportar Excel</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 };
 
