@@ -24,26 +24,27 @@ export function InventorySidebar({ items }: InventorySidebarProps) {
   }, [items]);
 
   return (
-    <aside className="w-56 shrink-0">
-      <div className="rounded-lg border border-border bg-card/50 p-4">
-        <h3 className="mb-4 text-sm font-semibold text-foreground">Inventario</h3>
-        <div className="space-y-3">
+    <aside className="w-48 shrink-0 sticky top-6">
+      <div className="rounded-xl border border-border/60 bg-card p-5 inventory-card">
+        <h3 className="mb-4 text-sm font-semibold text-foreground tracking-tight">Inventario</h3>
+        <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary">
-              <Package className="h-4 w-4 text-muted-foreground" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+              <Package className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Productos en stock</p>
-              <p className="text-lg font-semibold text-foreground">{stats.enStock}</p>
+              <p className="text-xs text-muted-foreground">En stock</p>
+              <p className="text-xl font-bold text-foreground tracking-tight">{stats.enStock}</p>
             </div>
           </div>
+          <div className="h-px bg-border/50" />
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary">
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-success/10">
+              <TrendingUp className="h-4 w-4 text-success" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Vendidos este mes</p>
-              <p className="text-lg font-semibold text-foreground">{stats.vendidosEsteMes}</p>
+              <p className="text-xs text-muted-foreground">Vendidos mes</p>
+              <p className="text-xl font-bold text-foreground tracking-tight">{stats.vendidosEsteMes}</p>
             </div>
           </div>
         </div>

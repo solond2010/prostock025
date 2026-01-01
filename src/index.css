@@ -136,27 +136,40 @@
   }
 }
 
-/* App Shell for desktop */
-@media (min-width: 1024px) {
-  .app-shell {
-    background-color: hsl(var(--app-shell));
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-card);
-    border: 1px solid hsl(var(--border));
-  }
-}
-
 /* Enhanced card styles for desktop */
 @media (min-width: 1024px) {
   .metric-card {
-    box-shadow: var(--shadow-card);
-    border: 1px solid hsl(var(--border));
-    transition: all 0.2s ease;
+    background: hsl(var(--card));
+    box-shadow: 0 1px 3px 0 hsl(220 20% 20% / 0.04), 0 1px 2px -1px hsl(220 20% 20% / 0.04);
+    border: 1px solid hsl(var(--border) / 0.6);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
   .metric-card:hover {
-    box-shadow: var(--shadow-card-hover);
+    box-shadow: 0 8px 25px -5px hsl(220 20% 20% / 0.1), 0 4px 10px -6px hsl(220 20% 20% / 0.08);
     transform: translateY(-2px);
-    border-color: hsl(var(--primary) / 0.3);
+    border-color: hsl(var(--primary) / 0.25);
   }
+  
+  /* Inventory sidebar card */
+  .inventory-card {
+    background: hsl(var(--card));
+    box-shadow: 0 1px 3px 0 hsl(220 20% 20% / 0.04);
+    border: 1px solid hsl(var(--border) / 0.6);
+  }
+}
+
+/* Premium floating button */
+.floating-btn-premium {
+  box-shadow: 0 4px 14px 0 hsl(220 20% 20% / 0.15);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.floating-btn-premium:hover {
+  box-shadow: 0 6px 20px 0 hsl(220 20% 20% / 0.2);
+  transform: scale(1.05);
+}
+
+.floating-btn-premium:active {
+  transform: scale(0.98);
 }
