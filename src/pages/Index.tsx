@@ -15,7 +15,7 @@ import {
   useDeleteStockItem,
   useDuplicateStockItem,
 } from '@/hooks/useStockItems';
-import { StockItem, StockItemFormData, StockItemWithCalculations, StockSummary } from '@/types/stock';
+import { StockItem, StockItemFormData, StockItemWithCalculations, StockSummary, CurrentStockSummary } from '@/types/stock';
 import { Plus, Package, BarChart3 } from 'lucide-react';
 import {
   AlertDialog,
@@ -93,6 +93,28 @@ const Index = () => {
     const profitMargin = totalExpectedRevenue > 0 ? (totalExpectedProfit / totalExpectedRevenue) * 100 : 0;
 
     return { totalInvested, totalExpectedRevenue, totalExpectedProfit, totalRealProfit, profitMargin };
+  }, [items]);
+
+  // Calculate current stock summary (only "En stock" items)
+  const currentSummary = useMemo<CurrentStockSummary>(() => {
+    let totalInvestedCurrent = 0;
+    let expectedRevenueCurrent = 0;
+
+    items.forEach((item) => {
+      if (item.estado === 'En stock') {
+        const coste_total =
+          Number(item.purchase_price_per_unit) +
+          Number(item.precio_envio) +
+          Number(item.coste_reparacion);
+        totalInvestedCurrent += coste_total;
+        expectedRevenueCurrent += Number(item.sale_price_per_unit);
+      }
+    });
+
+    const possibleProfitCurrent = expectedRevenueCurrent - totalInvestedCurrent;
+    const possibleMarginCurrent = expectedRevenueCurrent > 0 ? (possibleProfitCurrent / expectedRevenueCurrent) * 100 : 0;
+
+    return { totalInvestedCurrent, expectedRevenueCurrent, possibleProfitCurrent, possibleMarginCurrent };
   }, [items]);
 
   const handleAddClick = () => {
@@ -187,7 +209,7 @@ const Index = () => {
           <div className="flex-1 min-w-0 max-w-5xl">
             {/* Summary Cards */}
             <div className="mb-8">
-              <SummaryCards summary={summary} />
+              <SummaryCards summary={summary} currentSummary={currentSummary} />
             </div>
 
             {/* Filters */}

@@ -1,9 +1,10 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { StockSummary } from '@/types/stock';
-import { DollarSign, TrendingUp, Wallet, Percent, CheckCircle } from 'lucide-react';
+import { StockSummary, CurrentStockSummary } from '@/types/stock';
+import { DollarSign, TrendingUp, Wallet, Percent, CheckCircle, Package } from 'lucide-react';
 
 interface SummaryCardsProps {
   summary: StockSummary;
+  currentSummary: CurrentStockSummary;
 }
 
 const formatCurrency = (value: number) => {
@@ -14,8 +15,35 @@ const formatCurrency = (value: number) => {
   }).format(value);
 };
 
-export function SummaryCards({ summary }: SummaryCardsProps) {
-  const cards = [
+export function SummaryCards({ summary, currentSummary }: SummaryCardsProps) {
+  const currentCards = [
+    {
+      title: 'Total Invertido Actual',
+      value: formatCurrency(currentSummary.totalInvestedCurrent),
+      icon: Package,
+      className: 'text-foreground',
+    },
+    {
+      title: 'Ingresos Esperados Actuales',
+      value: formatCurrency(currentSummary.expectedRevenueCurrent),
+      icon: DollarSign,
+      className: 'text-primary',
+    },
+    {
+      title: 'Beneficio Posible Actual',
+      value: formatCurrency(currentSummary.possibleProfitCurrent),
+      icon: TrendingUp,
+      className: currentSummary.possibleProfitCurrent >= 0 ? 'text-success' : 'text-destructive',
+    },
+    {
+      title: 'Margen Posible Actual',
+      value: `${currentSummary.possibleMarginCurrent.toFixed(1)}%`,
+      icon: Percent,
+      className: currentSummary.possibleMarginCurrent >= 0 ? 'text-success' : 'text-destructive',
+    },
+  ];
+
+  const historicCards = [
     {
       title: 'Total Invertido',
       value: formatCurrency(summary.totalInvested),
@@ -49,22 +77,54 @@ export function SummaryCards({ summary }: SummaryCardsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-      {cards.map((card) => (
-        <Card key={card.title} className="border-border/50 shadow-sm">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">{card.title}</p>
-                <p className={`mt-1 text-2xl font-semibold ${card.className}`}>{card.value}</p>
-              </div>
-              <div className="rounded-lg bg-secondary p-2.5">
-                <card.icon className="h-5 w-5 text-muted-foreground" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+    <div className="space-y-6">
+      {/* Resumen Actual (Stock) */}
+      <div>
+        <h3 className="mb-3 text-sm font-medium text-muted-foreground uppercase tracking-wide">
+          Resumen Actual (Stock)
+        </h3>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {currentCards.map((card) => (
+            <Card key={card.title} className="border-border/50 shadow-sm">
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">{card.title}</p>
+                    <p className={`mt-1 text-2xl font-semibold ${card.className}`}>{card.value}</p>
+                  </div>
+                  <div className="rounded-lg bg-secondary p-2.5">
+                    <card.icon className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* Histórico Total */}
+      <div>
+        <h3 className="mb-3 text-sm font-medium text-muted-foreground uppercase tracking-wide">
+          Histórico Total
+        </h3>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {historicCards.map((card) => (
+            <Card key={card.title} className="border-border/50 shadow-sm">
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">{card.title}</p>
+                    <p className={`mt-1 text-2xl font-semibold ${card.className}`}>{card.value}</p>
+                  </div>
+                  <div className="rounded-lg bg-secondary p-2.5">
+                    <card.icon className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
