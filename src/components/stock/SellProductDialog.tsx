@@ -60,7 +60,7 @@ export function SellProductDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 duration-200">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <span className="text-success">✅</span> Confirmar venta
@@ -133,11 +133,23 @@ export function SellProductDialog({
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
+            className="transition-all duration-200"
           >
             Cancelar
           </Button>
-          <Button onClick={handleConfirm} disabled={isLoading}>
-            {isLoading ? 'Procesando...' : '✅ Confirmar venta'}
+          <Button 
+            onClick={handleConfirm} 
+            disabled={isLoading}
+            className="bg-success hover:bg-success/90 text-success-foreground transition-all duration-200 min-w-[140px]"
+          >
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                Guardando...
+              </span>
+            ) : (
+              '✅ Confirmar venta'
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
