@@ -272,8 +272,8 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-7xl px-3 py-4 sm:px-6 sm:py-8 lg:max-w-[1550px] lg:px-10 xl:px-12">
+    <div className="min-h-screen bg-background lg:py-6 lg:px-6 xl:px-8">
+      <div className="mx-auto max-w-7xl px-3 py-4 sm:px-6 sm:py-8 lg:max-w-[1550px] lg:px-8 xl:px-10 app-shell lg:py-8">
         {/* Header */}
         <div className="mb-4 sm:mb-8 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">

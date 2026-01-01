@@ -36,16 +36,16 @@ export function StockTable({ items, onItemClick, onDuplicateClick, onSellClick }
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-card">
-      <Table>
+    <div className="overflow-hidden rounded-lg border border-border bg-card lg:shadow-sm">
+      <Table className="crm-table">
         <TableHeader>
-          <TableRow className="bg-secondary/50 hover:bg-secondary/50">
-            <TableHead className="font-semibold">Nombre</TableHead>
-            <TableHead className="font-semibold">Estado</TableHead>
-            <TableHead className="font-semibold">Categoría</TableHead>
-            <TableHead className="text-right font-semibold">Coste Total</TableHead>
-            <TableHead className="text-right font-semibold">Beneficio</TableHead>
-            <TableHead className="w-[150px] text-center font-semibold">Acciones</TableHead>
+          <TableRow className="bg-secondary/70 hover:bg-secondary/70 border-b border-border">
+            <TableHead className="font-semibold text-foreground/80">Nombre</TableHead>
+            <TableHead className="font-semibold text-foreground/80">Estado</TableHead>
+            <TableHead className="font-semibold text-foreground/80">Categoría</TableHead>
+            <TableHead className="text-right font-semibold text-foreground/80">Coste Total</TableHead>
+            <TableHead className="text-right font-semibold text-foreground/80">Beneficio</TableHead>
+            <TableHead className="w-[150px] text-center font-semibold text-foreground/80">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -55,7 +55,7 @@ export function StockTable({ items, onItemClick, onDuplicateClick, onSellClick }
             const isEnStock = item.estado === 'En stock';
             
             return (
-              <TableRow key={item.id} className="hover:bg-secondary/30">
+              <TableRow key={item.id} className="border-b border-border/50 last:border-b-0">
                 <TableCell>
                   <button
                     onClick={() => onItemClick(item)}
