@@ -69,7 +69,7 @@ export function SummaryDetailModal({ open, onOpenChange, type, stockItems }: Sum
   }, [inStockItems, search]);
 
   const calculateItemCost = (item: StockItem) => {
-    return item.purchase_price_per_unit + item.coste_reparacion;
+    return Number(item.purchase_price_per_unit) + Number(item.precio_envio) + Number(item.coste_reparacion);
   };
 
   const calculateItemProfit = (item: StockItem) => {
