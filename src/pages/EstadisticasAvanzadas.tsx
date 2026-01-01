@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react';
-import { PieChart, TrendingUp, TrendingDown, Package, DollarSign, Percent, ShoppingCart, Trophy, AlertTriangle } from 'lucide-react';
+import { PieChart, TrendingUp, Package, DollarSign, Percent, ShoppingCart, Trophy, AlertTriangle, Search, Calendar } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
 import { useStockItems } from '@/hooks/useStockItems';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -11,6 +12,7 @@ const EstadisticasAvanzadas = () => {
   const currentDate = new Date();
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
+  const [salesSearch, setSalesSearch] = useState('');
   
   const { data: stockItems = [], isLoading } = useStockItems();
 
@@ -31,8 +33,12 @@ const EstadisticasAvanzadas = () => {
 
   const years = Array.from({ length: 10 }, (_, i) => currentDate.getFullYear() - i);
 
+  const calculateCosteTotal = (item: typeof stockItems[0]) => {
+    return item.purchase_price_per_unit + item.precio_envio + item.coste_reparacion;
+  };
+
   const calculateBeneficioReal = (item: typeof stockItems[0]) => {
-    const costeTotal = item.purchase_price_per_unit + item.precio_envio + item.coste_reparacion;
+    const costeTotal = calculateCosteTotal(item);
     return item.precio_venta_real - costeTotal;
   };
 
@@ -56,6 +62,20 @@ const EstadisticasAvanzadas = () => {
       return purchaseDate.getMonth() + 1 === selectedMonth && purchaseDate.getFullYear() === selectedYear;
     });
   }, [stockItems, selectedMonth, selectedYear]);
+
+  // Sales history: sorted by date (most recent first) and filtered by search
+  const salesHistory = useMemo(() => {
+    return filteredSoldItems
+      .filter(item => 
+        salesSearch === '' || 
+        item.name.toLowerCase().includes(salesSearch.toLowerCase())
+      )
+      .sort((a, b) => {
+        const dateA = a.fecha_venta ? parseISO(a.fecha_venta).getTime() : 0;
+        const dateB = b.fecha_venta ? parseISO(b.fecha_venta).getTime() : 0;
+        return dateB - dateA;
+      });
+  }, [filteredSoldItems, salesSearch]);
 
   const metrics = useMemo(() => {
     const totalProducts = filteredSoldItems.length;
@@ -114,6 +134,11 @@ const EstadisticasAvanzadas = () => {
 
   const formatCurrency = (value: number) => 
     new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(value);
+
+  const getSelectedMonthName = () => {
+    const month = months.find(m => m.value === selectedMonth);
+    return month ? month.label : '';
+  };
 
   if (isLoading) {
     return (
@@ -321,7 +346,7 @@ const EstadisticasAvanzadas = () => {
         </Card>
 
         {/* Resumen por categoría */}
-        <Card>
+        <Card className="mb-8">
           <CardHeader>
             <CardTitle>Resumen por categoría</CardTitle>
           </CardHeader>
@@ -353,6 +378,75 @@ const EstadisticasAvanzadas = () => {
               </Table>
             ) : (
               <p className="text-muted-foreground text-center py-8">Sin datos para este periodo</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Historial de ventas del mes */}
+        <Card>
+          <CardHeader>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-primary" />
+                <CardTitle>Historial de ventas del mes</CardTitle>
+              </div>
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar producto..."
+                  value={salesSearch}
+                  onChange={(e) => setSalesSearch(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {salesHistory.length > 0 ? (
+              <>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Fecha de venta</TableHead>
+                        <TableHead>Producto</TableHead>
+                        <TableHead>Categoría</TableHead>
+                        <TableHead className="text-right">Precio venta (€)</TableHead>
+                        <TableHead className="text-right">Coste total (€)</TableHead>
+                        <TableHead className="text-right">Beneficio real (€)</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {salesHistory.map((item) => {
+                        const costeTotal = calculateCosteTotal(item);
+                        const beneficioReal = calculateBeneficioReal(item);
+                        return (
+                          <TableRow key={item.id}>
+                            <TableCell>
+                              {item.fecha_venta ? format(parseISO(item.fecha_venta), 'dd MMM yyyy', { locale: es }) : '-'}
+                            </TableCell>
+                            <TableCell className="font-medium">{item.name}</TableCell>
+                            <TableCell>{item.category}</TableCell>
+                            <TableCell className="text-right">{formatCurrency(item.precio_venta_real)}</TableCell>
+                            <TableCell className="text-right">{formatCurrency(costeTotal)}</TableCell>
+                            <TableCell className={`text-right font-semibold ${beneficioReal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              {formatCurrency(beneficioReal)}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+                <p className="text-sm text-muted-foreground mt-4 text-center">
+                  Mostrando {salesHistory.length} {salesHistory.length === 1 ? 'venta' : 'ventas'} de {getSelectedMonthName()} {selectedYear}
+                </p>
+              </>
+            ) : (
+              <div className="text-center py-12">
+                <Calendar className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+                <p className="text-muted-foreground">No hay ventas registradas en este mes.</p>
+              </div>
             )}
           </CardContent>
         </Card>
