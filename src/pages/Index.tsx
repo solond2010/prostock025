@@ -240,7 +240,7 @@ const Index = () => {
           <div className="flex-1 min-w-0 lg:max-w-5xl">
             {/* Summary Cards */}
             <div className="mb-4 sm:mb-8">
-              <SummaryCards summary={summary} currentSummary={currentSummary} />
+              <SummaryCards summary={summary} currentSummary={currentSummary} stockItems={items} />
             </div>
 
             {/* Filters */}
