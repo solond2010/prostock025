@@ -56,3 +56,10 @@ export interface StockSummary {
   totalRealProfit: number;
   profitMargin: number;
 }
+
+export interface CurrentStockSummary {
+  totalInvestedCurrent: number;
+  expectedRevenueCurrent: number;
+  possibleProfitCurrent: number;
+  possibleMarginCurrent: number;
+}
