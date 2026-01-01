@@ -385,6 +385,8 @@ const Index = () => {
                 onItemClick={handleItemClick} 
                 onDuplicateClick={handleDuplicateClick}
                 onSellClick={handleSellClick}
+                onEditClick={handleEdit}
+                onDeleteClick={(item) => handleDelete(item.id)}
                 recentlySoldId={recentlySoldId}
                 daysInStockFilter={daysInStockFilter}
                 onDaysInStockFilterChange={setDaysInStockFilter}

@@ -15,7 +15,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Copy, ShoppingCart, ChevronDown, CheckCircle, AlertTriangle, Flame, Circle } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { Copy, ShoppingCart, ChevronDown, CheckCircle, AlertTriangle, Flame, Circle, Pencil, Trash2 } from 'lucide-react';
 import { StockItemWithCalculations } from '@/types/stock';
 import { differenceInDays } from 'date-fns';
 import { ProductNameTooltip } from './ProductNameTooltip';
@@ -47,6 +52,8 @@ interface StockTableProps {
   onItemClick: (item: StockItemWithCalculations) => void;
   onDuplicateClick: (item: StockItemWithCalculations) => void;
   onSellClick?: (item: StockItemWithCalculations) => void;
+  onEditClick?: (item: StockItemWithCalculations) => void;
+  onDeleteClick?: (item: StockItemWithCalculations) => void;
   recentlySoldId?: string | null;
   daysInStockFilter?: DaysInStockFilter;
   onDaysInStockFilterChange?: (filter: DaysInStockFilter) => void;
@@ -72,6 +79,8 @@ export function StockTable({
   onItemClick, 
   onDuplicateClick, 
   onSellClick, 
+  onEditClick,
+  onDeleteClick,
   recentlySoldId,
   daysInStockFilter = 'all',
   onDaysInStockFilterChange 
@@ -173,7 +182,7 @@ export function StockTable({
               return (
                 <TableRow 
                   key={item.id} 
-                  className={`border-b border-border/50 last:border-b-0 ${isRecentlySold ? 'sale-highlight' : ''}`}
+                  className={`group border-b border-border/50 last:border-b-0 ${isRecentlySold ? 'sale-highlight' : ''}`}
                 >
                   <TableCell>
                     <ProductNameTooltip item={item} onClick={() => onItemClick(item)} />
@@ -218,34 +227,85 @@ export function StockTable({
                     {beneficio !== null ? formatCurrency(beneficio) : '-'}
                   </TableCell>
                   <TableCell className="text-center">
-                    <div className="flex items-center justify-center gap-1">
+                    <div className="flex items-center justify-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-200 md:translate-x-2 md:group-hover:translate-x-0">
                       {isEnStock && onSellClick && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onSellClick(item);
-                          }}
-                          title="Vender producto"
-                          className="text-success hover:text-success hover:bg-success/10"
-                        >
-                          <ShoppingCart className="h-4 w-4 mr-1" />
-                          Vender
-                        </Button>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onSellClick(item);
+                              }}
+                              className="h-8 w-8 text-success hover:text-success hover:bg-success/15 hover:shadow-[0_0_8px_hsl(var(--success)/0.4)] transition-all"
+                            >
+                              <ShoppingCart className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="bg-popover border border-border/60 text-xs">
+                            Vender
+                          </TooltipContent>
+                        </Tooltip>
                       )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDuplicateClick(item);
-                        }}
-                        title="Duplicar producto"
-                      >
-                        <Copy className="h-4 w-4 mr-1" />
-                        Duplicar
-                      </Button>
+                      {onEditClick && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onEditClick(item);
+                              }}
+                              className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/15 hover:shadow-[0_0_8px_hsl(var(--primary)/0.4)] transition-all"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="bg-popover border border-border/60 text-xs">
+                            Editar
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+                      {onDeleteClick && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onDeleteClick(item);
+                              }}
+                              className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/15 hover:shadow-[0_0_8px_hsl(var(--destructive)/0.4)] transition-all"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="bg-popover border border-border/60 text-xs">
+                            Eliminar
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDuplicateClick(item);
+                            }}
+                            className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="bg-popover border border-border/60 text-xs">
+                          Duplicar
+                        </TooltipContent>
+                      </Tooltip>
                     </div>
                   </TableCell>
                 </TableRow>
