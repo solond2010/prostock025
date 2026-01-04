@@ -12,7 +12,7 @@ export function AppHeader() {
           </div>
           <div className="flex flex-col">
             <span className="text-lg font-semibold text-foreground tracking-tight">Gestión de Finanzas</span>
-            <span className="text-xs text-muted-foreground hidden sm:block">Control financiero personal</span>
+            <span className="text-xs text-muted-foreground hidden sm:block">Control Financiero</span>
           </div>
         </div>
       </div>
