@@ -344,7 +344,7 @@ const Index = () => {
                   className="w-full border-border/60 bg-card/50 hover:bg-card"
                 >
                   <LayoutDashboard className="h-4 w-4 mr-2" />
-                  Panel de Resumen
+                  Resumen mensual
                 </Button>
               </DrawerTrigger>
               <DrawerContent className="max-h-[85vh]">
