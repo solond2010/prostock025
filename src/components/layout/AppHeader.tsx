@@ -1,4 +1,5 @@
 import { AppSidebar } from './AppSidebar';
+import { Wallet } from 'lucide-react';
 
 export function AppHeader() {
   return (
@@ -6,14 +7,12 @@ export function AppHeader() {
       <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-4 px-4 sm:px-6 lg:px-10 xl:px-12">
         <AppSidebar />
         <div className="flex items-center gap-3">
-          <img 
-            src="/logo.jpg" 
-            alt="ProStock Logo" 
-            className="h-9 w-9 rounded-full border border-border/50 shadow-sm object-cover"
-          />
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
+            <Wallet className="h-5 w-5 text-primary" />
+          </div>
           <div className="flex flex-col">
-            <span className="text-lg font-semibold text-foreground tracking-tight">ProStock</span>
-            <span className="text-xs text-muted-foreground hidden sm:block">Gestión de Inventario</span>
+            <span className="text-lg font-semibold text-foreground tracking-tight">Gestión de Finanzas</span>
+            <span className="text-xs text-muted-foreground hidden sm:block">Control financiero personal</span>
           </div>
         </div>
       </div>
