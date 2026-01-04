@@ -3,6 +3,7 @@ import { StockItem } from '@/types/stock';
 import { useMemo } from 'react';
 import { differenceInDays, format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 import {
   Tooltip,
   TooltipContent,
@@ -12,9 +13,10 @@ import {
 
 interface InventorySidebarProps {
   items: StockItem[];
+  className?: string;
 }
 
-export function InventorySidebar({ items }: InventorySidebarProps) {
+export function InventorySidebar({ items, className }: InventorySidebarProps) {
   const stats = useMemo(() => {
     const now = new Date();
     const currentMonth = now.getMonth();
@@ -56,7 +58,7 @@ export function InventorySidebar({ items }: InventorySidebarProps) {
 
   return (
     <TooltipProvider>
-      <aside className="w-52 shrink-0 sticky top-24">
+      <aside className={cn("w-52 shrink-0 sticky top-24", className)}>
         <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm">
           <h3 className="mb-5 text-sm font-semibold text-foreground tracking-tight">Inventario</h3>
           <div className="space-y-4">
