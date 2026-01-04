@@ -59,14 +59,12 @@ export function AppSidebar() {
       <SheetContent side="left" className="w-72 p-0 flex flex-col bg-card">
         <SheetHeader className="border-b border-border/60 px-6 py-5">
           <div className="flex items-center gap-3">
-            <img 
-              src="/logo.jpg" 
-              alt="ProStock Logo" 
-              className="h-10 w-10 rounded-full border border-border/50 shadow-sm object-cover"
-            />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
+              <Wallet className="h-6 w-6 text-primary" />
+            </div>
             <div>
-              <SheetTitle className="text-left text-lg font-semibold">ProStock</SheetTitle>
-              <p className="text-xs text-muted-foreground">Gestión de Inventario</p>
+              <SheetTitle className="text-left text-lg font-semibold">Gestión de Finanzas</SheetTitle>
+              <p className="text-xs text-muted-foreground">Control financiero personal</p>
             </div>
           </div>
         </SheetHeader>
