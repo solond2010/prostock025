@@ -64,7 +64,7 @@ export function AppSidebar() {
             </div>
             <div>
               <SheetTitle className="text-left text-lg font-semibold">Gestión de Finanzas</SheetTitle>
-              <p className="text-xs text-muted-foreground">Control financiero personal</p>
+              <p className="text-xs text-muted-foreground">Control Financiero</p>
             </div>
           </div>
         </SheetHeader>
