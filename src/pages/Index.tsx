@@ -10,6 +10,13 @@ import { InventorySidebar } from '@/components/stock/InventorySidebar';
 import { DuplicateProductDialog } from '@/components/stock/DuplicateProductDialog';
 import { SellProductDialog } from '@/components/stock/SellProductDialog';
 import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@/components/ui/drawer';
+import {
   useStockItems,
   useCreateStockItem,
   useUpdateStockItem,
@@ -17,7 +24,7 @@ import {
   useDuplicateStockItem,
 } from '@/hooks/useStockItems';
 import { StockItem, StockItemFormData, StockItemWithCalculations, StockSummary, CurrentStockSummary } from '@/types/stock';
-import { Plus, Package, BarChart3, TrendingUp, Download } from 'lucide-react';
+import { Plus, Package, BarChart3, TrendingUp, Download, LayoutDashboard } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import {
@@ -328,33 +335,27 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Mobile Inventory Stats */}
-          <div className="mb-4 grid grid-cols-2 gap-2 sm:hidden">
-            <div className="rounded-lg border border-border bg-card/50 p-3 flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-secondary shrink-0">
-                <Package className="h-3.5 w-3.5 text-muted-foreground" />
-              </div>
-              <div>
-                <p className="text-[10px] text-muted-foreground">En stock</p>
-                <p className="text-base font-semibold text-foreground">{items.filter(i => i.estado === 'En stock').length}</p>
-              </div>
-            </div>
-            <div className="rounded-lg border border-border bg-card/50 p-3 flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-secondary shrink-0">
-                <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
-              </div>
-              <div>
-                <p className="text-[10px] text-muted-foreground">Vendidos mes</p>
-                <p className="text-base font-semibold text-foreground">
-                  {items.filter((item) => {
-                    if (item.estado !== 'Vendido' || !item.fecha_venta) return false;
-                    const now = new Date();
-                    const saleDate = new Date(item.fecha_venta);
-                    return saleDate.getMonth() === now.getMonth() && saleDate.getFullYear() === now.getFullYear();
-                  }).length}
-                </p>
-              </div>
-            </div>
+          {/* Mobile Panel Button - opens Bottom Sheet with sidebar content */}
+          <div className="mb-4 lg:hidden">
+            <Drawer>
+              <DrawerTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  className="w-full border-border/60 bg-card/50 hover:bg-card"
+                >
+                  <LayoutDashboard className="h-4 w-4 mr-2" />
+                  Panel de Resumen
+                </Button>
+              </DrawerTrigger>
+              <DrawerContent className="max-h-[85vh]">
+                <DrawerHeader className="pb-2">
+                  <DrawerTitle className="text-center">Panel de Resumen</DrawerTitle>
+                </DrawerHeader>
+                <div className="overflow-y-auto px-4 pb-6">
+                  <InventorySidebar items={items} className="w-full" />
+                </div>
+              </DrawerContent>
+            </Drawer>
           </div>
 
           {/* Main Content with Sidebar */}
