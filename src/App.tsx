@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import MonthlyCharts from "./pages/MonthlyCharts";
 import GastoMaterial from "./pages/GastoMaterial";
 import EstadisticasAvanzadas from "./pages/EstadisticasAvanzadas";
+import FinanzasPersonales from "./pages/FinanzasPersonales";
 import Auth from "./pages/Auth";
 import RegistroAdmin from "./pages/RegistroAdmin";
 import NotFound from "./pages/NotFound";
@@ -60,6 +61,16 @@ const App = () => (
               <ProtectedRoute>
                 <MainLayout>
                   <EstadisticasAvanzadas />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/finanzas-personales"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <FinanzasPersonales />
                 </MainLayout>
               </ProtectedRoute>
             }

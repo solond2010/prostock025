@@ -47,6 +47,39 @@ export type Database = {
         }
         Relationships: []
       }
+      personal_finance_movements: {
+        Row: {
+          amount: number
+          category: string
+          concept: string
+          created_at: string
+          date: string
+          id: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          concept: string
+          created_at?: string
+          date?: string
+          id?: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          concept?: string
+          created_at?: string
+          date?: string
+          id?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       stock_items: {
         Row: {
           almacenamiento: string | null
