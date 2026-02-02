@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { StockSummary, CurrentStockSummary, StockItem } from '@/types/stock';
-import { DollarSign, TrendingUp, Wallet, Percent, CheckCircle, Package } from 'lucide-react';
+import { CurrentStockSummary, StockItem } from '@/types/stock';
+import { DollarSign, TrendingUp, Percent, Package } from 'lucide-react';
 import { SummaryDetailModal } from './SummaryDetailModal';
 import {
   Tooltip,
@@ -11,7 +11,6 @@ import {
 } from '@/components/ui/tooltip';
 
 interface SummaryCardsProps {
-  summary: StockSummary;
   currentSummary: CurrentStockSummary;
   stockItems: StockItem[];
 }
@@ -26,7 +25,7 @@ const formatCurrency = (value: number) => {
 
 type ModalType = 'invested' | 'revenue' | 'profit' | 'margin';
 
-export function SummaryCards({ summary, currentSummary, stockItems }: SummaryCardsProps) {
+export function SummaryCards({ currentSummary, stockItems }: SummaryCardsProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState<ModalType>('invested');
 
@@ -70,111 +69,39 @@ export function SummaryCards({ summary, currentSummary, stockItems }: SummaryCar
     },
   ];
 
-  const historicCards = [
-    {
-      title: 'Invertido',
-      fullTitle: 'Total Invertido (Histórico)',
-      value: formatCurrency(summary.totalInvested),
-      icon: Wallet,
-      className: 'text-foreground',
-    },
-    {
-      title: 'Ingresos Esp.',
-      fullTitle: 'Ingresos Esperados Totales',
-      value: formatCurrency(summary.totalExpectedRevenue),
-      icon: DollarSign,
-      className: 'text-primary',
-    },
-    {
-      title: 'Beneficio Esp.',
-      fullTitle: 'Beneficio Esperado Total',
-      value: formatCurrency(summary.totalExpectedProfit),
-      icon: TrendingUp,
-      className: summary.totalExpectedProfit >= 0 ? 'text-success' : 'text-destructive',
-    },
-    {
-      title: 'Beneficio Real',
-      fullTitle: 'Beneficio Real (Ventas confirmadas)',
-      value: formatCurrency(summary.totalRealProfit),
-      icon: CheckCircle,
-      className: summary.totalRealProfit >= 0 ? 'text-success' : 'text-destructive',
-    },
-    {
-      title: 'Margen',
-      fullTitle: 'Margen de Beneficio',
-      value: `${summary.profitMargin.toFixed(1)}%`,
-      icon: Percent,
-      className: summary.profitMargin >= 0 ? 'text-success' : 'text-destructive',
-    },
-  ];
-
   return (
     <TooltipProvider>
       <>
-        <div className="space-y-4 sm:space-y-6 lg:space-y-8">
-          {/* Resumen Actual (Stock) */}
-          <div>
-            <h3 className="mb-2 sm:mb-3 lg:mb-4 text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-              Resumen Actual
-            </h3>
-            <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4 lg:gap-4">
-              {currentCards.map((card) => (
-                <Tooltip key={card.title}>
-                  <TooltipTrigger asChild>
-                    <Card 
-                      className="border-border/60 bg-card cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5 active:scale-[0.98] lg:metric-card"
-                      onClick={() => handleCardClick(card.type)}
-                    >
-                      <CardContent className="p-3 sm:p-4 lg:p-6">
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="min-w-0 flex-1">
-                            <p className="text-[10px] sm:text-xs lg:text-sm font-medium text-muted-foreground leading-snug line-clamp-2">{card.title}</p>
-                            <p className={`mt-0.5 sm:mt-1 lg:mt-2 text-base sm:text-lg lg:text-2xl xl:text-3xl font-bold tracking-tight ${card.className}`}>{card.value}</p>
-                          </div>
-                          <div className="rounded-xl bg-primary/10 p-1.5 sm:p-2 lg:p-3 shrink-0 hidden sm:block">
-                            <card.icon className="h-4 w-4 sm:h-4 sm:w-4 lg:h-6 lg:w-6 text-primary" />
-                          </div>
+        <div>
+          <h3 className="mb-2 sm:mb-3 lg:mb-4 text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+            Resumen Actual
+          </h3>
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4 lg:gap-4">
+            {currentCards.map((card) => (
+              <Tooltip key={card.title}>
+                <TooltipTrigger asChild>
+                  <Card 
+                    className="border-border/60 bg-card cursor-pointer transition-all duration-200 hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5 active:scale-[0.98] lg:metric-card"
+                    onClick={() => handleCardClick(card.type)}
+                  >
+                    <CardContent className="p-3 sm:p-4 lg:p-6">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[10px] sm:text-xs lg:text-sm font-medium text-muted-foreground leading-snug line-clamp-2">{card.title}</p>
+                          <p className={`mt-0.5 sm:mt-1 lg:mt-2 text-base sm:text-lg lg:text-2xl xl:text-3xl font-bold tracking-tight ${card.className}`}>{card.value}</p>
                         </div>
-                      </CardContent>
-                    </Card>
-                  </TooltipTrigger>
-                  <TooltipContent className="hidden lg:block">
-                    <p>{card.fullTitle}</p>
-                  </TooltipContent>
-                </Tooltip>
-              ))}
-            </div>
-          </div>
-
-          {/* Histórico Total */}
-          <div>
-            <h3 className="mb-2 sm:mb-3 lg:mb-4 text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-              Histórico Total
-            </h3>
-            <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-5 lg:gap-4">
-              {historicCards.map((card) => (
-                <Tooltip key={card.title}>
-                  <TooltipTrigger asChild>
-                    <Card className="border-border/60 bg-card transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 lg:metric-card">
-                      <CardContent className="p-3 sm:p-4 lg:p-6">
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="min-w-0 flex-1">
-                            <p className="text-[10px] sm:text-xs lg:text-sm font-medium text-muted-foreground leading-snug line-clamp-2">{card.title}</p>
-                            <p className={`mt-0.5 sm:mt-1 lg:mt-2 text-base sm:text-lg lg:text-2xl xl:text-3xl font-bold tracking-tight ${card.className}`}>{card.value}</p>
-                          </div>
-                          <div className="rounded-xl bg-secondary p-1.5 sm:p-2 lg:p-3 shrink-0 hidden sm:block">
-                            <card.icon className="h-4 w-4 sm:h-4 sm:w-4 lg:h-6 lg:w-6 text-muted-foreground" />
-                          </div>
+                        <div className="rounded-xl bg-primary/10 p-1.5 sm:p-2 lg:p-3 shrink-0 hidden sm:block">
+                          <card.icon className="h-4 w-4 sm:h-4 sm:w-4 lg:h-6 lg:w-6 text-primary" />
                         </div>
-                      </CardContent>
-                    </Card>
-                  </TooltipTrigger>
-                  <TooltipContent className="hidden lg:block">
-                    <p>{card.fullTitle}</p>
-                  </TooltipContent>
-                </Tooltip>
-              ))}
-            </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TooltipTrigger>
+                <TooltipContent className="hidden lg:block">
+                  <p>{card.fullTitle}</p>
+                </TooltipContent>
+              </Tooltip>
+            ))}
           </div>
         </div>
 

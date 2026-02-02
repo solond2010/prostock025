@@ -364,7 +364,7 @@ const Index = () => {
             <div className="flex-1 min-w-0">
               {/* Summary Cards */}
               <div className="mb-6 sm:mb-8 lg:mb-10">
-                <SummaryCards summary={summary} currentSummary={currentSummary} stockItems={items} />
+                <SummaryCards currentSummary={currentSummary} stockItems={items} />
               </div>
 
               {/* Filters */}
