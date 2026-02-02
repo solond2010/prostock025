@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input';
 import { useStockItems } from '@/hooks/useStockItems';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { HistoricSummaryCards } from '@/components/stock/HistoricSummaryCards';
+import { StockSummary } from '@/types/stock';
 
 const EstadisticasAvanzadas = () => {
   const currentDate = new Date();
@@ -173,6 +175,28 @@ const EstadisticasAvanzadas = () => {
     return [...monthlyBillingHistory].reverse().slice(-12);
   }, [monthlyBillingHistory]);
 
+  // Calculate historic summary for all items
+  const historicSummary = useMemo<StockSummary>(() => {
+    let totalInvested = 0;
+    let totalExpectedRevenue = 0;
+    let totalRealProfit = 0;
+
+    stockItems.forEach((item) => {
+      const coste_total = calculateCosteTotal(item);
+      totalInvested += coste_total;
+      totalExpectedRevenue += Number(item.sale_price_per_unit);
+
+      if (item.estado === 'Vendido') {
+        totalRealProfit += Number(item.precio_venta_real) - coste_total;
+      }
+    });
+
+    const totalExpectedProfit = totalExpectedRevenue - totalInvested;
+    const profitMargin = totalExpectedRevenue > 0 ? (totalExpectedProfit / totalExpectedRevenue) * 100 : 0;
+
+    return { totalInvested, totalExpectedRevenue, totalExpectedProfit, totalRealProfit, profitMargin };
+  }, [stockItems]);
+
   const formatCurrency = (value: number) => 
     new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(value);
 
@@ -232,6 +256,11 @@ const EstadisticasAvanzadas = () => {
               </SelectContent>
             </Select>
           </div>
+        </div>
+
+        {/* Histórico Total */}
+        <div className="mb-8">
+          <HistoricSummaryCards summary={historicSummary} />
         </div>
 
         {/* Tarjetas de resumen */}
