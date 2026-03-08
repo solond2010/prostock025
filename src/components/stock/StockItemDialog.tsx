@@ -416,9 +416,8 @@ export function StockItemDialog({
               </div>
             )}
 
-            {/* Campos comunes - ocultar para Reparación los que no aplican */}
-            {!isReparacion && (
-              <FormField
+            {/* Fecha de compra - visible para Reparación también */}
+            <FormField
               control={form.control}
               name="purchase_date"
               render={({ field }) => (
@@ -431,63 +430,71 @@ export function StockItemDialog({
                 </FormItem>
               )}
             />
-            <div className="grid grid-cols-2 gap-3">
-              <FormField
-                control={form.control}
-                name="purchase_price_per_unit"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Precio Compra</FormLabel>
-                    <FormControl>
-                      <Input type="number" min="0" step="0.01" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="sale_price_per_unit"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Precio Venta Esperado</FormLabel>
-                    <FormControl>
-                      <Input type="number" min="0" step="0.01" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <FormField
-                control={form.control}
-                name="precio_envio"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Precio de Envío</FormLabel>
-                    <FormControl>
-                      <Input type="number" min="0" step="0.01" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="coste_reparacion"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Coste de Reparación</FormLabel>
-                    <FormControl>
-                      <Input type="number" min="0" step="0.01" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            {watchEstado === 'Vendido' && (
+
+            {/* Campos de precios - ocultar para Reparación */}
+            {!isReparacion && (
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <FormField
+                    control={form.control}
+                    name="purchase_price_per_unit"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Precio Compra</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" step="0.01" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="sale_price_per_unit"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Precio Venta Esperado</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" step="0.01" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <FormField
+                    control={form.control}
+                    name="precio_envio"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Precio de Envío</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" step="0.01" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="coste_reparacion"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Coste de Reparación</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" step="0.01" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Campos de venta - ocultar para Reparación */}
+            {!isReparacion && watchEstado === 'Vendido' && (
               <div className="grid grid-cols-2 gap-3">
                 <FormField
                   control={form.control}
@@ -517,6 +524,7 @@ export function StockItemDialog({
                 />
               </div>
             )}
+
             <FormField
               control={form.control}
               name="notes"
@@ -530,6 +538,7 @@ export function StockItemDialog({
                 </FormItem>
               )}
             />
+
             <div className="flex justify-end gap-3 pt-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancelar
