@@ -401,7 +401,7 @@ export function StockItemDialog({
                   />
                   <FormField
                     control={form.control}
-                    name="sale_price_per_unit"
+                    name="coste_reparacion"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Precio Venta Reparación</FormLabel>
