@@ -404,7 +404,7 @@ export function StockItemDialog({
                     name="coste_reparacion"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Precio Reparación</FormLabel>
+                        <FormLabel>Precio Venta Reparación</FormLabel>
                         <FormControl>
                           <Input type="number" min="0" step="0.01" {...field} />
                         </FormControl>
