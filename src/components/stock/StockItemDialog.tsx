@@ -118,6 +118,7 @@ export function StockItemDialog({
   const watchCategory = form.watch('category');
   const isTelefonia = watchCategory === 'Telefonía';
   const isRopa = watchCategory === 'Ropa';
+  const isReparacion = watchCategory === 'Reparación';
 
   useEffect(() => {
     if (open) {
@@ -204,6 +205,7 @@ export function StockItemDialog({
                       <SelectContent>
                         <SelectItem value="Telefonía">Telefonía</SelectItem>
                         <SelectItem value="Ropa">Ropa</SelectItem>
+                        <SelectItem value="Reparación">Reparación</SelectItem>
                         <SelectItem value="Perfumes">Perfumes</SelectItem>
                         <SelectItem value="Electrónica">Electrónica</SelectItem>
                         <SelectItem value="Otros">Otros</SelectItem>
@@ -379,7 +381,44 @@ export function StockItemDialog({
               </div>
             )}
 
-            <FormField
+            {/* Campos específicos de Reparación */}
+            {isReparacion && (
+              <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
+                <p className="text-sm font-medium text-muted-foreground">Detalles de Reparación</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <FormField
+                    control={form.control}
+                    name="purchase_price_per_unit"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Precio Compra Pieza</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" step="0.01" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="coste_reparacion"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Precio Reparación</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" step="0.01" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Campos comunes - ocultar para Reparación los que no aplican */}
+            {!isReparacion && (
+              <FormField
               control={form.control}
               name="purchase_date"
               render={({ field }) => (
