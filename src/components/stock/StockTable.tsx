@@ -227,6 +227,17 @@ export function StockTable({
                   >
                     {beneficio !== null ? formatCurrency(beneficio) : '-'}
                   </TableCell>
+                  <TableCell className="table-cell-numeric">
+                    {(() => {
+                      if (beneficio === null || item.coste_total === 0) return '-';
+                      const margen = (beneficio / item.coste_total) * 100;
+                      return (
+                        <span className={margen >= 0 ? 'text-success' : 'text-destructive'}>
+                          {margen.toFixed(1)}%
+                        </span>
+                      );
+                    })()}
+                  </TableCell>
                   <TableCell className="text-center">
                     <div className="flex items-center justify-center gap-0.5">
                       {isEnStock && onSellClick && (
