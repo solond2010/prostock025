@@ -157,6 +157,7 @@ export function StockTable({
             </TableHead>
             <TableHead className="text-right font-semibold text-foreground/80">Coste Total</TableHead>
             <TableHead className="text-right font-semibold text-foreground/80">Beneficio</TableHead>
+            <TableHead className="text-right font-semibold text-foreground/80">Margen</TableHead>
             <TableHead className="w-[150px] text-center font-semibold text-foreground/80">Acciones</TableHead>
           </TableRow>
         </TableHeader>
