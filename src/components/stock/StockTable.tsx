@@ -157,13 +157,14 @@ export function StockTable({
             </TableHead>
             <TableHead className="text-right font-semibold text-foreground/80">Coste Total</TableHead>
             <TableHead className="text-right font-semibold text-foreground/80">Beneficio</TableHead>
+            <TableHead className="text-right font-semibold text-foreground/80">Margen</TableHead>
             <TableHead className="w-[150px] text-center font-semibold text-foreground/80">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {filteredItems.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="h-32 text-center">
+              <TableCell colSpan={8} className="h-32 text-center">
                 <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
                   <SelectedIcon className={`h-8 w-8 ${selectedOption.colorClass} opacity-50`} />
                   <span>No hay productos en este rango de días.</span>
@@ -225,6 +226,17 @@ export function StockTable({
                     className={`table-cell-numeric ${isPositive ? 'text-success' : 'text-destructive'}`}
                   >
                     {beneficio !== null ? formatCurrency(beneficio) : '-'}
+                  </TableCell>
+                  <TableCell className="table-cell-numeric">
+                    {(() => {
+                      if (beneficio === null || item.coste_total === 0) return '-';
+                      const margen = (beneficio / item.coste_total) * 100;
+                      return (
+                        <span className={margen >= 0 ? 'text-success' : 'text-destructive'}>
+                          {margen.toFixed(1)}%
+                        </span>
+                      );
+                    })()}
                   </TableCell>
                   <TableCell className="text-center">
                     <div className="flex items-center justify-center gap-0.5">
