@@ -12,6 +12,7 @@ import EstadisticasAvanzadas from "./pages/EstadisticasAvanzadas";
 import FinanzasPersonales from "./pages/FinanzasPersonales";
 import Auth from "./pages/Auth";
 import RegistroAdmin from "./pages/RegistroAdmin";
+import InventarioPiezas from "./pages/InventarioPiezas";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
