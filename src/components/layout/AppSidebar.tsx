@@ -1,4 +1,4 @@
-import { Package, Receipt, PieChart, BarChart3, Menu, LogOut, Moon, Sun, Wallet } from 'lucide-react';
+import { Package, Receipt, PieChart, BarChart3, Menu, LogOut, Moon, Sun, Wallet, Wrench } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import {
   Sheet,
