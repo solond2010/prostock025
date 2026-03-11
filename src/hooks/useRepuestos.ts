@@ -5,6 +5,9 @@ import { useToast } from '@/hooks/use-toast';
 export interface Repuesto {
   id: string;
   nombre: string;
+  marca: string;
+  dispositivo: string | null;
+  modelo: string | null;
   cantidad: number;
   notas: string | null;
   created_at: string;
