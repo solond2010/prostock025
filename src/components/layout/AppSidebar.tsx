@@ -1,4 +1,4 @@
-import { Package, Receipt, PieChart, BarChart3, Menu, LogOut, Moon, Sun, Wallet } from 'lucide-react';
+import { Package, Receipt, PieChart, BarChart3, Menu, LogOut, Moon, Sun, Wallet, Wrench } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import {
   Sheet,
@@ -21,6 +21,7 @@ const menuItems = [
   { title: 'Gasto en Material', url: '/gasto-material', icon: Receipt },
   { title: 'Estadísticas Avanzadas', url: '/estadisticas', icon: PieChart },
   { title: 'Finanzas personales', url: '/finanzas-personales', icon: Wallet },
+  { title: 'Inventario Piezas', url: '/inventario-piezas', icon: Wrench },
 ];
 
 export function AppSidebar() {
