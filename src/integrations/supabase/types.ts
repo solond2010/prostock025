@@ -80,6 +80,30 @@ export type Database = {
         }
         Relationships: []
       }
+      repuestos_inventario: {
+        Row: {
+          cantidad: number
+          created_at: string
+          id: string
+          nombre: string
+          notas: string | null
+        }
+        Insert: {
+          cantidad?: number
+          created_at?: string
+          id?: string
+          nombre: string
+          notas?: string | null
+        }
+        Update: {
+          cantidad?: number
+          created_at?: string
+          id?: string
+          nombre?: string
+          notas?: string | null
+        }
+        Relationships: []
+      }
       stock_items: {
         Row: {
           almacenamiento: string | null
