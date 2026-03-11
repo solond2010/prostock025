@@ -21,6 +21,7 @@ const menuItems = [
   { title: 'Gasto en Material', url: '/gasto-material', icon: Receipt },
   { title: 'Estadísticas Avanzadas', url: '/estadisticas', icon: PieChart },
   { title: 'Finanzas personales', url: '/finanzas-personales', icon: Wallet },
+  { title: 'Inventario Piezas', url: '/inventario-piezas', icon: Wrench },
 ];
 
 export function AppSidebar() {

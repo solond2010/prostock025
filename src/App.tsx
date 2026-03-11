@@ -76,6 +76,16 @@ const App = () => (
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/inventario-piezas"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <InventarioPiezas />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
