@@ -30,7 +30,7 @@ export function useRepuestos() {
   });
 
   const addRepuesto = useMutation({
-    mutationFn: async (item: { nombre: string; cantidad: number; notas?: string }) => {
+    mutationFn: async (item: { nombre: string; cantidad: number; marca: string; dispositivo?: string; modelo?: string; notas?: string }) => {
       const { error } = await supabase
         .from('repuestos_inventario' as any)
         .insert(item as any);

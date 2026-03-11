@@ -14,7 +14,31 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select';
 import { Plus, Trash2, Search, Wrench, Loader2 } from 'lucide-react';
+
+const MARCAS = ['Apple'];
+
+const DISPOSITIVOS: Record<string, string[]> = {
+  Apple: ['iPhone', 'iPad', 'MacBook'],
+};
+
+const MODELOS_IPHONE = [
+  'iPhone 11', 'iPhone 11 Pro', 'iPhone 11 Pro Max',
+  'iPhone 12 mini', 'iPhone 12', 'iPhone 12 Pro', 'iPhone 12 Pro Max',
+  'iPhone 13 mini', 'iPhone 13', 'iPhone 13 Pro', 'iPhone 13 Pro Max',
+  'iPhone 14', 'iPhone 14 Plus', 'iPhone 14 Pro', 'iPhone 14 Pro Max',
+  'iPhone 15', 'iPhone 15 Plus', 'iPhone 15 Pro', 'iPhone 15 Pro Max',
+  'iPhone 16', 'iPhone 16 Plus', 'iPhone 16 Pro', 'iPhone 16 Pro Max',
+  'iPhone 16e',
+];
+
+function getModelos(dispositivo: string): string[] | null {
+  if (dispositivo === 'iPhone') return MODELOS_IPHONE;
+  return null;
+}
 
 export default function InventarioPiezas() {
   const { data: repuestos = [], isLoading, addRepuesto, deleteRepuesto } = useRepuestos();
@@ -24,25 +48,41 @@ export default function InventarioPiezas() {
 
   // Form state
   const [nombre, setNombre] = useState('');
+  const [marca, setMarca] = useState('Apple');
+  const [dispositivo, setDispositivo] = useState('');
+  const [modelo, setModelo] = useState('');
   const [cantidad, setCantidad] = useState(1);
   const [notas, setNotas] = useState('');
 
+  const modelos = dispositivo ? getModelos(dispositivo) : null;
+
   const filtered = repuestos.filter((r: Repuesto) =>
-    r.nombre.toLowerCase().includes(search.toLowerCase())
+    r.nombre.toLowerCase().includes(search.toLowerCase()) ||
+    r.modelo?.toLowerCase().includes(search.toLowerCase()) ||
+    r.dispositivo?.toLowerCase().includes(search.toLowerCase())
   );
+
+  const resetForm = () => {
+    setNombre('');
+    setMarca('Apple');
+    setDispositivo('');
+    setModelo('');
+    setCantidad(1);
+    setNotas('');
+  };
 
   const handleAdd = () => {
     if (!nombre.trim()) return;
     addRepuesto.mutate(
-      { nombre: nombre.trim(), cantidad, notas: notas.trim() || undefined },
       {
-        onSuccess: () => {
-          setDialogOpen(false);
-          setNombre('');
-          setCantidad(1);
-          setNotas('');
-        },
-      }
+        nombre: nombre.trim(),
+        marca,
+        dispositivo: dispositivo || undefined,
+        modelo: modelo || undefined,
+        cantidad,
+        notas: notas.trim() || undefined,
+      },
+      { onSuccess: () => { setDialogOpen(false); resetForm(); } }
     );
   };
 
@@ -90,6 +130,9 @@ export default function InventarioPiezas() {
             <TableHeader>
               <TableRow>
                 <TableHead>Nombre</TableHead>
+                <TableHead>Marca</TableHead>
+                <TableHead>Dispositivo</TableHead>
+                <TableHead>Modelo</TableHead>
                 <TableHead className="w-24 text-center">Cantidad</TableHead>
                 <TableHead>Notas</TableHead>
                 <TableHead className="w-20 text-center">Acciones</TableHead>
@@ -98,7 +141,7 @@ export default function InventarioPiezas() {
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                     {search ? 'Sin resultados' : 'No hay piezas registradas'}
                   </TableCell>
                 </TableRow>
@@ -106,6 +149,9 @@ export default function InventarioPiezas() {
                 filtered.map((r: Repuesto) => (
                   <TableRow key={r.id}>
                     <TableCell className="font-medium">{r.nombre}</TableCell>
+                    <TableCell>{r.marca}</TableCell>
+                    <TableCell>{r.dispositivo || '—'}</TableCell>
+                    <TableCell>{r.modelo || '—'}</TableCell>
                     <TableCell className="text-center">{r.cantidad}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">{r.notas || '—'}</TableCell>
                     <TableCell className="text-center">
@@ -127,7 +173,7 @@ export default function InventarioPiezas() {
       )}
 
       {/* Add Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) resetForm(); setDialogOpen(open); }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Añadir pieza</DialogTitle>
@@ -137,11 +183,57 @@ export default function InventarioPiezas() {
             <div className="space-y-2">
               <Label>Nombre *</Label>
               <Input
-                placeholder="Ej: Pantalla iPhone 12"
+                placeholder="Ej: Pantalla, Batería, Conector de carga..."
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
               />
             </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Marca</Label>
+                <Select value={marca} onValueChange={setMarca}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MARCAS.map((m) => (
+                      <SelectItem key={m} value={m}>{m}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Dispositivo</Label>
+                <Select
+                  value={dispositivo}
+                  onValueChange={(val) => { setDispositivo(val); setModelo(''); }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(DISPOSITIVOS[marca] || []).map((d) => (
+                      <SelectItem key={d} value={d}>{d}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            {modelos && (
+              <div className="space-y-2">
+                <Label>Modelo</Label>
+                <Select value={modelo} onValueChange={setModelo}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar modelo..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {modelos.map((m) => (
+                      <SelectItem key={m} value={m}>{m}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="space-y-2">
               <Label>Cantidad</Label>
               <Input
