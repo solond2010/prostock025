@@ -84,21 +84,30 @@ export type Database = {
         Row: {
           cantidad: number
           created_at: string
+          dispositivo: string | null
           id: string
+          marca: string
+          modelo: string | null
           nombre: string
           notas: string | null
         }
         Insert: {
           cantidad?: number
           created_at?: string
+          dispositivo?: string | null
           id?: string
+          marca?: string
+          modelo?: string | null
           nombre: string
           notas?: string | null
         }
         Update: {
           cantidad?: number
           created_at?: string
+          dispositivo?: string | null
           id?: string
+          marca?: string
+          modelo?: string | null
           nombre?: string
           notas?: string | null
         }
