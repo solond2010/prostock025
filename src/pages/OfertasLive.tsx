@@ -101,6 +101,7 @@ function DealCard({ deal, onContact, onArchive, queuePending, showSourceBadge = 
   const isFresh = Date.now() - new Date(deal.created_at).getTime() < 5 * 60 * 1000;
   const isSent = deal.message_status === 'sent';
   const isQueued = deal.message_status === 'queued' || deal.message_status === 'sending';
+  const isFailed = deal.message_status === 'failed';
   const timeAgo = formatDistanceToNow(new Date(deal.created_at), { locale: es });
   const sentTime = deal.message_sent_at
     ? format(new Date(deal.message_sent_at), 'HH:mm')
@@ -181,6 +182,22 @@ function DealCard({ deal, onContact, onArchive, queuePending, showSourceBadge = 
             <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/30 h-6 px-2 text-[10px] animate-pulse">
               ⏳ Enviando...
             </Badge>
+          ) : isFailed ? (
+            <>
+              <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30 h-6 px-2 text-[10px]">
+                ❌ Error al enviar
+              </Badge>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-6 text-[10px] px-2 text-destructive border-destructive/30 hover:bg-destructive/10"
+                onClick={onContact}
+                disabled={queuePending}
+                title="Reintentar envío"
+              >
+                <Zap className="h-2.5 w-2.5 mr-1" /> Reintentar
+              </Button>
+            </>
           ) : (
             <Button
               size="sm"
