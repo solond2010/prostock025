@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Target, Flame, ExternalLink, Archive, Radio, Zap, MessageCircle, Bell, BellOff, ChevronDown, ChevronUp } from 'lucide-react';
+import { Target, Flame, ExternalLink, Archive, Radio, Zap, MessageCircle, Bell, BellOff } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,7 @@ import { usePushNotifications } from '@/hooks/usePushNotifications';
 // ─── Score config ──────────────────────────────────────────────────────────
 const SCORE_CONFIG: Record<Deal['score'], { label: string; className: string }> = {
   fire: {
-    label: 'PRECIO BRUTAL',
+    label: 'BRUTAL',
     className: 'bg-destructive/15 text-destructive border-destructive/30 font-bold',
   },
   good: {
@@ -35,6 +35,7 @@ interface SearchConfig {
   headerBorder: string;
   headerText: string;
   badgeClass: string;
+  colBg: string;
   priority: number;
 }
 
@@ -42,31 +43,34 @@ const SEARCH_CONFIG: Record<string, SearchConfig> = {
   'iphone pantalla rota': {
     label: 'Pantalla rota',
     emoji: '💥',
-    description: 'Mayor beneficio estimado · reparación de pantalla',
-    headerBg: 'bg-destructive/5',
-    headerBorder: 'border-destructive/25',
+    description: 'Mayor beneficio · reparación',
+    headerBg: 'bg-destructive/8',
+    headerBorder: 'border-destructive/30',
     headerText: 'text-destructive',
     badgeClass: 'bg-destructive/10 text-destructive border-destructive/25',
+    colBg: 'bg-destructive/3',
     priority: 1,
   },
   'iphone roto': {
     label: 'iPhone roto',
     emoji: '🔧',
-    description: 'Para piezas o reparación general',
-    headerBg: 'bg-amber-500/5',
-    headerBorder: 'border-amber-500/25',
+    description: 'Piezas o reparación general',
+    headerBg: 'bg-amber-500/8',
+    headerBorder: 'border-amber-500/30',
     headerText: 'text-amber-500',
     badgeClass: 'bg-amber-500/10 text-amber-500 border-amber-500/25',
+    colBg: 'bg-amber-500/3',
     priority: 2,
   },
   'iphone chollo 30km': {
     label: 'Chollo 30km',
     emoji: '⚡',
-    description: 'Funcional · sin reparar · cerca de ti',
-    headerBg: 'bg-success/5',
-    headerBorder: 'border-success/25',
+    description: 'Funcional · cerca de ti',
+    headerBg: 'bg-success/8',
+    headerBorder: 'border-success/30',
     headerText: 'text-success',
     badgeClass: 'bg-success/10 text-success border-success/25',
+    colBg: 'bg-success/3',
     priority: 3,
   },
 };
@@ -80,15 +84,17 @@ const getSearchConfig = (keyword: string | null): SearchConfig =>
     headerBorder: 'border-border/40',
     headerText: 'text-muted-foreground',
     badgeClass: 'bg-muted text-muted-foreground border-border/40',
+    colBg: 'bg-muted/10',
     priority: 99,
   };
 
 // ─── Deal card ─────────────────────────────────────────────────────────────
-function DealCard({ deal, onContact, onArchive, queuePending }: {
+function DealCard({ deal, onContact, onArchive, queuePending, showSourceBadge = false }: {
   deal: Deal;
   onContact: () => void;
   onArchive: () => void;
   queuePending: boolean;
+  showSourceBadge?: boolean;
 }) {
   const score = SCORE_CONFIG[deal.score];
   const searchCfg = getSearchConfig(deal.search_keyword);
@@ -102,10 +108,10 @@ function DealCard({ deal, onContact, onArchive, queuePending }: {
 
   return (
     <div
-      className={`flex gap-3 p-3.5 rounded-xl border transition-all ${
+      className={`flex gap-3 p-3 rounded-xl border transition-all ${
         isFresh
           ? 'border-destructive/40 bg-destructive/5 shadow-sm'
-          : 'border-border/60 hover:bg-secondary/40'
+          : 'border-border/60 bg-card hover:bg-secondary/30'
       }`}
     >
       {/* Imagen */}
@@ -113,85 +119,91 @@ function DealCard({ deal, onContact, onArchive, queuePending }: {
         <img
           src={deal.image_url}
           alt={deal.title}
-          className="w-16 h-16 rounded-lg object-cover bg-muted shrink-0"
+          className="w-14 h-14 rounded-lg object-cover bg-muted shrink-0"
           loading="lazy"
         />
       ) : (
-        <div className="w-16 h-16 rounded-lg bg-muted/60 flex items-center justify-center text-2xl shrink-0">
+        <div className="w-14 h-14 rounded-lg bg-muted/60 flex items-center justify-center text-xl shrink-0">
           📱
         </div>
       )}
 
       <div className="flex-1 min-w-0">
         {/* Título y precio */}
-        <div className="flex justify-between items-start gap-2 mb-1.5">
+        <div className="flex justify-between items-start gap-1.5 mb-1">
           <p className="font-semibold text-sm leading-snug line-clamp-2">{deal.title}</p>
-          <p className="font-bold text-lg whitespace-nowrap leading-tight">
-            {deal.price != null ? `${deal.price} €` : '—'}
+          <p className="font-bold text-base whitespace-nowrap leading-tight shrink-0">
+            {deal.price != null ? `${deal.price}€` : '—'}
           </p>
         </div>
 
         {/* Badges */}
-        <div className="flex flex-wrap items-center gap-1.5 mb-2">
-          <Badge variant="outline" className={`${score.className} text-[10px] h-5 px-2`}>
+        <div className="flex flex-wrap items-center gap-1 mb-1.5">
+          <Badge variant="outline" className={`${score.className} text-[10px] h-5 px-1.5`}>
             🔥 {score.label}
           </Badge>
-          <Badge variant="outline" className={`${searchCfg.badgeClass} text-[10px] h-5 px-2 font-semibold`}>
-            {searchCfg.emoji} {searchCfg.label}
-          </Badge>
-          <span className="text-[11px] text-muted-foreground">
-            hace {timeAgo}
-            {deal.location ? ` · ${deal.location}` : ''}
+          {showSourceBadge && (
+            <Badge variant="outline" className={`${searchCfg.badgeClass} text-[10px] h-5 px-1.5 font-semibold`}>
+              {searchCfg.emoji} {searchCfg.label}
+            </Badge>
+          )}
+          {isFresh && (
+            <Badge className="text-[10px] h-5 px-1.5 bg-destructive text-white border-0 animate-pulse">
+              NUEVO
+            </Badge>
+          )}
+          <span className="text-[10px] text-muted-foreground">
+            {timeAgo}{deal.location ? ` · ${deal.location}` : ''}
           </span>
         </div>
 
         {/* Descripción */}
         {deal.description && (
-          <p className="text-xs text-muted-foreground line-clamp-1 mb-2">
+          <p className="text-xs text-muted-foreground line-clamp-1 mb-1.5">
             {deal.description}
           </p>
         )}
 
         {/* Acciones */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5">
           {isSent ? (
             <>
-              <Badge variant="outline" className="bg-success/10 text-success border-success/20 h-7 px-3 text-xs">
-                ✅ Mensaje enviado{sentTime ? ` · ${sentTime}` : ''}
+              <Badge variant="outline" className="bg-success/10 text-success border-success/20 h-6 px-2 text-[10px]">
+                ✅ Enviado{sentTime ? ` ${sentTime}` : ''}
               </Badge>
-              <Button size="sm" variant="outline" className="h-7 text-xs" asChild>
+              <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" asChild>
                 <a href={deal.item_url} target="_blank" rel="noreferrer">
-                  <MessageCircle className="h-3 w-3 mr-1" /> Ver conversación
+                  <MessageCircle className="h-2.5 w-2.5 mr-1" /> Ver chat
                 </a>
               </Button>
             </>
           ) : isQueued ? (
-            <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/30 h-7 px-3 text-xs animate-pulse">
-              ⏳ Bot enviando mensaje...
+            <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/30 h-6 px-2 text-[10px] animate-pulse">
+              ⏳ Enviando...
             </Badge>
           ) : (
             <Button
               size="sm"
-              className="h-7 text-xs bg-primary hover:bg-primary/90"
+              className="h-6 text-[10px] px-2 bg-primary hover:bg-primary/90"
               onClick={onContact}
               disabled={queuePending}
             >
-              <Zap className="h-3 w-3 mr-1" /> Contactar ahora
+              <Zap className="h-2.5 w-2.5 mr-1" /> Contactar
             </Button>
           )}
-          <Button size="sm" variant="outline" className="h-7 text-xs" asChild>
+          <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" asChild>
             <a href={deal.item_url} target="_blank" rel="noreferrer">
-              <ExternalLink className="h-3 w-3 mr-1" /> Ver en Wallapop
+              <ExternalLink className="h-2.5 w-2.5 mr-1" /> Wallapop
             </a>
           </Button>
           <Button
             size="sm"
             variant="ghost"
-            className="h-7 text-xs text-muted-foreground"
+            className="h-6 text-[10px] px-1.5 text-muted-foreground"
             onClick={onArchive}
             title="Archivar"
           >
-            <Archive className="h-3 w-3" />
+            <Archive className="h-2.5 w-2.5" />
           </Button>
         </div>
       </div>
@@ -199,64 +211,66 @@ function DealCard({ deal, onContact, onArchive, queuePending }: {
   );
 }
 
-// ─── Search group section ──────────────────────────────────────────────────
-function SearchGroup({ keyword, deals, onContact, onArchive, queuePending, defaultOpen = true }: {
+// ─── Kanban column ─────────────────────────────────────────────────────────
+function KanbanColumn({ keyword, deals, onContact, onArchive, queuePending }: {
   keyword: string | null;
   deals: Deal[];
   onContact: (id: string) => void;
   onArchive: (id: string) => void;
   queuePending: boolean;
-  defaultOpen?: boolean;
 }) {
-  const [open, setOpen] = useState(defaultOpen);
   const cfg = getSearchConfig(keyword);
   const fireCount = deals.filter(d => d.score === 'fire').length;
   const goodCount = deals.filter(d => d.score === 'good').length;
 
   return (
-    <div className={`rounded-xl border ${cfg.headerBorder} overflow-hidden`}>
-      {/* Header colapsable */}
-      <button
-        className={`w-full flex items-center gap-3 px-4 py-3 ${cfg.headerBg} text-left transition-opacity hover:opacity-90`}
-        onClick={() => setOpen(v => !v)}
-      >
-        <span className="text-xl leading-none">{cfg.emoji}</span>
-        <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-            <span className={`text-sm font-bold ${cfg.headerText}`}>{cfg.label}</span>
-            {cfg.description && (
-              <span className="text-xs text-muted-foreground hidden sm:inline">· {cfg.description}</span>
-            )}
+    <div className={`flex flex-col rounded-xl border ${cfg.headerBorder} overflow-hidden min-h-[200px]`}>
+      {/* Column header */}
+      <div className={`px-3.5 py-3 ${cfg.headerBg} border-b ${cfg.headerBorder}`}>
+        <div className="flex items-center gap-2">
+          <span className="text-lg leading-none">{cfg.emoji}</span>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className={`text-sm font-bold ${cfg.headerText}`}>{cfg.label}</span>
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full border ${cfg.badgeClass}`}>
+                {deals.length}
+              </span>
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-0.5">{cfg.description}</p>
           </div>
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
-            <span className="text-[11px] text-muted-foreground">{deals.length} anuncio{deals.length !== 1 ? 's' : ''}</span>
+        </div>
+        {/* Mini stats */}
+        {deals.length > 0 && (
+          <div className="flex gap-2 mt-2">
             {fireCount > 0 && (
-              <span className="text-[11px] text-destructive font-semibold">🔥 {fireCount} brutal{fireCount !== 1 ? 'es' : ''}</span>
+              <span className="text-[10px] text-destructive font-semibold">🔥 {fireCount} brutal{fireCount !== 1 ? 'es' : ''}</span>
             )}
             {goodCount > 0 && (
-              <span className="text-[11px] text-amber-500 font-semibold">⭐ {goodCount} buen precio</span>
+              <span className="text-[10px] text-amber-500 font-semibold">⭐ {goodCount} buen precio</span>
             )}
           </div>
-        </div>
-        <div className="shrink-0 text-muted-foreground">
-          {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-        </div>
-      </button>
+        )}
+      </div>
 
-      {/* Lista de deals */}
-      {open && (
-        <div className="space-y-2 p-2 bg-card">
-          {deals.map(deal => (
+      {/* Cards */}
+      <div className={`flex-1 p-2 space-y-2 ${cfg.colBg}`}>
+        {deals.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground/50">
+            <p className="text-xs">Sin anuncios aún</p>
+          </div>
+        ) : (
+          deals.map(deal => (
             <DealCard
               key={deal.id}
               deal={deal}
               onContact={() => onContact(deal.id)}
               onArchive={() => onArchive(deal.id)}
               queuePending={queuePending}
+              showSourceBadge={false}
             />
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
     </div>
   );
 }
@@ -281,28 +295,33 @@ const OfertasLive = () => {
     });
   };
 
-  // All unique search keywords present in data
+  // All unique search keywords sorted by priority
   const sources = useMemo(() => {
     const set = new Set(deals.map(d => d.search_keyword ?? null));
     return Array.from(set).sort((a, b) => getSearchConfig(a).priority - getSearchConfig(b).priority);
   }, [deals]);
 
-  // Group deals by search_keyword, filtered by activeSource
+  // Group deals by search_keyword
   const grouped = useMemo(() => {
-    const filtered = activeSource !== 'all'
-      ? deals.filter(d => (d.search_keyword ?? null) === activeSource)
-      : deals;
+    // Use canonical order from SEARCH_CONFIG so empty columns still show
+    const keys = Object.keys(SEARCH_CONFIG) as (string | null)[];
+    // Add any extra keys from data not in config
+    sources.forEach(s => { if (s && !keys.includes(s)) keys.push(s); });
 
-    const map = new Map<string | null, Deal[]>();
-    filtered.forEach(deal => {
-      const key = deal.search_keyword ?? null;
-      if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(deal);
+    return keys.map(keyword => {
+      const filtered = deals.filter(d => {
+        const match = (d.search_keyword ?? null) === keyword;
+        if (activeSource !== 'all') return match && (d.search_keyword ?? null) === activeSource;
+        return match;
+      });
+      return [keyword, filtered] as [string | null, Deal[]];
     });
+  }, [deals, activeSource, sources]);
 
-    return Array.from(map.entries()).sort(([ka], [kb]) =>
-      getSearchConfig(ka).priority - getSearchConfig(kb).priority
-    );
+  // For mobile single-column view
+  const mobileDeals = useMemo(() => {
+    if (activeSource === 'all') return deals;
+    return deals.filter(d => (d.search_keyword ?? null) === activeSource);
   }, [deals, activeSource]);
 
   const stats = {
@@ -383,73 +402,79 @@ const OfertasLive = () => {
         </Card>
       </div>
 
-      {/* Feed */}
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <CardTitle className="flex items-center gap-2 text-base">
-              Feed de ofertas
-              <Badge variant="outline" className="border-destructive/30 text-destructive text-[10px] font-bold">
-                LIVE
-              </Badge>
-              <span className="text-xs font-normal text-muted-foreground">
-                {deals.length} {deals.length === 1 ? 'oferta' : 'ofertas'}
-              </span>
-            </CardTitle>
+      {/* Filtros */}
+      <div className="flex flex-wrap items-center gap-2">
+        <Button
+          variant={onlyFire ? 'default' : 'outline'}
+          size="sm"
+          className="h-7 text-xs"
+          onClick={() => setOnlyFire(v => !v)}
+        >
+          <Flame className="h-3 w-3 mr-1" /> Solo fuego
+        </Button>
+        <Button
+          variant={maxPrice === 100 ? 'default' : 'outline'}
+          size="sm"
+          className="h-7 text-xs"
+          onClick={() => setMaxPrice(maxPrice === 100 ? undefined : 100)}
+        >
+          ≤ 100€
+        </Button>
+        <Button
+          variant={maxPrice === 200 ? 'default' : 'outline'}
+          size="sm"
+          className="h-7 text-xs"
+          onClick={() => setMaxPrice(maxPrice === 200 ? undefined : 200)}
+        >
+          ≤ 200€
+        </Button>
+      </div>
 
-            {/* Filtros precio/score */}
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant={onlyFire ? 'default' : 'outline'}
-                size="sm"
-                className="h-7 text-xs"
-                onClick={() => setOnlyFire(v => !v)}
-              >
-                <Flame className="h-3 w-3 mr-1" /> Solo fuego
-              </Button>
-              <Button
-                variant={maxPrice === 100 ? 'default' : 'outline'}
-                size="sm"
-                className="h-7 text-xs"
-                onClick={() => setMaxPrice(maxPrice === 100 ? undefined : 100)}
-              >
-                ≤ 100€
-              </Button>
-              <Button
-                variant={maxPrice === 200 ? 'default' : 'outline'}
-                size="sm"
-                className="h-7 text-xs"
-                onClick={() => setMaxPrice(maxPrice === 200 ? undefined : 200)}
-              >
-                ≤ 200€
-              </Button>
-            </div>
+      {/* ── DESKTOP: Kanban 3 columnas ── */}
+      {isLoading ? (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {[1, 2, 3].map(i => <Skeleton key={i} className="h-64 rounded-xl" />)}
+        </div>
+      ) : (
+        <>
+          {/* Desktop kanban */}
+          <div className="hidden lg:grid grid-cols-3 gap-4">
+            {grouped.map(([keyword, groupDeals]) => (
+              <KanbanColumn
+                key={keyword ?? 'otros'}
+                keyword={keyword}
+                deals={groupDeals}
+                onContact={handleContact}
+                onArchive={id => archive.mutate(id)}
+                queuePending={queueSend.isPending}
+              />
+            ))}
           </div>
 
-          {/* Tabs de búsqueda — solo si hay más de 1 fuente */}
-          {sources.length > 1 && (
-            <div className="flex flex-wrap gap-1.5 mt-2 pt-2.5 border-t border-border/50">
+          {/* Mobile: tabs + single feed */}
+          <div className="lg:hidden space-y-3">
+            {/* Tab pills */}
+            <div className="flex flex-wrap gap-1.5">
               <button
                 onClick={() => setActiveSource('all')}
-                className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border transition-all ${
+                className={`text-[11px] font-semibold px-3 py-1.5 rounded-full border transition-all ${
                   activeSource === 'all'
                     ? 'bg-foreground text-background border-foreground'
-                    : 'border-border text-muted-foreground hover:text-foreground hover:border-foreground/40'
+                    : 'border-border text-muted-foreground hover:text-foreground'
                 }`}
               >
                 Todas ({deals.length})
               </button>
-              {sources.map(src => {
-                const cfg = getSearchConfig(src);
-                const count = deals.filter(d => (d.search_keyword ?? null) === src).length;
+              {Object.entries(SEARCH_CONFIG).map(([key, cfg]) => {
+                const count = deals.filter(d => d.search_keyword === key).length;
                 return (
                   <button
-                    key={src ?? 'otros'}
-                    onClick={() => setActiveSource(src)}
-                    className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border transition-all ${
-                      activeSource === src
+                    key={key}
+                    onClick={() => setActiveSource(key)}
+                    className={`text-[11px] font-semibold px-3 py-1.5 rounded-full border transition-all ${
+                      activeSource === key
                         ? `${cfg.badgeClass}`
-                        : 'border-border text-muted-foreground hover:text-foreground hover:border-foreground/40'
+                        : 'border-border text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     {cfg.emoji} {cfg.label} ({count})
@@ -457,36 +482,40 @@ const OfertasLive = () => {
                 );
               })}
             </div>
-          )}
-        </CardHeader>
 
-        <CardContent className="space-y-3 pt-0">
-          {isLoading && (
-            <>{[1, 2, 3].map(i => <Skeleton key={i} className="h-28 w-full rounded-xl" />)}</>
-          )}
+            {/* Feed */}
+            {mobileDeals.length === 0 ? (
+              <div className="text-center py-16 text-muted-foreground">
+                <Target className="h-12 w-12 mx-auto mb-3 opacity-20" />
+                <p className="text-sm font-medium">Aún no hay ofertas</p>
+                <p className="text-xs mt-1 opacity-70">El bot las irá añadiendo aquí en cuanto encuentre alguna.</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {mobileDeals.map(deal => (
+                  <DealCard
+                    key={deal.id}
+                    deal={deal}
+                    onContact={() => handleContact(deal.id)}
+                    onArchive={() => archive.mutate(deal.id)}
+                    queuePending={queueSend.isPending}
+                    showSourceBadge={activeSource === 'all'}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </>
+      )}
 
-          {!isLoading && deals.length === 0 && (
-            <div className="text-center py-16 text-muted-foreground">
-              <Target className="h-12 w-12 mx-auto mb-3 opacity-20" />
-              <p className="text-sm font-medium">Aún no hay ofertas</p>
-              <p className="text-xs mt-1 opacity-70">El bot las irá añadiendo aquí en cuanto encuentre alguna.</p>
-            </div>
-          )}
-
-          {/* Secciones agrupadas por búsqueda */}
-          {!isLoading && grouped.map(([keyword, groupDeals], idx) => (
-            <SearchGroup
-              key={keyword ?? 'otros'}
-              keyword={keyword}
-              deals={groupDeals}
-              onContact={handleContact}
-              onArchive={id => archive.mutate(id)}
-              queuePending={queueSend.isPending}
-              defaultOpen={idx === 0}
-            />
-          ))}
-        </CardContent>
-      </Card>
+      {/* Empty state desktop */}
+      {!isLoading && deals.length === 0 && (
+        <div className="text-center py-16 text-muted-foreground">
+          <Target className="h-12 w-12 mx-auto mb-3 opacity-20" />
+          <p className="text-sm font-medium">Aún no hay ofertas</p>
+          <p className="text-xs mt-1 opacity-70">El bot las irá añadiendo aquí en cuanto encuentre alguna.</p>
+        </div>
+      )}
     </div>
   );
 };
