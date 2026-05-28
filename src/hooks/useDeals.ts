@@ -50,12 +50,54 @@ export function useDeals(
         .select('*')
         .eq('is_archived', false)
         .order('created_at', { ascending: false })
-        .limit(50);
+        .limit(200);                        // increased from 50
       if (filter.onlyFire) q = q.eq('score', 'fire');
       if (filter.maxPrice) q = q.lte('price', filter.maxPrice);
       const { data, error } = await q;
       if (error) throw error;
       return (data as unknown as Deal[]) ?? [];
+    },
+  });
+
+  // Separate COUNT query — not capped by the display limit
+  const statsQuery = useQuery({
+    queryKey: ['deals-stats'],
+    enabled: !!user,
+    staleTime: 30_000,           // refresh every 30 s
+    queryFn: async () => {
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+
+      const [todayRes, sentRes, pendingRes, fireRes] = await Promise.all([
+        supabase
+          .from('deals' as any)
+          .select('id', { count: 'exact', head: true })
+          .eq('is_archived', false)
+          .gte('created_at', startOfToday.toISOString()),
+        supabase
+          .from('deals' as any)
+          .select('id', { count: 'exact', head: true })
+          .eq('is_archived', false)
+          .eq('message_status', 'sent'),
+        supabase
+          .from('deals' as any)
+          .select('id', { count: 'exact', head: true })
+          .eq('is_archived', false)
+          .eq('message_status', 'pending'),
+        supabase
+          .from('deals' as any)
+          .select('id', { count: 'exact', head: true })
+          .eq('is_archived', false)
+          .eq('score', 'fire')
+          .gte('created_at', startOfToday.toISOString()),
+      ]);
+
+      return {
+        todayTotal:    todayRes.count   ?? 0,
+        sentTotal:     sentRes.count    ?? 0,
+        pendingTotal:  pendingRes.count ?? 0,
+        fireTodayTotal: fireRes.count   ?? 0,
+      };
     },
   });
 
@@ -136,5 +178,14 @@ export function useDeals(
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['deals'] }),
   });
 
-  return { deals: query.data ?? [], isLoading: query.isLoading, markSent, archive, queueSend, updatePipeline };
+  return {
+    deals: query.data ?? [],
+    isLoading: query.isLoading,
+    // Real counts from DB — not limited by the display cap
+    realStats: statsQuery.data ?? { todayTotal: 0, sentTotal: 0, pendingTotal: 0, fireTodayTotal: 0 },
+    markSent,
+    archive,
+    queueSend,
+    updatePipeline,
+  };
 }

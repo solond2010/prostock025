@@ -519,7 +519,7 @@ const OfertasLive = () => {
 
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
 
-  const { deals, isLoading, archive, queueSend } = useDeals(
+  const { deals, isLoading, archive, queueSend, realStats } = useDeals(
     { onlyFire, maxPrice },
     { onDealFailed, onDealSent }
   );
@@ -558,11 +558,13 @@ const OfertasLive = () => {
     return deals.filter(d => (d.search_keyword ?? null) === activeSource);
   }, [deals, activeSource]);
 
+  // Use real DB counts (not capped by display limit)
   const stats = {
-    today:        deals.filter(d => Date.now() - new Date(d.created_at).getTime() < 24 * 60 * 60 * 1000).length,
-    sent:         deals.filter(d => d.message_status === 'sent').length,
-    pending:      deals.filter(d => d.message_status === 'pending').length,
+    today:        realStats.todayTotal,
+    sent:         realStats.sentTotal,
+    pending:      realStats.pendingTotal,
     pantallaRota: deals.filter(d => d.search_keyword === 'iphone pantalla rota').length,
+    fire:         realStats.fireTodayTotal,
   };
 
   const notifAction = needsInstall ? (
@@ -607,10 +609,17 @@ const OfertasLive = () => {
       {/* ── KPIs ── */}
       <div className="flex flex-wrap gap-3">
         <MiniKPI
-          emoji="🔥"
+          emoji="📡"
           label="Hoy"
           value={stats.today}
-          sub="ofertas nuevas"
+          sub="ofertas encontradas hoy"
+          accentColor="hsl(0 72% 51%)"
+        />
+        <MiniKPI
+          emoji="🔥"
+          label="En fuego hoy"
+          value={stats.fire}
+          sub="puntuación brutal"
           accentColor="hsl(0 72% 51%)"
         />
         <MiniKPI
@@ -619,13 +628,6 @@ const OfertasLive = () => {
           value={stats.sent}
           sub={`enviados · ${stats.pending} pendientes`}
           accentColor="hsl(262 73% 58%)"
-        />
-        <MiniKPI
-          emoji="💥"
-          label="Pantalla rota"
-          value={stats.pantallaRota}
-          sub="anuncios activos"
-          accentColor="hsl(38 92% 50%)"
         />
         <MiniKPI
           emoji="🤖"

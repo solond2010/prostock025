@@ -75,7 +75,7 @@ export default function Dashboard() {
   const { data: items = [], isLoading: loadingStock } = useStockItems();
   const { tasks, isLoading: loadingTasks } = useTasks();
   // Load all deals (no filter) for bot stats
-  const { deals, isLoading: loadingDeals } = useDeals();
+  const { deals, isLoading: loadingDeals, realStats: dealRealStats } = useDeals();
   const greeting = getGreeting();
   // Name from email (before @)
   const firstName = user?.email?.split('@')[0] ?? 'Mohamed';
@@ -184,12 +184,11 @@ export default function Dashboard() {
 
   // ── Bot stats ─────────────────────────────────────────────────────────────
   const botStats = useMemo(() => {
-    const fire  = deals.filter(d => d.score === 'fire').length;
-    const good  = deals.filter(d => d.score === 'good').length;
-    const sent  = deals.filter(d => d.message_status === 'sent').length;
-    const today = deals.filter(d =>
-      Date.now() - new Date(d.created_at).getTime() < 24 * 60 * 60 * 1000
-    ).length;
+    // Use real DB counts (not capped by display limit)
+    const fire  = dealRealStats.fireTodayTotal;
+    const sent  = dealRealStats.sentTotal;
+    const today = dealRealStats.todayTotal;
+    const good  = deals.filter(d => d.score === 'good').length; // approx from loaded
 
     // Últimas 7 días: nuevas ofertas por día
     const last7 = eachDayOfInterval({ start: subDays(now, 6), end: now }).map(day => {
@@ -205,9 +204,9 @@ export default function Dashboard() {
       return { label, deals: count, fire: fireCount };
     });
 
-    const fireRate = deals.length > 0 ? Math.round((fire / deals.length) * 100) : 0;
+    const fireRate = today > 0 ? Math.round((fire / today) * 100) : 0;
 
-    return { fire, good, sent, today, last7, fireRate, total: deals.length };
+    return { fire, good, sent, today, last7, fireRate, total: dealRealStats.todayTotal };
   }, [deals, now]);
 
   const isLoading = loadingStock || loadingTasks || loadingDeals;

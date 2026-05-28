@@ -86,12 +86,14 @@ export function HistoricSummaryCards({ summary }: HistoricSummaryCardsProps) {
                     </div>
                     {/* Label */}
                     <p className="text-[10px] font-medium text-muted-foreground leading-snug mb-1">{card.title}</p>
-                    {/* Number — full width, no overflow */}
+                    {/* Number — full width, shrinks to fit */}
                     <p
-                      className="stat-number font-bold leading-tight break-all"
+                      className="stat-number font-bold leading-tight"
                       style={{
                         color: card.accent,
-                        fontSize: 'clamp(0.95rem, 1.8vw, 1.4rem)',
+                        fontSize: 'clamp(0.8rem, 1.4vw, 1.35rem)',
+                        overflowWrap: 'break-word',
+                        wordBreak: 'break-all',
                       }}
                     >
                       {card.value}

@@ -345,8 +345,9 @@
 
 /* ── KPI card accent border ── */
 .kpi-card {
-  @apply relative overflow-hidden rounded-xl border bg-card transition-all duration-200 cursor-pointer;
+  @apply relative rounded-xl border bg-card transition-all duration-200 cursor-pointer;
   box-shadow: var(--shadow-sm);
+  /* NO overflow-hidden — would clip numbers */
 }
 .kpi-card::after {
   content: '';

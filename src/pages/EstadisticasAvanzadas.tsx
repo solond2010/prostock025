@@ -292,8 +292,13 @@ const EstadisticasAvanzadas = () => {
                 </div>
                 <p className="text-[10px] font-medium text-muted-foreground leading-snug mb-1">{kpi.label}</p>
                 <p
-                  className="stat-number font-bold leading-tight break-all"
-                  style={{ color: kpi.accent, fontSize: 'clamp(1rem, 1.8vw, 1.45rem)' }}
+                  className="stat-number font-bold leading-tight"
+                  style={{
+                    color: kpi.accent,
+                    fontSize: 'clamp(0.85rem, 1.5vw, 1.4rem)',
+                    overflowWrap: 'break-word',
+                    wordBreak: 'break-all',
+                  }}
                 >
                   {kpi.fmt(kpi.value)}
                 </p>
