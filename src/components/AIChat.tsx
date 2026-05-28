@@ -39,15 +39,30 @@ Cuando tengas datos de anuncios reales de Wallapop, analízalos con detalle:
 - Cuáles son deals interesantes y cuáles están caros
 
 Responde SIEMPRE en español. Sé conciso pero completo. Usa emojis con moderación.
-IMPORTANTE: Estás en un panel de chat pequeño (móvil). Si usas tablas, que tengan MÁXIMO 2-3 columnas cortas. Si necesitas más columnas, usa listas con viñetas en su lugar. Nunca hagas tablas de más de 3 columnas.`;
+IMPORTANTE: Estás en un panel de chat pequeño (móvil). Si usas tablas, que tengan MÁXIMO 2-3 columnas cortas. Si necesitas más columnas, usa listas con viñetas en su lugar. Nunca hagas tablas de más de 3 columnas.
+Cuando tengas datos del stock del usuario, úsalos para dar respuestas personalizadas y concretas sobre su negocio.`;
 
-// ─── Price keyword detection ──────────────────────────────────────────────────
+// ─── Keyword detection ────────────────────────────────────────────────────────
 function isPriceQuery(msg: string): boolean {
   const keywords = [
     'cuánto vale', 'cuanto vale', 'precio', 'vale', 'cuesta', 'valen', 'cuestan',
     'mercado', 'wallapop', 'anuncios', 'listings', 'datos', 'análisis', 'analiza',
     'iphone', 'samsung', 'xiaomi', 'comprar', 'vender', 'revender', 'margen',
     'beneficio', 'chollo', 'barato', 'caro', 'media', 'promedio', 'rango',
+  ];
+  const lower = msg.toLowerCase();
+  return keywords.some(k => lower.includes(k));
+}
+
+function isStockQuery(msg: string): boolean {
+  const keywords = [
+    'stock', 'inventario', 'tengo', 'tenemos', 'queda', 'quedan', 'unidades',
+    'vendido', 'vendidos', 'vendí', 'vendi', 'vendidas', 'en venta',
+    'invertido', 'inversión', 'inversion', 'gastado', 'gasto',
+    'beneficio', 'ganancia', 'margen', 'rentabilidad', 'roi',
+    'artículo', 'articulo', 'producto', 'productos', 'artículos',
+    'cuántos', 'cuantos', 'resumen', 'negocio', 'balance',
+    'reparación', 'reparacion', 'bateria', 'batería',
   ];
   const lower = msg.toLowerCase();
   return keywords.some(k => lower.includes(k));
@@ -106,6 +121,77 @@ Muestra de anuncios recientes:
 ${sample}
 
 Analiza estos datos para responder la pregunta del usuario.`.trim();
+  } catch {
+    return '';
+  }
+}
+
+// ─── Fetch stock context from Supabase ───────────────────────────────────────
+async function fetchStockContext(): Promise<string> {
+  try {
+    const { data, error } = await supabase
+      .from('stock_items')
+      .select('name, category, estado, purchase_price_per_unit, sale_price_per_unit, precio_venta_real, precio_envio, coste_reparacion, bateria_porcentaje, almacenamiento, color, reparaciones, fecha_venta, purchase_date')
+      .order('created_at', { ascending: false });
+
+    if (error || !data?.length) return '';
+
+    const items = data as any[];
+    const enStock = items.filter(i => i.estado === 'En stock');
+    const vendidos = items.filter(i => i.estado === 'Vendido');
+
+    // ── Invertido en stock actual ──
+    const invertidoStock = enStock.reduce((s: number, i: any) => {
+      return s + (i.purchase_price_per_unit || 0) + (i.coste_reparacion || 0) + (i.precio_envio || 0);
+    }, 0);
+
+    // ── Valor de venta esperado del stock actual ──
+    const valorEsperado = enStock.reduce((s: number, i: any) => s + (i.sale_price_per_unit || 0), 0);
+
+    // ── Beneficio real de vendidos ──
+    const beneficioReal = vendidos.reduce((s: number, i: any) => {
+      const ingresos = i.precio_venta_real || i.sale_price_per_unit || 0;
+      const costes = (i.purchase_price_per_unit || 0) + (i.coste_reparacion || 0) + (i.precio_envio || 0);
+      return s + (ingresos - costes);
+    }, 0);
+
+    const margenMedio = vendidos.length > 0
+      ? vendidos.reduce((s: number, i: any) => {
+          const ingresos = i.precio_venta_real || i.sale_price_per_unit || 0;
+          const costes = (i.purchase_price_per_unit || 0) + (i.coste_reparacion || 0) + (i.precio_envio || 0);
+          return s + (costes > 0 ? ((ingresos - costes) / costes) * 100 : 0);
+        }, 0) / vendidos.length
+      : 0;
+
+    // ── Artículos en stock (muestra) ──
+    const stockSample = enStock.slice(0, 20).map((i: any) => {
+      const costes = (i.purchase_price_per_unit || 0) + (i.coste_reparacion || 0) + (i.precio_envio || 0);
+      const extra = [
+        i.almacenamiento && i.almacenamiento,
+        i.bateria_porcentaje && `batería ${i.bateria_porcentaje}%`,
+        i.color && i.color,
+      ].filter(Boolean).join(', ');
+      return `• ${i.name}${extra ? ` (${extra})` : ''} — coste ${costes.toFixed(0)}€ → venta ${i.sale_price_per_unit || 0}€`;
+    }).join('\n');
+
+    // ── Últimas ventas ──
+    const ventasSample = vendidos.slice(0, 10).map((i: any) => {
+      const ingresos = i.precio_venta_real || i.sale_price_per_unit || 0;
+      const costes = (i.purchase_price_per_unit || 0) + (i.coste_reparacion || 0) + (i.precio_envio || 0);
+      const ben = ingresos - costes;
+      return `• ${i.name} — vendido ${ingresos}€ (beneficio: ${ben >= 0 ? '+' : ''}${ben.toFixed(0)}€)`;
+    }).join('\n');
+
+    return `
+[STOCK DEL USUARIO — datos en tiempo real]
+📦 En stock: ${enStock.length} artículos | Invertido: ${invertidoStock.toFixed(0)}€ | Valor esperado: ${valorEsperado.toFixed(0)}€ | Beneficio potencial: ${(valorEsperado - invertidoStock).toFixed(0)}€
+✅ Vendidos: ${vendidos.length} artículos | Beneficio real acumulado: ${beneficioReal >= 0 ? '+' : ''}${beneficioReal.toFixed(0)}€ | Margen medio: ${margenMedio.toFixed(1)}%
+
+Artículos en stock (hasta 20):
+${stockSample || 'Sin artículos en stock'}
+
+Últimas ventas:
+${ventasSample || 'Sin ventas registradas'}`.trim();
   } catch {
     return '';
   }
@@ -252,11 +338,15 @@ export function AIChat() {
     setLoading(true);
 
     try {
-      // Build context if price-related
-      let contextText = '';
-      if (isPriceQuery(text)) {
-        contextText = await fetchDealsContext(text);
-      }
+      // Build context from Supabase data
+      const contextParts: string[] = [];
+      const [dealsCtx, stockCtx] = await Promise.all([
+        isPriceQuery(text) ? fetchDealsContext(text) : Promise.resolve(''),
+        isStockQuery(text) ? fetchStockContext() : Promise.resolve(''),
+      ]);
+      if (dealsCtx) contextParts.push(dealsCtx);
+      if (stockCtx) contextParts.push(stockCtx);
+      const contextText = contextParts.join('\n\n');
 
       // Build message history for API
       const history = messages
