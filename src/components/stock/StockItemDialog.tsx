@@ -28,6 +28,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { StockItem, StockItemFormData } from '@/types/stock';
+import { TrendingUp, TrendingDown, Calculator } from 'lucide-react';
 
 const STORAGE_OPTIONS = ['64GB', '128GB', '256GB', '512GB', '1TB'];
 const REPAIR_OPTIONS = [
@@ -119,6 +120,19 @@ export function StockItemDialog({
   const isTelefonia = watchCategory === 'Telefonía';
   const isRopa = watchCategory === 'Ropa';
   const isReparacion = watchCategory === 'Reparación';
+
+  // Live profit calculator
+  const watchPurchase = form.watch('purchase_price_per_unit');
+  const watchSale = form.watch('sale_price_per_unit');
+  const watchSaleReal = form.watch('precio_venta_real');
+  const watchEnvio = form.watch('precio_envio');
+  const watchReparacion = form.watch('coste_reparacion');
+
+  const liveCoste = Number(watchPurchase || 0) + Number(watchEnvio || 0) + Number(watchReparacion || 0);
+  const referencePrice = watchEstado === 'Vendido' ? Number(watchSaleReal || 0) : Number(watchSale || 0);
+  const liveBeneficio = referencePrice - liveCoste;
+  const liveMargen = referencePrice > 0 ? (liveBeneficio / referencePrice) * 100 : 0;
+  const showCalculator = !isReparacion && liveCoste > 0;
 
   useEffect(() => {
     if (open) {
@@ -416,7 +430,7 @@ export function StockItemDialog({
               </div>
             )}
 
-            {/* Fecha de compra - visible para Reparación también */}
+            {/* Fecha de compra */}
             <FormField
               control={form.control}
               name="purchase_date"
@@ -522,6 +536,65 @@ export function StockItemDialog({
                     </FormItem>
                   )}
                 />
+              </div>
+            )}
+
+            {/* ── Live profit calculator ─────────────────────────────── */}
+            {showCalculator && (
+              <div className={`rounded-xl border p-3 transition-all ${
+                liveBeneficio >= 0
+                  ? 'border-success/30 bg-success/5'
+                  : 'border-destructive/30 bg-destructive/5'
+              }`}>
+                <div className="flex items-center gap-1.5 mb-2.5">
+                  <Calculator className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+                    Calculadora en vivo
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div>
+                    <p className="text-[10px] text-muted-foreground mb-0.5">Coste total</p>
+                    <p className="text-base font-bold">{liveCoste.toFixed(0)}€</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground mb-0.5">
+                      {watchEstado === 'Vendido' ? 'Beneficio real' : 'Beneficio esp.'}
+                    </p>
+                    <p className={`text-base font-bold ${liveBeneficio >= 0 ? 'text-success' : 'text-destructive'}`}>
+                      {liveBeneficio >= 0 ? '+' : ''}{liveBeneficio.toFixed(0)}€
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground mb-0.5">Margen</p>
+                    <div className={`flex items-center justify-center gap-0.5 text-base font-bold ${liveMargen >= 0 ? 'text-success' : 'text-destructive'}`}>
+                      {liveMargen >= 0
+                        ? <TrendingUp className="h-3.5 w-3.5" />
+                        : <TrendingDown className="h-3.5 w-3.5" />}
+                      {liveMargen.toFixed(1)}%
+                    </div>
+                  </div>
+                </div>
+                {/* Margen visual bar */}
+                {referencePrice > 0 && (
+                  <div className="mt-2.5">
+                    <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-300 ${
+                          liveMargen >= 30 ? 'bg-success' :
+                          liveMargen >= 15 ? 'bg-amber-500' :
+                          liveMargen >= 0 ? 'bg-orange-500' : 'bg-destructive'
+                        }`}
+                        style={{ width: `${Math.min(Math.max(liveMargen, 0), 100)}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-[9px] text-muted-foreground mt-0.5">
+                      <span>0%</span>
+                      <span className={liveMargen >= 30 ? 'text-success font-medium' : ''}>30% objetivo</span>
+                      <span>100%</span>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
