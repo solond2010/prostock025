@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { AppHeader } from './AppHeader';
 import { DesktopSidebar } from './DesktopSidebar';
+import { AIChat } from '@/components/AIChat';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -18,6 +19,9 @@ export function MainLayout({ children }: MainLayoutProps) {
         <AppHeader />
         <main className="flex-1 pb-safe">{children}</main>
       </div>
+
+      {/* Chat IA flotante — visible en todas las páginas */}
+      <AIChat />
     </div>
   );
 }
