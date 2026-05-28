@@ -143,7 +143,7 @@ const MonthlyCharts = () => {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Facturación Total {selectedYear}
+                Facturación Total {periodLabel}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -155,7 +155,7 @@ const MonthlyCharts = () => {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Beneficio Total {selectedYear}
+                Beneficio Total {periodLabel}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -167,7 +167,7 @@ const MonthlyCharts = () => {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Productos Vendidos {selectedYear}
+                Productos Vendidos {periodLabel}
               </CardTitle>
             </CardHeader>
             <CardContent>
