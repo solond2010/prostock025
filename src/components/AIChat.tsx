@@ -10,13 +10,16 @@ const OPENROUTER_API_KEY_LS = 'prostock_openrouter_key';
 
 // Free models in priority order — auto-rotation on failure
 const FREE_MODELS = [
-  'deepseek/deepseek-chat-v3-0324:free',
-  'deepseek/deepseek-r1-0528:free',
-  'google/gemma-3-12b-it:free',
+  'meta-llama/llama-3.3-70b-instruct:free',
+  'openai/gpt-oss-120b:free',
+  'openai/gpt-oss-20b:free',
+  'deepseek/deepseek-v4-flash:free',
+  'google/gemma-4-31b-it:free',
+  'nvidia/nemotron-3-super-120b-a12b:free',
+  'qwen/qwen3-coder:free',
   'meta-llama/llama-3.2-3b-instruct:free',
-  'qwen/qwen3-8b:free',
-  'mistralai/mistral-7b-instruct:free',
-  'microsoft/phi-3-mini-128k-instruct:free',
+  'nvidia/nemotron-nano-9b-v2:free',
+  'liquid/lfm-2.5-1.2b-instruct:free',
 ];
 
 const SYSTEM_PROMPT = `Eres un asistente experto en compra-venta de iPhones de segunda mano en Wallapop España. Trabajas integrado en ProStock, una app de gestión de stock para revendedores.
