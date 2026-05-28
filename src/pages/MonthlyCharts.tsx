@@ -123,10 +123,11 @@ const MonthlyCharts = () => {
             </div>
           </div>
           <Select value={selectedYear} onValueChange={setSelectedYear}>
-            <SelectTrigger className="w-32">
+            <SelectTrigger className="w-40">
               <SelectValue placeholder="Año" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="all">Todo el tiempo</SelectItem>
               {availableYears.map((year) => (
                 <SelectItem key={year} value={year.toString()}>
                   {year}
@@ -135,6 +136,7 @@ const MonthlyCharts = () => {
             </SelectContent>
           </Select>
         </div>
+
 
         {/* Year Summary Cards */}
         <div className="mb-8 grid gap-4 sm:grid-cols-3">
