@@ -1,4 +1,4 @@
-import { Package, Receipt, PieChart, BarChart3, Menu, LogOut, Moon, Sun, Wallet, Wrench, Target, CheckCircle2, Calendar, Settings, Bot } from 'lucide-react';
+import { Package, Receipt, PieChart, BarChart3, Menu, LogOut, Moon, Sun, Wallet, Wrench, Target, CheckCircle2, Calendar, Bot, LayoutDashboard } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import {
   Sheet,
@@ -20,6 +20,7 @@ const menuSections = [
   {
     label: 'EXISTENTE',
     items: [
+      { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
       { title: 'Gestor de Stock', url: '/', icon: Package },
       { title: 'Gráficos Anuales', url: '/graficos', icon: BarChart3 },
       { title: 'Gasto en Material', url: '/gasto-material', icon: Receipt },

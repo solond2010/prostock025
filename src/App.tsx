@@ -16,6 +16,7 @@ import InventarioPiezas from "./pages/InventarioPiezas";
 import OfertasLive from "./pages/OfertasLive";
 import Tareas from "./pages/Tareas";
 import Agenda from "./pages/Agenda";
+import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -115,6 +116,16 @@ const App = () => (
               <ProtectedRoute>
                 <MainLayout>
                   <Agenda />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <Dashboard />
                 </MainLayout>
               </ProtectedRoute>
             }
