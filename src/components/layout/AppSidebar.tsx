@@ -16,7 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
 const menuItems = [
-  { title: 'Ofertas en vivo', url: '/ofertas', icon: Target, highlight: true },
+  { title: 'En directo', url: '/ofertas', icon: Target, highlight: true },
   { title: 'Tareas', url: '/tareas', icon: CheckCircle2, highlight: true },
   { title: 'Agenda', url: '/agenda', icon: Calendar, highlight: true },
   { title: 'Gestor de Stock', url: '/', icon: Package },

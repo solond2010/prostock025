@@ -47,9 +47,9 @@ const OfertasLive = () => {
           </div>
           <div>
             <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-              Ofertas en vivo
+              En directo
               <Badge variant="outline" className="border-destructive/30 text-destructive">
-                <Radio className="h-3 w-3 mr-1 animate-pulse" /> LIVE
+                <Radio className="h-3 w-3 mr-1 animate-pulse" /> EN VIVO
               </Badge>
             </h1>
             <p className="text-sm text-muted-foreground">
@@ -63,7 +63,7 @@ const OfertasLive = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Card>
           <CardContent className="p-4">
-            <div className="text-xs text-muted-foreground font-medium mb-1">Últimas 24h</div>
+            <div className="text-xs text-muted-foreground font-medium mb-1">Últimas 24 h</div>
             <div className="text-2xl font-bold">{stats.today}</div>
             <div className="text-xs text-muted-foreground mt-1">ofertas nuevas</div>
           </CardContent>
@@ -92,6 +92,7 @@ const OfertasLive = () => {
               Activo
             </div>
             <div className="text-xs text-muted-foreground mt-1">cada 2 min</div>
+
           </CardContent>
         </Card>
       </div>
@@ -103,7 +104,7 @@ const OfertasLive = () => {
           size="sm"
           onClick={() => setOnlyFire((v) => !v)}
         >
-          <Flame className="h-3.5 w-3.5 mr-1.5" /> Solo precio brutal
+          <Flame className="h-3.5 w-3.5 mr-1.5" /> Sólo precio brutal
         </Button>
         <Button
           variant={maxPrice === 100 ? 'default' : 'outline'}
@@ -127,7 +128,7 @@ const OfertasLive = () => {
           <CardTitle className="flex items-center gap-2">
             <Filter className="h-4 w-4" /> Feed
             <span className="text-xs font-normal text-muted-foreground ml-auto">
-              {deals.length} ofertas
+              {deals.length} {deals.length === 1 ? 'oferta' : 'ofertas'}
             </span>
           </CardTitle>
         </CardHeader>
@@ -144,7 +145,7 @@ const OfertasLive = () => {
             <div className="text-center py-12 text-muted-foreground">
               <Target className="h-12 w-12 mx-auto mb-3 opacity-30" />
               <p className="text-sm">
-                Aún no hay ofertas. El bot las irá insertando aquí en cuanto encuentre alguna.
+                Aún no hay ofertas. El bot las irá añadiendo aquí en cuanto encuentre alguna.
               </p>
             </div>
           )}
