@@ -17,16 +17,17 @@ export function usePushNotifications() {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const supported = 'serviceWorker' in navigator && 'PushManager' in window;
+  const isIOS = /iP(hone|od|ad)/.test(navigator.userAgent);
+  const isStandalone = isIOS && (window.navigator as any).standalone === true;
+  // Push works on: non-iOS browsers OR iOS PWA (added to home screen)
+  const supported = ('serviceWorker' in navigator && 'PushManager' in window) || isStandalone;
+  // iOS Safari but not installed as PWA — needs to be added to home screen first
+  const needsInstall = isIOS && !isStandalone;
 
   useEffect(() => {
-    if (!supported) return;
+    if (!('serviceWorker' in navigator && 'PushManager' in window)) return;
     setPermission(Notification.permission);
-
-    // Registrar SW
     navigator.serviceWorker.register('/sw.js').catch(() => {});
-
-    // Comprobar si ya hay suscripción activa
     navigator.serviceWorker.ready.then(reg =>
       reg.pushManager.getSubscription()
     ).then(sub => {
@@ -35,7 +36,8 @@ export function usePushNotifications() {
   }, []);
 
   const subscribe = async () => {
-    if (!supported || !user) return;
+    if (!user) return;
+    if (!('serviceWorker' in navigator && 'PushManager' in window)) return;
     setIsLoading(true);
     try {
       const reg = await navigator.serviceWorker.ready;
@@ -43,13 +45,11 @@ export function usePushNotifications() {
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       });
-
       const subJson = sub.toJSON();
       await supabase.from('push_subscriptions' as any).upsert({
         user_id: user.id,
         subscription: subJson,
       }, { onConflict: 'user_id' });
-
       setPermission('granted');
       setIsSubscribed(true);
     } catch (e) {
@@ -60,7 +60,7 @@ export function usePushNotifications() {
   };
 
   const unsubscribe = async () => {
-    if (!supported || !user) return;
+    if (!user) return;
     setIsLoading(true);
     try {
       const reg = await navigator.serviceWorker.ready;
@@ -75,5 +75,5 @@ export function usePushNotifications() {
     }
   };
 
-  return { supported, permission, isSubscribed, isLoading, subscribe, unsubscribe };
+  return { supported, needsInstall, isIOS, permission, isSubscribed, isLoading, subscribe, unsubscribe };
 }

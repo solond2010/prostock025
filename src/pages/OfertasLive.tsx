@@ -341,7 +341,7 @@ const OfertasLive = () => {
     { onlyFire, maxPrice },
     { onDealFailed, onDealSent }
   );
-  const { supported, isSubscribed, isLoading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
+  const { supported, needsInstall, isSubscribed, isLoading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
 
   const handleContact = (id: string) => {
     queueSend.mutate(id, {
@@ -409,7 +409,12 @@ const OfertasLive = () => {
             </p>
           </div>
         </div>
-        {supported && (
+        {needsInstall ? (
+          <div className="flex items-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/8 px-3 py-2 text-xs text-amber-600 dark:text-amber-400 max-w-[220px]">
+            <Bell className="h-3.5 w-3.5 shrink-0" />
+            <span>Añade la app al inicio para activar notificaciones</span>
+          </div>
+        ) : supported ? (
           <Button
             variant={isSubscribed ? 'default' : 'outline'}
             size="sm"
@@ -422,7 +427,7 @@ const OfertasLive = () => {
               : <><Bell className="h-3.5 w-3.5 mr-1.5" /> Activar notificaciones 🔥</>
             }
           </Button>
-        )}
+        ) : null}
       </div>
 
       {/* KPIs */}
