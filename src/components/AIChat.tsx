@@ -10,13 +10,13 @@ const OPENROUTER_API_KEY_LS = 'prostock_openrouter_key';
 
 // Free models in priority order — auto-rotation on failure
 const FREE_MODELS = [
-  'meta-llama/llama-3.1-8b-instruct:free',
-  'google/gemma-2-9b-it:free',
+  'deepseek/deepseek-chat-v3-0324:free',
+  'deepseek/deepseek-r1-0528:free',
+  'google/gemma-3-12b-it:free',
+  'meta-llama/llama-3.2-3b-instruct:free',
+  'qwen/qwen3-8b:free',
   'mistralai/mistral-7b-instruct:free',
   'microsoft/phi-3-mini-128k-instruct:free',
-  'meta-llama/llama-3.2-3b-instruct:free',
-  'qwen/qwen-2-7b-instruct:free',
-  'openchat/openchat-7b:free',
 ];
 
 const SYSTEM_PROMPT = `Eres un asistente experto en compra-venta de iPhones de segunda mano en Wallapop España. Trabajas integrado en ProStock, una app de gestión de stock para revendedores.
@@ -136,7 +136,12 @@ async function callOpenRouter(
   if (!res.ok) {
     const errText = await res.text().catch(() => '');
     // Rate limit or model unavailable — try next model
-    if (res.status === 429 || res.status === 503 || res.status === 502 || errText.includes('quota')) {
+    // Rotate on: rate limit, unavailable, not found, or quota issues
+    if (
+      res.status === 429 || res.status === 503 || res.status === 502 ||
+      res.status === 404 || res.status === 400 ||
+      errText.includes('quota') || errText.includes('No endpoints found') || errText.includes('not found')
+    ) {
       console.log(`Model ${model} failed (${res.status}), trying next...`);
       return callOpenRouter(messages, apiKey, modelIndex + 1);
     }
