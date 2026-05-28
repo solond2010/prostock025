@@ -1,17 +1,17 @@
 import { AppSidebar } from './AppSidebar';
-import { Package } from 'lucide-react';
+import { Zap } from 'lucide-react';
 
 export function AppHeader() {
   return (
-    // Solo visible en móvil — en desktop el sidebar fijo lo reemplaza
-    <header className="lg:hidden sticky top-0 z-50 border-b border-border/60 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 pt-safe">
+    <header className="lg:hidden sticky top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/75 pt-safe">
       <div className="flex h-14 items-center gap-3 px-4">
         <AppSidebar />
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
-            <Package className="h-4 w-4 text-primary" />
+          <div className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-lg overflow-hidden"
+            style={{ background: 'linear-gradient(135deg, hsl(262,73%,55%), hsl(282,73%,62%))' }}>
+            <Zap className="h-4 w-4 text-white" fill="white" strokeWidth={0} />
           </div>
-          <span className="text-base font-bold tracking-tight">ProStock</span>
+          <span className="text-base font-bold tracking-tight">Flipr</span>
         </div>
       </div>
     </header>

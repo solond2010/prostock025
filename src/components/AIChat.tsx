@@ -8,7 +8,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 // ─── OpenRouter config ────────────────────────────────────────────────────────
-const OPENROUTER_API_KEY_LS = 'prostock_openrouter_key';
+const OPENROUTER_API_KEY_LS = 'flipr_openrouter_key';
 
 // Free models in priority order — auto-rotation on failure
 const FREE_MODELS = [
@@ -24,7 +24,7 @@ const FREE_MODELS = [
   'liquid/lfm-2.5-1.2b-instruct:free',
 ];
 
-const SYSTEM_PROMPT = `Eres un asistente experto en compra-venta de iPhones de segunda mano en Wallapop España. Trabajas integrado en ProStock, una app de gestión de stock para revendedores.
+const SYSTEM_PROMPT = `Eres un asistente experto en compra-venta de iPhones de segunda mano en Wallapop España. Trabajas integrado en Flipr, el panel de ventas personal de Mohamed.
 
 Tu trabajo:
 - Analizar precios de mercado con los datos reales de Wallapop que te proporcionen
@@ -214,8 +214,8 @@ async function callOpenRouter(
     headers: {
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
-      'HTTP-Referer': 'https://prostock.app',
-      'X-Title': 'ProStock AI',
+      'HTTP-Referer': 'https://flipr.app',
+      'X-Title': 'Flipr AI',
     },
     body: JSON.stringify({
       model,
@@ -425,7 +425,7 @@ export function AIChat() {
               <Sparkles className="h-4 w-4 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold">ProStock AI</p>
+              <p className="text-sm font-semibold">Flipr AI</p>
               {currentModel && (
                 <p className="text-[10px] text-muted-foreground truncate">{currentModel}</p>
               )}

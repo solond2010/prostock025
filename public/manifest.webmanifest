@@ -1,13 +1,13 @@
 {
-  "name": "ProStock",
-  "short_name": "ProStock",
+  "name": "Flipr",
+  "short_name": "Flipr",
   "description": "Gestión de stock, ofertas en vivo, tareas y agenda para flipping de iPhones",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0a0e1a",
-  "theme_color": "#3b82f6",
+  "background_color": "#0d0b14",
+  "theme_color": "#7c3aed",
   "icons": [
     {
       "src": "/icon-192.png",

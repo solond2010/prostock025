@@ -2,121 +2,130 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 222 47% 11%;
+    /* ── Core palette ── */
+    --background: 248 20% 98%;
+    --foreground: 248 45% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 248 45% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 248 45% 10%;
 
-    --primary: 217 91% 60%;
-    --primary-foreground: 210 40% 98%;
+    /* Violet primary */
+    --primary: 262 73% 58%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 222 47% 11%;
+    --secondary: 248 14% 95%;
+    --secondary-foreground: 248 45% 10%;
 
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
+    --muted: 248 14% 95%;
+    --muted-foreground: 248 10% 50%;
 
-    --accent: 220 14% 96%;
-    --accent-foreground: 222 47% 11%;
+    --accent: 248 14% 95%;
+    --accent-foreground: 248 45% 10%;
 
     --destructive: 0 72% 51%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --success: 160 84% 39%;
-    --success-foreground: 210 40% 98%;
+    --success: 160 84% 38%;
+    --success-foreground: 0 0% 100%;
 
-    --warning: 43 96% 56%;
-    --warning-foreground: 222 47% 11%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 217 91% 60%;
+    --border: 248 13% 90%;
+    --input: 248 13% 90%;
+    --ring: 262 73% 58%;
 
     --radius: 0.75rem;
 
     /* Chart colors */
-    --chart-1: 217 91% 60%;
-    --chart-2: 160 84% 39%;
-    --chart-3: 262 83% 58%;
-    --chart-4: 43 96% 56%;
-    --chart-5: 0 72% 51%;
+    --chart-1: 262 73% 58%;
+    --chart-2: 160 84% 38%;
+    --chart-3: 38 92% 50%;
+    --chart-4: 0 72% 51%;
+    --chart-5: 217 91% 60%;
 
-    /* CRM specific tokens */
-    --app-shell: 0 0% 100%;
-    --table-row-alt: 220 20% 98%;
-    --shadow-card: 0 1px 3px 0 hsl(220 20% 20% / 0.05), 0 1px 2px -1px hsl(220 20% 20% / 0.05);
-    --shadow-card-hover: 0 10px 25px -5px hsl(220 20% 20% / 0.1), 0 8px 10px -6px hsl(220 20% 20% / 0.08);
+    /* Shadows */
+    --shadow-sm: 0 1px 3px 0 hsl(248 30% 12% / 0.06), 0 1px 2px -1px hsl(248 30% 12% / 0.04);
+    --shadow-md: 0 4px 12px -2px hsl(248 30% 12% / 0.08), 0 2px 6px -2px hsl(248 30% 12% / 0.05);
+    --shadow-lg: 0 12px 28px -6px hsl(248 30% 12% / 0.12), 0 4px 12px -4px hsl(248 30% 12% / 0.08);
+    --shadow-violet: 0 8px 24px -4px hsl(262 73% 58% / 0.25);
 
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary: 217 91% 60%;
+    /* Sidebar */
+    --sidebar-background: 248 25% 97%;
+    --sidebar-foreground: 248 45% 10%;
+    --sidebar-primary: 262 73% 58%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 14% 96%;
-    --sidebar-accent-foreground: 222 47% 11%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217 91% 60%;
+    --sidebar-accent: 248 14% 93%;
+    --sidebar-accent-foreground: 248 45% 10%;
+    --sidebar-border: 248 13% 88%;
+    --sidebar-ring: 262 73% 58%;
   }
 
   .dark {
-    --background: 224 71% 4%;
-    --foreground: 213 31% 91%;
+    /* ── Dark mode ── */
+    --background: 248 22% 7%;
+    --foreground: 248 15% 91%;
 
-    --card: 224 71% 6%;
-    --card-foreground: 213 31% 91%;
+    --card: 248 22% 10%;
+    --card-foreground: 248 15% 91%;
 
-    --popover: 224 71% 6%;
-    --popover-foreground: 213 31% 91%;
+    --popover: 248 22% 10%;
+    --popover-foreground: 248 15% 91%;
 
-    --primary: 217 91% 60%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 262 73% 62%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 222 47% 11%;
-    --secondary-foreground: 213 31% 91%;
+    --secondary: 248 20% 15%;
+    --secondary-foreground: 248 15% 91%;
 
-    --muted: 223 47% 11%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 248 20% 14%;
+    --muted-foreground: 248 12% 58%;
 
-    --accent: 222 47% 11%;
-    --accent-foreground: 213 31% 91%;
+    --accent: 248 20% 15%;
+    --accent-foreground: 248 15% 91%;
 
-    --destructive: 0 63% 45%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 65% 48%;
+    --destructive-foreground: 0 0% 100%;
 
-    --success: 160 84% 39%;
-    --success-foreground: 210 40% 98%;
+    --success: 160 70% 40%;
+    --success-foreground: 0 0% 100%;
 
-    --warning: 43 96% 56%;
-    --warning-foreground: 222 47% 11%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 248 45% 10%;
 
-    --border: 216 34% 17%;
-    --input: 216 34% 17%;
-    --ring: 217 91% 60%;
+    --border: 248 18% 17%;
+    --input: 248 18% 17%;
+    --ring: 262 73% 62%;
 
-    /* Chart colors for dark mode */
-    --chart-1: 217 91% 60%;
-    --chart-2: 160 84% 50%;
-    --chart-3: 262 83% 65%;
-    --chart-4: 43 96% 56%;
-    --chart-5: 0 72% 60%;
+    /* Chart colors dark */
+    --chart-1: 262 73% 65%;
+    --chart-2: 160 70% 48%;
+    --chart-3: 38 92% 55%;
+    --chart-4: 0 65% 55%;
+    --chart-5: 217 91% 65%;
 
-    --table-row-alt: 224 71% 5%;
+    /* Shadows dark */
+    --shadow-sm: 0 1px 3px 0 hsl(248 30% 4% / 0.4), 0 1px 2px -1px hsl(248 30% 4% / 0.3);
+    --shadow-md: 0 4px 12px -2px hsl(248 30% 4% / 0.5), 0 2px 6px -2px hsl(248 30% 4% / 0.3);
+    --shadow-lg: 0 12px 28px -6px hsl(248 30% 4% / 0.6), 0 4px 12px -4px hsl(248 30% 4% / 0.4);
+    --shadow-violet: 0 8px 24px -4px hsl(262 73% 62% / 0.3);
 
-    --sidebar-background: 224 71% 4%;
-    --sidebar-foreground: 213 31% 91%;
-    --sidebar-primary: 217 91% 60%;
+    /* Sidebar — distinctly darker than main bg */
+    --sidebar-background: 248 25% 5%;
+    --sidebar-foreground: 248 15% 88%;
+    --sidebar-primary: 262 73% 62%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 47% 11%;
-    --sidebar-accent-foreground: 213 31% 91%;
-    --sidebar-border: 216 34% 17%;
-    --sidebar-ring: 217 91% 60%;
+    --sidebar-accent: 248 22% 12%;
+    --sidebar-accent-foreground: 248 15% 88%;
+    --sidebar-border: 248 20% 13%;
+    --sidebar-ring: 262 73% 62%;
   }
 }
 
@@ -126,13 +135,24 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    /* Prevent overscroll bounce color bleed on iOS */
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
     overscroll-behavior: none;
   }
 
-  /* iOS PWA safe-area variables */
+  /* Better heading hierarchy */
+  h1, h2, h3, h4 {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  /* Numeric tabular for all numbers */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
+  }
+
   :root {
     --sat: env(safe-area-inset-top, 0px);
     --sar: env(safe-area-inset-right, 0px);
@@ -142,112 +162,134 @@
 }
 
 @layer utilities {
-  /* Safe-area utilities for iOS PWA */
   .pt-safe   { padding-top: env(safe-area-inset-top, 0px); }
   .pb-safe   { padding-bottom: env(safe-area-inset-bottom, 0px); }
   .pl-safe   { padding-left: env(safe-area-inset-left, 0px); }
   .pr-safe   { padding-right: env(safe-area-inset-right, 0px); }
   .mt-safe   { margin-top: env(safe-area-inset-top, 0px); }
   .mb-safe   { margin-bottom: env(safe-area-inset-bottom, 0px); }
-
-  /* Use dynamic viewport height — avoids iOS browser chrome bug */
   .min-h-dvh { min-height: 100dvh; }
   .h-dvh     { height: 100dvh; }
-}
 
-@layer utilities {
+  /* Gradient text utility */
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(var(--primary)), hsl(262 73% 75%));
+  }
+
+  .text-gradient-green {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(var(--success)), hsl(160 84% 55%));
+  }
+
+  /* Glow utilities */
+  .glow-primary {
+    box-shadow: var(--shadow-violet);
+  }
+
+  /* Glass card effect */
+  .glass {
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+  }
+
   .table-cell-numeric {
     @apply text-right font-medium tabular-nums;
   }
 }
 
-/* Premium Card Styles */
+/* ── Premium card ── */
 .card-premium {
-  @apply bg-card border border-border/60 transition-all duration-200;
+  @apply bg-card border border-border/70 transition-all duration-200;
   border-radius: var(--radius);
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--shadow-sm);
 }
 
 .card-premium:hover {
-  box-shadow: var(--shadow-card-hover);
-  transform: translateY(-2px);
-  border-color: hsl(var(--primary) / 0.2);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+  border-color: hsl(var(--primary) / 0.25);
 }
 
-/* Sale success animation */
+/* ── KPI / metric card ── */
+.metric-card {
+  @apply bg-card border border-border/60 rounded-xl transition-all duration-200;
+  box-shadow: var(--shadow-sm);
+}
+
+@media (min-width: 1024px) {
+  .metric-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+    border-color: hsl(var(--primary) / 0.3);
+  }
+}
+
+/* ── Gradient borders for special cards ── */
+.card-gradient-border {
+  position: relative;
+  background: hsl(var(--card));
+  border-radius: var(--radius);
+}
+.card-gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+  padding: 1px;
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.4), hsl(var(--primary) / 0.1));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ── Stat number display ── */
+.stat-number {
+  @apply tabular-nums font-bold tracking-tight;
+  font-feature-settings: 'tnum', 'cv02';
+}
+
+/* ── Sale highlight animation ── */
 @keyframes sale-highlight {
-  0% {
-    background-color: hsl(var(--success) / 0.15);
-    box-shadow: inset 0 0 0 1px hsl(var(--success) / 0.3);
-  }
-  100% {
-    background-color: transparent;
-    box-shadow: none;
-  }
+  0%   { background-color: hsl(var(--success) / 0.15); box-shadow: inset 0 0 0 1px hsl(var(--success) / 0.3); }
+  100% { background-color: transparent; box-shadow: none; }
+}
+.sale-highlight { animation: sale-highlight 1s ease-out forwards; }
+
+/* ── Pulse dot animation ── */
+@keyframes pulse-ring {
+  0%   { transform: scale(0.8); opacity: 1; }
+  100% { transform: scale(2); opacity: 0; }
 }
 
-.sale-highlight {
-  animation: sale-highlight 1s ease-out forwards;
-}
-
-/* Badge transition for status changes */
-.badge-animated {
-  transition: all 0.3s ease-out;
-}
-
-/* CRM Table Styles */
+/* ── CRM table ── */
 .crm-table tbody tr:nth-child(even) {
-  background-color: hsl(var(--table-row-alt));
+  background-color: hsl(var(--muted) / 0.4);
 }
-
 .crm-table tbody tr {
   transition: background-color 0.15s ease;
 }
-
 .crm-table tbody tr:hover {
   background-color: hsl(var(--muted));
 }
 
-/* Metric card hover for desktop */
-@media (min-width: 1024px) {
-  .metric-card {
-    @apply bg-card transition-all duration-200 ease-out;
-    box-shadow: 0 1px 3px 0 hsl(220 20% 20% / 0.04), 0 1px 2px -1px hsl(220 20% 20% / 0.04);
-    border: 1px solid hsl(var(--border) / 0.7);
-  }
-  
-  .metric-card:hover {
-    box-shadow: 0 10px 25px -5px hsl(220 20% 20% / 0.1), 0 8px 10px -6px hsl(220 20% 20% / 0.08);
-    transform: translateY(-2px);
-    border-color: hsl(var(--primary) / 0.25);
-  }
+/* ── Sidebar active glow ── */
+.nav-active-glow {
+  box-shadow: 0 0 0 1px hsl(var(--primary) / 0.3), 0 2px 8px -2px hsl(var(--primary) / 0.25);
 }
 
+/* ── Badge animated ── */
+.badge-animated { transition: all 0.3s ease-out; }
 
-/* Premium button transitions */
-.btn-premium {
-  @apply transition-all duration-200;
-}
+/* ── Text helpers ── */
+.text-success { color: hsl(var(--success)); }
+.text-error   { color: hsl(var(--destructive)); }
+.text-warning { color: hsl(var(--warning)); }
 
-.btn-premium:hover {
-  transform: translateY(-1px);
-}
-
-/* Logo styles */
-.logo-premium {
-  @apply rounded-full border-2 border-border/50 shadow-sm;
-  transition: all 0.2s ease;
-}
-
-.logo-premium:hover {
-  @apply border-primary/30 shadow-md;
-}
-
-/* Text success/error colors */
-.text-success {
-  color: hsl(var(--success));
-}
-
-.text-error {
-  color: hsl(var(--destructive));
-}
+/* ── Scrollbar slim ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.5); }
