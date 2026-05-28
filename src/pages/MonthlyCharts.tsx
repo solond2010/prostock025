@@ -29,6 +29,8 @@ const MonthlyCharts = () => {
     return Array.from(years).sort((a, b) => b - a);
   }, [items, currentYear]);
 
+  const isAllTime = selectedYear === 'all';
+
   // Filter sold items and calculate monthly data
   const monthlyData = useMemo(() => {
     const data = MONTHS.map((month, index) => ({
@@ -45,7 +47,7 @@ const MonthlyCharts = () => {
         const saleYear = saleDate.getFullYear();
         const saleMonth = saleDate.getMonth();
 
-        if (saleYear.toString() === selectedYear) {
+        if (isAllTime || saleYear.toString() === selectedYear) {
           const precioVentaReal = Number(item.precio_venta_real) || 0;
           const costeTotal =
             Number(item.purchase_price_per_unit) +
@@ -61,7 +63,7 @@ const MonthlyCharts = () => {
     });
 
     return data;
-  }, [items, selectedYear]);
+  }, [items, selectedYear, isAllTime]);
 
   // Calculate totals for the year
   const yearTotals = useMemo(() => {
@@ -74,6 +76,9 @@ const MonthlyCharts = () => {
       { facturacion: 0, beneficio: 0, vendidos: 0 }
     );
   }, [monthlyData]);
+
+  const periodLabel = isAllTime ? 'Todo el tiempo' : selectedYear;
+
 
   const chartConfig = {
     facturacion: {
