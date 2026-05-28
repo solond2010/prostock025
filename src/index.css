@@ -128,7 +128,31 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    /* Prevent overscroll bounce color bleed on iOS */
+    overscroll-behavior: none;
   }
+
+  /* iOS PWA safe-area variables */
+  :root {
+    --sat: env(safe-area-inset-top, 0px);
+    --sar: env(safe-area-inset-right, 0px);
+    --sab: env(safe-area-inset-bottom, 0px);
+    --sal: env(safe-area-inset-left, 0px);
+  }
+}
+
+@layer utilities {
+  /* Safe-area utilities for iOS PWA */
+  .pt-safe   { padding-top: env(safe-area-inset-top, 0px); }
+  .pb-safe   { padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .pl-safe   { padding-left: env(safe-area-inset-left, 0px); }
+  .pr-safe   { padding-right: env(safe-area-inset-right, 0px); }
+  .mt-safe   { margin-top: env(safe-area-inset-top, 0px); }
+  .mb-safe   { margin-bottom: env(safe-area-inset-bottom, 0px); }
+
+  /* Use dynamic viewport height — avoids iOS browser chrome bug */
+  .min-h-dvh { min-height: 100dvh; }
+  .h-dvh     { height: 100dvh; }
 }
 
 @layer utilities {

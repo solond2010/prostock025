@@ -4,7 +4,7 @@ import { Package } from 'lucide-react';
 export function AppHeader() {
   return (
     // Solo visible en móvil — en desktop el sidebar fijo lo reemplaza
-    <header className="lg:hidden sticky top-0 z-50 border-b border-border/60 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80">
+    <header className="lg:hidden sticky top-0 z-50 border-b border-border/60 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 pt-safe">
       <div className="flex h-14 items-center gap-3 px-4">
         <AppSidebar />
         <div className="flex items-center gap-2.5">

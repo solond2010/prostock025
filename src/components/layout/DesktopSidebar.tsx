@@ -48,7 +48,7 @@ export function DesktopSidebar() {
   };
 
   return (
-    <aside className="hidden lg:flex w-56 xl:w-60 shrink-0 flex-col border-r border-border/60 bg-card min-h-screen sticky top-0 h-screen overflow-y-auto">
+    <aside className="hidden lg:flex w-56 xl:w-60 shrink-0 flex-col border-r border-border/60 bg-card min-h-dvh sticky top-0 h-dvh overflow-y-auto pt-safe pl-safe">
       {/* Logo */}
       <div className="border-b border-border/60 px-5 py-4">
         <div className="flex items-center gap-2.5">
