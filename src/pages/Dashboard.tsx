@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import {
   TrendingUp, TrendingDown, Package, CheckCircle2, Target,
   ArrowRight, AlertTriangle, Trophy, Flame, Clock, ShoppingCart,
-  Zap, BarChart2, Calendar, Bot
+  Zap, BarChart2, Calendar, Bot, Sparkles
 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -60,11 +62,23 @@ function ChartTooltip({ active, payload, label }: any) {
 }
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 6)  return { text: 'Buenas noches', emoji: '🌙' };
+  if (h < 13) return { text: 'Buenos días',   emoji: '☀️' };
+  if (h < 20) return { text: 'Buenas tardes', emoji: '👋' };
+  return       { text: 'Buenas noches',        emoji: '🌙' };
+}
+
 export default function Dashboard() {
+  const { user } = useAuth();
   const { data: items = [], isLoading: loadingStock } = useStockItems();
   const { tasks, isLoading: loadingTasks } = useTasks();
   // Load all deals (no filter) for bot stats
   const { deals, isLoading: loadingDeals } = useDeals();
+  const greeting = getGreeting();
+  // Name from email (before @)
+  const firstName = user?.email?.split('@')[0] ?? 'Mohamed';
 
   const now = new Date();
 
@@ -202,24 +216,31 @@ export default function Dashboard() {
   return (
     <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-6 space-y-5">
 
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      {/* Header — greeting + date + YTD */}
+      <div className="flex flex-wrap items-start justify-between gap-4 animate-slide-up">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            {format(now, "EEEE d 'de' MMMM", { locale: es })
-              .replace(/^\w/, c => c.toUpperCase())}
+          <p className="text-sm font-medium text-muted-foreground mb-1">
+            {greeting.emoji} {greeting.text}, <span className="text-foreground font-semibold capitalize">{firstName}</span>
+          </p>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight leading-none">
+            Dashboard
           </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Resumen general de tu negocio
+          <p className="text-xs text-muted-foreground mt-1.5 capitalize">
+            {format(now, "EEEE d 'de' MMMM", { locale: es })} · Resumen de tu negocio
           </p>
         </div>
+
         {/* YTD pill */}
         {!loadingStock && (
-          <div className="flex items-center gap-2 bg-success/10 border border-success/20 rounded-xl px-4 py-2">
-            <Calendar className="h-3.5 w-3.5 text-success" />
+          <div className="flex items-center gap-3 bg-success/8 border border-success/20 rounded-2xl px-4 py-3 animate-slide-up-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-success/15">
+              <Trophy className="h-4.5 w-4.5 text-success" style={{ width: 18, height: 18 }} />
+            </div>
             <div>
-              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Acumulado {new Date().getFullYear()}</p>
-              <p className="text-base font-bold text-success leading-tight">
+              <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-widest">
+                Acumulado {new Date().getFullYear()}
+              </p>
+              <p className="text-lg font-bold text-success leading-tight tabular-nums">
                 +{stats.benYear.toFixed(0)}€ · {stats.soldYearCount} ventas
               </p>
             </div>
@@ -230,100 +251,106 @@ export default function Dashboard() {
       {/* ── KPI row ──────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
         {isLoading ? Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-28 rounded-xl" />
+          <div key={i} className={`rounded-xl overflow-hidden border border-border/50 animate-slide-up-${i + 1}`}>
+            <div className="h-[3px] skeleton-shimmer" />
+            <div className="p-4 space-y-2">
+              <Skeleton className="h-4 w-24 rounded-lg" />
+              <Skeleton className="h-8 w-20 rounded-lg" />
+              <Skeleton className="h-3 w-32 rounded-lg" />
+            </div>
+          </div>
         )) : (<>
 
           {/* Beneficio del mes */}
-          <Card className="border-border/60">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-muted-foreground">Beneficio del mes</span>
-                <div className={`h-7 w-7 rounded-lg flex items-center justify-center ${stats.benMes >= 0 ? 'bg-success/10' : 'bg-destructive/10'}`}>
-                  <TrendingUp className={`h-3.5 w-3.5 ${stats.benMes >= 0 ? 'text-success' : 'text-destructive'}`} />
+          <div className="kpi-card animate-slide-up-1">
+            <div className="h-[3px] w-full rounded-t-xl" style={{ background: stats.benMes >= 0 ? 'hsl(160 84% 38%)' : 'hsl(0 72% 51%)' }} />
+            <div className="p-4">
+              <div className="flex items-start justify-between mb-3">
+                <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${stats.benMes >= 0 ? 'bg-success/12' : 'bg-destructive/12'}`}>
+                  <TrendingUp className={`h-[18px] w-[18px] ${stats.benMes >= 0 ? 'text-success' : 'text-destructive'}`} />
                 </div>
-              </div>
-              <p className={`text-2xl font-bold ${stats.benMes >= 0 ? 'text-success' : 'text-destructive'}`}>
-                {stats.benMes >= 0 ? '+' : ''}{stats.benMes.toFixed(0)}€
-              </p>
-              <div className="flex items-center gap-1 mt-1">
-                {stats.benDelta >= 0
-                  ? <TrendingUp className="h-3 w-3 text-success" />
-                  : <TrendingDown className="h-3 w-3 text-destructive" />}
-                <span className={`text-[11px] font-medium ${stats.benDelta >= 0 ? 'text-success' : 'text-destructive'}`}>
-                  {stats.benDelta >= 0 ? '+' : ''}{stats.benDelta.toFixed(0)}% vs mes anterior
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* En stock + días rotación */}
-          <Card className="border-border/60">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-muted-foreground">En stock</span>
-                <div className="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Package className="h-3.5 w-3.5 text-primary" />
-                </div>
-              </div>
-              <p className="text-2xl font-bold">{stats.inStockCount}</p>
-              <div className="flex items-center justify-between mt-1">
-                <p className="text-[11px] text-muted-foreground">
-                  {stats.invertido.toFixed(0)}€ invertido
-                  {stats.dead.length > 0 && (
-                    <span className="text-destructive font-medium"> · {stats.dead.length} parados</span>
-                  )}
-                </p>
-                {stats.avgDaysToSell > 0 && (
-                  <span className="text-[10px] text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded-md font-medium">
-                    ~{Math.round(stats.avgDaysToSell)}d/ud
+                {stats.benDelta !== 0 && (
+                  <span className={`text-[10px] font-bold flex items-center gap-0.5 mt-0.5 ${stats.benDelta >= 0 ? 'text-success' : 'text-destructive'}`}>
+                    {stats.benDelta >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                    {stats.benDelta >= 0 ? '+' : ''}{stats.benDelta.toFixed(0)}%
                   </span>
                 )}
               </div>
-            </CardContent>
-          </Card>
+              <p className="text-[11px] font-medium text-muted-foreground mb-1">Beneficio del mes</p>
+              <p className={`stat-number text-2xl lg:text-[1.55rem] ${stats.benMes >= 0 ? 'text-success' : 'text-destructive'}`}>
+                {stats.benMes >= 0 ? '+' : ''}{stats.benMes.toFixed(0)}€
+              </p>
+              <p className="text-[10px] text-muted-foreground mt-1.5">{stats.soldThisCount} ventas · vs mes anterior</p>
+            </div>
+          </div>
+
+          {/* En stock */}
+          <div className="kpi-card animate-slide-up-2">
+            <div className="h-[3px] w-full rounded-t-xl" style={{ background: 'hsl(262 73% 58%)' }} />
+            <div className="p-4">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/12">
+                  <Package className="h-[18px] w-[18px] text-primary" />
+                </div>
+                {stats.dead.length > 0 && (
+                  <span className="text-[10px] font-bold text-destructive flex items-center gap-0.5 mt-0.5">
+                    <AlertTriangle className="h-3 w-3" /> {stats.dead.length}
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] font-medium text-muted-foreground mb-1">En stock</p>
+              <p className="stat-number text-2xl lg:text-[1.55rem] text-primary">{stats.inStockCount}</p>
+              <div className="flex items-center justify-between mt-1.5">
+                <p className="text-[10px] text-muted-foreground">{stats.invertido.toFixed(0)}€ invertido</p>
+                {stats.avgDaysToSell > 0 && (
+                  <span className="text-[9px] font-bold text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded-md">
+                    ~{Math.round(stats.avgDaysToSell)}d
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
 
           {/* Margen medio */}
-          <Card className="border-border/60">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-muted-foreground">Margen medio</span>
-                <div className="h-7 w-7 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                  <Trophy className="h-3.5 w-3.5 text-amber-500" />
+          <div className="kpi-card animate-slide-up-3">
+            <div className="h-[3px] w-full rounded-t-xl" style={{ background: 'hsl(38 92% 50%)' }} />
+            <div className="p-4">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/12">
+                  <Trophy className="h-[18px] w-[18px] text-amber-500" />
                 </div>
-              </div>
-              <p className="text-2xl font-bold">{stats.margenMedio.toFixed(1)}%</p>
-              <div className="flex items-center justify-between mt-1">
-                <p className="text-[11px] text-muted-foreground">{stats.soldThisCount} ventas este mes</p>
                 {stats.bestSale && (
-                  <span className="text-[10px] text-success font-medium bg-success/10 px-1.5 py-0.5 rounded-md">
+                  <span className="text-[10px] font-bold text-success bg-success/10 px-1.5 py-0.5 rounded-md mt-0.5">
                     🏆 +{beneficioReal(stats.bestSale).toFixed(0)}€
                   </span>
                 )}
               </div>
-            </CardContent>
-          </Card>
+              <p className="text-[11px] font-medium text-muted-foreground mb-1">Margen medio</p>
+              <p className="stat-number text-2xl lg:text-[1.55rem] text-amber-500">{stats.margenMedio.toFixed(1)}%</p>
+              <p className="text-[10px] text-muted-foreground mt-1.5">{stats.soldThisCount} ventas este mes</p>
+            </div>
+          </div>
 
           {/* Bot */}
-          <Card className="border-border/60">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-muted-foreground">Bot · hoy</span>
-                <div className="h-7 w-7 rounded-lg bg-destructive/10 flex items-center justify-center">
-                  <Bot className="h-3.5 w-3.5 text-destructive" />
+          <div className="kpi-card animate-slide-up-4">
+            <div className="h-[3px] w-full rounded-t-xl" style={{ background: 'hsl(0 72% 51%)' }} />
+            <div className="p-4">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-destructive/12">
+                  <Bot className="h-[18px] w-[18px] text-destructive" />
                 </div>
+                <span className="flex items-center gap-1 mt-0.5">
+                  <span className="status-dot-online" />
+                  <span className="text-[9px] font-bold text-success">ACTIVO</span>
+                </span>
               </div>
-              <div className="flex items-end gap-3">
-                <div>
-                  <p className="text-2xl font-bold">{botStats.today}</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">ofertas nuevas</p>
-                </div>
-                <div className="pb-0.5">
-                  <p className="text-sm font-bold text-destructive">{botStats.fire} 🔥</p>
-                  <p className="text-[11px] text-muted-foreground">{botStats.fireRate}% fuego</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              <p className="text-[11px] font-medium text-muted-foreground mb-1">Bot · hoy</p>
+              <p className="stat-number text-2xl lg:text-[1.55rem] text-destructive">{botStats.today}</p>
+              <p className="text-[10px] text-muted-foreground mt-1.5">
+                ofertas · {botStats.fire} 🔥 · {botStats.fireRate}% fuego
+              </p>
+            </div>
+          </div>
         </>)}
       </div>
 
