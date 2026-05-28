@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 // ─── OpenRouter config ────────────────────────────────────────────────────────
 const OPENROUTER_API_KEY_LS = 'prostock_openrouter_key';
@@ -37,7 +38,8 @@ Cuando tengas datos de anuncios reales de Wallapop, analízalos con detalle:
 - Factores que afectan al precio (batería, daños, almacenamiento, color)
 - Cuáles son deals interesantes y cuáles están caros
 
-Responde SIEMPRE en español. Sé conciso pero completo. Usa emojis con moderación.`;
+Responde SIEMPRE en español. Sé conciso pero completo. Usa emojis con moderación.
+IMPORTANTE: Estás en un panel de chat pequeño (móvil). Si usas tablas, que tengan MÁXIMO 2-3 columnas cortas. Si necesitas más columnas, usa listas con viñetas en su lugar. Nunca hagas tablas de más de 3 columnas.`;
 
 // ─── Price keyword detection ──────────────────────────────────────────────────
 function isPriceQuery(msg: string): boolean {
@@ -394,6 +396,7 @@ export function AIChat() {
                       ) : (
                         <div className="text-xs leading-relaxed prose-chat">
                           <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
                             components={{
                               p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
                               strong: ({ children }) => <strong className="font-semibold text-foreground">{children}</strong>,
