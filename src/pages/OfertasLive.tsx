@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Target, Flame, ExternalLink, MessageSquare, Archive, Radio, Zap, Brain, MessageCircle } from 'lucide-react';
+import { Target, Flame, ExternalLink, Archive, Radio, Zap, MessageCircle, Bell, BellOff } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDeals, Deal } from '@/hooks/useDeals';
 import { useToast } from '@/hooks/use-toast';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 const SCORE_CONFIG: Record<Deal['score'], { label: string; className: string; dotClass: string }> = {
   fire: {
@@ -33,6 +34,7 @@ const OfertasLive = () => {
   const [maxPrice, setMaxPrice] = useState<number | undefined>(undefined);
 
   const { deals, isLoading, markSent, archive, queueSend } = useDeals({ onlyFire, maxPrice });
+  const { supported, isSubscribed, isLoading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
 
   const handleContact = (deal: Deal) => {
     queueSend.mutate(deal.id, {
@@ -74,6 +76,22 @@ const OfertasLive = () => {
             </p>
           </div>
         </div>
+
+        {/* Botón notificaciones push */}
+        {supported && (
+          <Button
+            variant={isSubscribed ? 'default' : 'outline'}
+            size="sm"
+            onClick={isSubscribed ? unsubscribe : subscribe}
+            disabled={pushLoading}
+            className="shrink-0"
+          >
+            {isSubscribed
+              ? <><BellOff className="h-3.5 w-3.5 mr-1.5" /> Notificaciones ON</>
+              : <><Bell className="h-3.5 w-3.5 mr-1.5" /> Activar notificaciones 🔥</>
+            }
+          </Button>
+        )}
       </div>
 
       {/* KPIs */}
