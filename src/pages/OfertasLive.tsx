@@ -36,9 +36,17 @@ const OfertasLive = () => {
 
   const handleContact = (deal: Deal) => {
     window.open(deal.item_url, '_blank');
+    toast({
+      title: '⚡ Wallapop abierto',
+      description: '¿Has enviado el mensaje? Pulsa "Marcar como enviado" cuando lo hayas hecho.',
+      duration: 10000,
+    });
+  };
+
+  const handleMarkSent = (deal: Deal) => {
     markSent.mutate(deal.id, {
       onSuccess: () =>
-        toast({ title: '⚡ Contactado', description: 'Recuerda enviar el mensaje en Wallapop.' }),
+        toast({ title: '✅ Marcado como enviado', description: 'El trato está en curso.' }),
     });
   };
 
@@ -246,14 +254,24 @@ const OfertasLive = () => {
                         </Button>
                       </>
                     ) : (
-                      <Button
-                        size="sm"
-                        className="h-7 text-xs bg-primary hover:bg-primary/90"
-                        onClick={() => handleContact(deal)}
-                        disabled={markSent.isPending}
-                      >
-                        <Zap className="h-3 w-3 mr-1" /> Contactar ahora
-                      </Button>
+                      <>
+                        <Button
+                          size="sm"
+                          className="h-7 text-xs bg-primary hover:bg-primary/90"
+                          onClick={() => handleContact(deal)}
+                        >
+                          <Zap className="h-3 w-3 mr-1" /> Abrir en Wallapop
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-xs text-success border-success/40 hover:bg-success/10"
+                          onClick={() => handleMarkSent(deal)}
+                          disabled={markSent.isPending}
+                        >
+                          <MessageCircle className="h-3 w-3 mr-1" /> Marcar enviado
+                        </Button>
+                      </>
                     )}
                     <Button size="sm" variant="outline" className="h-7 text-xs" asChild>
                       <a href={deal.item_url} target="_blank" rel="noreferrer">
