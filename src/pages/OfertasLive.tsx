@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { Target, Flame, ExternalLink, Archive, Radio, Zap, MessageCircle, Bell, BellOff, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Target, Flame, ExternalLink, Archive, Radio, Zap, MessageCircle, Bell, BellOff, RefreshCw, AlertTriangle, MapPin, Clock, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow, format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Separator } from '@/components/ui/separator';
 import { useDeals, Deal } from '@/hooks/useDeals';
 import { useToast } from '@/hooks/use-toast';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
@@ -89,56 +91,187 @@ const getSearchConfig = (keyword: string | null): SearchConfig =>
     priority: 99,
   };
 
+// ─── Deal actions (shared between card and sheet) ──────────────────────────
+function DealActions({ deal, onContact, onArchive, queuePending, size = 'sm' }: {
+  deal: Deal;
+  onContact: () => void;
+  onArchive: () => void;
+  queuePending: boolean;
+  size?: 'sm' | 'lg';
+}) {
+  const isSent = deal.message_status === 'sent';
+  const isQueued = deal.message_status === 'queued' || deal.message_status === 'sending';
+  const isFailed = deal.message_status === 'failed';
+  const sentTime = deal.message_sent_at ? format(new Date(deal.message_sent_at), 'HH:mm') : null;
+  const h = size === 'lg' ? 'h-9' : 'h-6';
+  const txt = size === 'lg' ? 'text-xs' : 'text-[10px]';
+  const px = size === 'lg' ? 'px-4' : 'px-2';
+  const iconCls = size === 'lg' ? 'h-3.5 w-3.5' : 'h-2.5 w-2.5';
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {isSent ? (
+        <>
+          <Badge variant="outline" className={`bg-success/10 text-success border-success/20 ${h} ${px} ${txt}`}>
+            ✅ Enviado{sentTime ? ` ${sentTime}` : ''}
+          </Badge>
+          <Button size="sm" variant="outline" className={`${h} ${txt} ${px}`} asChild>
+            <a href={deal.item_url} target="_blank" rel="noreferrer">
+              <MessageCircle className={`${iconCls} mr-1`} /> Ver chat
+            </a>
+          </Button>
+        </>
+      ) : isQueued ? (
+        <Badge variant="outline" className={`bg-amber-500/10 text-amber-500 border-amber-500/30 ${h} ${px} ${txt} animate-pulse`}>
+          ⏳ Bot enviando...
+        </Badge>
+      ) : isFailed ? (
+        <>
+          <div className="w-full flex items-center gap-1.5 text-destructive mb-1">
+            <AlertTriangle className={iconCls} />
+            <span className={`${txt} font-semibold`}>El bot no pudo enviar</span>
+          </div>
+          <Button size="sm" className={`${h} ${txt} ${px} bg-destructive hover:bg-destructive/90 text-white`} onClick={onContact} disabled={queuePending}>
+            <RefreshCw className={`${iconCls} mr-1`} /> Reintentar
+          </Button>
+          <Button size="sm" variant="outline" className={`${h} ${txt} ${px}`} asChild>
+            <a href={deal.item_url} target="_blank" rel="noreferrer">
+              <ExternalLink className={`${iconCls} mr-1`} /> Enviar manualmente
+            </a>
+          </Button>
+        </>
+      ) : (
+        <Button size="sm" className={`${h} ${txt} ${px} bg-primary hover:bg-primary/90`} onClick={onContact} disabled={queuePending}>
+          <Zap className={`${iconCls} mr-1`} /> Contactar
+        </Button>
+      )}
+      <Button size="sm" variant="outline" className={`${h} ${txt} ${px}`} asChild>
+        <a href={deal.item_url} target="_blank" rel="noreferrer">
+          <ExternalLink className={`${iconCls} mr-1`} /> Wallapop
+        </a>
+      </Button>
+      <Button size="sm" variant="ghost" className={`${h} ${txt} px-1.5 text-muted-foreground`} onClick={onArchive} title="Archivar">
+        <Archive className={iconCls} />
+      </Button>
+    </div>
+  );
+}
+
+// ─── Deal detail sheet ──────────────────────────────────────────────────────
+function DealDetailSheet({ deal, open, onClose, onContact, onArchive, queuePending }: {
+  deal: Deal | null;
+  open: boolean;
+  onClose: () => void;
+  onContact: () => void;
+  onArchive: () => void;
+  queuePending: boolean;
+}) {
+  if (!deal) return null;
+  const score = SCORE_CONFIG[deal.score];
+  const searchCfg = getSearchConfig(deal.search_keyword);
+  const isFresh = Date.now() - new Date(deal.created_at).getTime() < 5 * 60 * 1000;
+  const timeAgo = formatDistanceToNow(new Date(deal.created_at), { locale: es, addSuffix: true });
+
+  return (
+    <Sheet open={open} onOpenChange={v => { if (!v) onClose(); }}>
+      <SheetContent side="bottom" className="rounded-t-2xl max-h-[90dvh] overflow-y-auto p-0">
+        {/* Imagen hero */}
+        {deal.image_url ? (
+          <img src={deal.image_url} alt={deal.title} className="w-full h-48 object-cover" />
+        ) : (
+          <div className="w-full h-32 bg-muted/60 flex items-center justify-center text-5xl">📱</div>
+        )}
+
+        <div className="p-5 space-y-4">
+          {/* Título + precio */}
+          <div className="flex justify-between items-start gap-3">
+            <SheetTitle className="text-lg font-bold leading-snug flex-1">{deal.title}</SheetTitle>
+            <span className="text-2xl font-bold shrink-0 text-primary">
+              {deal.price != null ? `${deal.price}€` : '—'}
+            </span>
+          </div>
+
+          {/* Badges */}
+          <div className="flex flex-wrap gap-1.5">
+            <Badge variant="outline" className={`${score.className} text-xs h-6 px-2`}>
+              🔥 {score.label}
+            </Badge>
+            <Badge variant="outline" className={`${searchCfg.badgeClass} text-xs h-6 px-2 font-semibold`}>
+              {searchCfg.emoji} {searchCfg.label}
+            </Badge>
+            {isFresh && (
+              <Badge className="text-xs h-6 px-2 bg-destructive text-white border-0 animate-pulse">
+                NUEVO
+              </Badge>
+            )}
+          </div>
+
+          {/* Meta */}
+          <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{timeAgo}</span>
+            {deal.location && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{deal.location}</span>}
+          </div>
+
+          <Separator />
+
+          {/* Descripción completa */}
+          {deal.description ? (
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Descripción del vendedor</p>
+              <p className="text-sm leading-relaxed whitespace-pre-wrap">{deal.description}</p>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground italic">Sin descripción</p>
+          )}
+
+          <Separator />
+
+          {/* Acciones grandes */}
+          <DealActions deal={deal} onContact={() => { onContact(); onClose(); }} onArchive={() => { onArchive(); onClose(); }} queuePending={queuePending} size="lg" />
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
 // ─── Deal card ─────────────────────────────────────────────────────────────
-function DealCard({ deal, onContact, onArchive, queuePending, showSourceBadge = false }: {
+function DealCard({ deal, onContact, onArchive, queuePending, showSourceBadge = false, onOpen }: {
   deal: Deal;
   onContact: () => void;
   onArchive: () => void;
   queuePending: boolean;
   showSourceBadge?: boolean;
+  onOpen: () => void;
 }) {
-  const [descExpanded, setDescExpanded] = useState(false);
   const score = SCORE_CONFIG[deal.score];
   const searchCfg = getSearchConfig(deal.search_keyword);
   const isFresh = Date.now() - new Date(deal.created_at).getTime() < 5 * 60 * 1000;
-  const isSent = deal.message_status === 'sent';
-  const isQueued = deal.message_status === 'queued' || deal.message_status === 'sending';
-  const isFailed = deal.message_status === 'failed';
   const timeAgo = formatDistanceToNow(new Date(deal.created_at), { locale: es });
-  const sentTime = deal.message_sent_at
-    ? format(new Date(deal.message_sent_at), 'HH:mm')
-    : null;
-  const descLong = deal.description && deal.description.length > 80;
 
   return (
     <div
-      className={`flex gap-3 p-3 rounded-xl border transition-all ${
+      className={`flex gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
         isFresh
           ? 'border-destructive/40 bg-destructive/5 shadow-sm'
-          : 'border-border/60 bg-card hover:bg-secondary/30'
+          : 'border-border/60 bg-card hover:bg-secondary/40'
       }`}
+      onClick={onOpen}
     >
       {/* Imagen */}
       {deal.image_url ? (
-        <img
-          src={deal.image_url}
-          alt={deal.title}
-          className="w-14 h-14 rounded-lg object-cover bg-muted shrink-0"
-          loading="lazy"
-        />
+        <img src={deal.image_url} alt={deal.title} className="w-14 h-14 rounded-lg object-cover bg-muted shrink-0" loading="lazy" />
       ) : (
-        <div className="w-14 h-14 rounded-lg bg-muted/60 flex items-center justify-center text-xl shrink-0">
-          📱
-        </div>
+        <div className="w-14 h-14 rounded-lg bg-muted/60 flex items-center justify-center text-xl shrink-0">📱</div>
       )}
 
       <div className="flex-1 min-w-0">
         {/* Título y precio */}
         <div className="flex justify-between items-start gap-1.5 mb-1">
           <p className="font-semibold text-sm leading-snug line-clamp-2">{deal.title}</p>
-          <p className="font-bold text-base whitespace-nowrap leading-tight shrink-0">
-            {deal.price != null ? `${deal.price}€` : '—'}
-          </p>
+          <div className="flex items-center gap-1 shrink-0">
+            <p className="font-bold text-base leading-tight">{deal.price != null ? `${deal.price}€` : '—'}</p>
+            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50" />
+          </div>
         </div>
 
         {/* Badges */}
@@ -152,95 +285,21 @@ function DealCard({ deal, onContact, onArchive, queuePending, showSourceBadge = 
             </Badge>
           )}
           {isFresh && (
-            <Badge className="text-[10px] h-5 px-1.5 bg-destructive text-white border-0 animate-pulse">
-              NUEVO
-            </Badge>
+            <Badge className="text-[10px] h-5 px-1.5 bg-destructive text-white border-0 animate-pulse">NUEVO</Badge>
           )}
           <span className="text-[10px] text-muted-foreground">
             {timeAgo}{deal.location ? ` · ${deal.location}` : ''}
           </span>
         </div>
 
-        {/* Descripción */}
+        {/* Descripción preview — 1 línea */}
         {deal.description && (
-          <div className="mb-1.5">
-            <p className={`text-xs text-muted-foreground ${descExpanded ? '' : 'line-clamp-2'}`}>
-              {deal.description}
-            </p>
-            {descLong && (
-              <button
-                className="text-[10px] text-primary font-semibold mt-0.5 hover:underline"
-                onClick={() => setDescExpanded(v => !v)}
-              >
-                {descExpanded ? 'Ver menos ▲' : 'Ver más ▼'}
-              </button>
-            )}
-          </div>
+          <p className="text-xs text-muted-foreground line-clamp-1 mb-1.5">{deal.description}</p>
         )}
 
-        {/* Acciones */}
-        <div className="flex flex-wrap gap-1.5">
-          {isSent ? (
-            <>
-              <Badge variant="outline" className="bg-success/10 text-success border-success/20 h-6 px-2 text-[10px]">
-                ✅ Enviado{sentTime ? ` ${sentTime}` : ''}
-              </Badge>
-              <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" asChild>
-                <a href={deal.item_url} target="_blank" rel="noreferrer">
-                  <MessageCircle className="h-2.5 w-2.5 mr-1" /> Ver chat
-                </a>
-              </Button>
-            </>
-          ) : isQueued ? (
-            <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/30 h-6 px-2 text-[10px] animate-pulse">
-              ⏳ Bot enviando...
-            </Badge>
-          ) : isFailed ? (
-            <div className="w-full space-y-1.5">
-              <div className="flex items-center gap-1.5 text-destructive">
-                <AlertTriangle className="h-3 w-3 shrink-0" />
-                <span className="text-[10px] font-semibold">El bot no pudo enviar el mensaje</span>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                <Button
-                  size="sm"
-                  className="h-6 text-[10px] px-2 bg-destructive hover:bg-destructive/90 text-white"
-                  onClick={onContact}
-                  disabled={queuePending}
-                >
-                  <RefreshCw className="h-2.5 w-2.5 mr-1" /> Reintentar
-                </Button>
-                <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" asChild>
-                  <a href={deal.item_url} target="_blank" rel="noreferrer">
-                    <ExternalLink className="h-2.5 w-2.5 mr-1" /> Enviar manualmente
-                  </a>
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <Button
-              size="sm"
-              className="h-6 text-[10px] px-2 bg-primary hover:bg-primary/90"
-              onClick={onContact}
-              disabled={queuePending}
-            >
-              <Zap className="h-2.5 w-2.5 mr-1" /> Contactar
-            </Button>
-          )}
-          <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" asChild>
-            <a href={deal.item_url} target="_blank" rel="noreferrer">
-              <ExternalLink className="h-2.5 w-2.5 mr-1" /> Wallapop
-            </a>
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-6 text-[10px] px-1.5 text-muted-foreground"
-            onClick={onArchive}
-            title="Archivar"
-          >
-            <Archive className="h-2.5 w-2.5" />
-          </Button>
+        {/* Acciones — stop propagation para no abrir el sheet */}
+        <div onClick={e => e.stopPropagation()}>
+          <DealActions deal={deal} onContact={onContact} onArchive={onArchive} queuePending={queuePending} size="sm" />
         </div>
       </div>
     </div>
@@ -248,12 +307,13 @@ function DealCard({ deal, onContact, onArchive, queuePending, showSourceBadge = 
 }
 
 // ─── Kanban column ─────────────────────────────────────────────────────────
-function KanbanColumn({ keyword, deals, onContact, onArchive, queuePending }: {
+function KanbanColumn({ keyword, deals, onContact, onArchive, queuePending, onOpenDetail }: {
   keyword: string | null;
   deals: Deal[];
   onContact: (id: string) => void;
   onArchive: (id: string) => void;
   queuePending: boolean;
+  onOpenDetail: (deal: Deal) => void;
 }) {
   const cfg = getSearchConfig(keyword);
   const fireCount = deals.filter(d => d.score === 'fire').length;
@@ -303,6 +363,7 @@ function KanbanColumn({ keyword, deals, onContact, onArchive, queuePending }: {
               onArchive={() => onArchive(deal.id)}
               queuePending={queuePending}
               showSourceBadge={false}
+              onOpen={() => onOpenDetail(deal)}
             />
           ))
         )}
@@ -348,6 +409,8 @@ const OfertasLive = () => {
       duration: 5000,
     });
   }, [toast]);
+
+  const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
 
   const { deals, isLoading, archive, queueSend } = useDeals(
     { onlyFire, maxPrice },
@@ -522,6 +585,7 @@ const OfertasLive = () => {
                 onContact={handleContact}
                 onArchive={id => archive.mutate(id)}
                 queuePending={queueSend.isPending}
+                onOpenDetail={setSelectedDeal}
               />
             ))}
           </div>
@@ -575,6 +639,7 @@ const OfertasLive = () => {
                     onArchive={() => archive.mutate(deal.id)}
                     queuePending={queueSend.isPending}
                     showSourceBadge={activeSource === 'all'}
+                    onOpen={() => setSelectedDeal(deal)}
                   />
                 ))}
               </div>
@@ -591,6 +656,16 @@ const OfertasLive = () => {
           <p className="text-xs mt-1 opacity-70">El bot las irá añadiendo aquí en cuanto encuentre alguna.</p>
         </div>
       )}
+
+      {/* Deal detail sheet */}
+      <DealDetailSheet
+        deal={selectedDeal}
+        open={!!selectedDeal}
+        onClose={() => setSelectedDeal(null)}
+        onContact={() => selectedDeal && handleContact(selectedDeal.id)}
+        onArchive={() => selectedDeal && archive.mutate(selectedDeal.id)}
+        queuePending={queueSend.isPending}
+      />
     </div>
   );
 };
