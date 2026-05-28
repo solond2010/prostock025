@@ -13,6 +13,9 @@ import FinanzasPersonales from "./pages/FinanzasPersonales";
 import Auth from "./pages/Auth";
 import RegistroAdmin from "./pages/RegistroAdmin";
 import InventarioPiezas from "./pages/InventarioPiezas";
+import OfertasLive from "./pages/OfertasLive";
+import Tareas from "./pages/Tareas";
+import Agenda from "./pages/Agenda";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -82,6 +85,36 @@ const App = () => (
               <ProtectedRoute>
                 <MainLayout>
                   <InventarioPiezas />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/ofertas"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <OfertasLive />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/tareas"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <Tareas />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/agenda"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <Agenda />
                 </MainLayout>
               </ProtectedRoute>
             }
