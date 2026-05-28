@@ -17,7 +17,7 @@ export interface Deal {
   search_keyword: string | null;
   score: 'fire' | 'good' | 'ok';
   is_archived: boolean;
-  message_status: 'pending' | 'sent' | 'failed' | 'skipped';
+  message_status: 'pending' | 'queued' | 'sending' | 'sent' | 'failed' | 'skipped';
   message_sent_at: string | null;
   created_at: string;
   updated_at: string;
@@ -85,5 +85,16 @@ export function useDeals(filter: { onlyFire?: boolean; maxPrice?: number } = {})
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['deals'] }),
   });
 
-  return { deals: query.data ?? [], isLoading: query.isLoading, markSent, archive };
+  const queueSend = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('deals' as any)
+        .update({ message_status: 'queued' })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['deals'] }),
+  });
+
+  return { deals: query.data ?? [], isLoading: query.isLoading, markSent, archive, queueSend };
 }

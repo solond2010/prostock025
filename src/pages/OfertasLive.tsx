@@ -32,21 +32,15 @@ const OfertasLive = () => {
   const [onlyFire, setOnlyFire] = useState(false);
   const [maxPrice, setMaxPrice] = useState<number | undefined>(undefined);
 
-  const { deals, isLoading, markSent, archive } = useDeals({ onlyFire, maxPrice });
+  const { deals, isLoading, markSent, archive, queueSend } = useDeals({ onlyFire, maxPrice });
 
   const handleContact = (deal: Deal) => {
-    window.open(deal.item_url, '_blank');
-    toast({
-      title: '⚡ Wallapop abierto',
-      description: '¿Has enviado el mensaje? Pulsa "Marcar como enviado" cuando lo hayas hecho.',
-      duration: 10000,
-    });
-  };
-
-  const handleMarkSent = (deal: Deal) => {
-    markSent.mutate(deal.id, {
+    queueSend.mutate(deal.id, {
       onSuccess: () =>
-        toast({ title: '✅ Marcado como enviado', description: 'El trato está en curso.' }),
+        toast({
+          title: '⚡ Enviando mensaje...',
+          description: 'El bot lo enviará en Wallapop en los próximos segundos siguiendo las reglas anti-ban.',
+        }),
     });
   };
 
@@ -184,6 +178,7 @@ const OfertasLive = () => {
             const score = SCORE_CONFIG[deal.score];
             const isFresh = Date.now() - new Date(deal.created_at).getTime() < 5 * 60 * 1000;
             const isSent = deal.message_status === 'sent';
+            const isQueued = deal.message_status === 'queued' || deal.message_status === 'sending';
             const timeAgo = formatDistanceToNow(new Date(deal.created_at), { locale: es });
             const sentTime = deal.message_sent_at
               ? format(new Date(deal.message_sent_at), 'HH:mm')
@@ -253,25 +248,19 @@ const OfertasLive = () => {
                           </a>
                         </Button>
                       </>
+                    ) : isQueued ? (
+                      <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/30 h-7 px-3 text-xs animate-pulse">
+                        ⏳ Bot enviando mensaje...
+                      </Badge>
                     ) : (
-                      <>
-                        <Button
-                          size="sm"
-                          className="h-7 text-xs bg-primary hover:bg-primary/90"
-                          onClick={() => handleContact(deal)}
-                        >
-                          <Zap className="h-3 w-3 mr-1" /> Abrir en Wallapop
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 text-xs text-success border-success/40 hover:bg-success/10"
-                          onClick={() => handleMarkSent(deal)}
-                          disabled={markSent.isPending}
-                        >
-                          <MessageCircle className="h-3 w-3 mr-1" /> Marcar enviado
-                        </Button>
-                      </>
+                      <Button
+                        size="sm"
+                        className="h-7 text-xs bg-primary hover:bg-primary/90"
+                        onClick={() => handleContact(deal)}
+                        disabled={queueSend.isPending}
+                      >
+                        <Zap className="h-3 w-3 mr-1" /> Contactar ahora
+                      </Button>
                     )}
                     <Button size="sm" variant="outline" className="h-7 text-xs" asChild>
                       <a href={deal.item_url} target="_blank" rel="noreferrer">
