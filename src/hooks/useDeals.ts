@@ -3,6 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
+export type PipelineStatus = 'found' | 'contacted' | 'responded' | 'bought' | 'repairing' | 'sold';
+
 export interface Deal {
   id: string;
   user_id: string;
@@ -19,6 +21,7 @@ export interface Deal {
   is_archived: boolean;
   message_status: 'pending' | 'queued' | 'sending' | 'sent' | 'failed' | 'skipped';
   message_sent_at: string | null;
+  pipeline_status: PipelineStatus | null;
   created_at: string;
   updated_at: string;
 }
@@ -64,7 +67,7 @@ export function useDeals(
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'deals', filter: `user_id=eq.${user.id}` },
-        (payload) => {
+        async (payload) => {
           queryClient.invalidateQueries({ queryKey: ['deals'] });
           const updated = payload.new as unknown as Deal | undefined;
           if (!updated) return;
@@ -72,6 +75,14 @@ export function useDeals(
             callbacksRef.current?.onDealFailed?.(updated);
           } else if (updated.message_status === 'sent') {
             callbacksRef.current?.onDealSent?.(updated);
+            // Auto-advance pipeline: found → contacted when message is sent
+            const pipeStatus = updated.pipeline_status ?? 'found';
+            if (pipeStatus === 'found') {
+              await supabase
+                .from('deals' as any)
+                .update({ pipeline_status: 'contacted' })
+                .eq('id', updated.id);
+            }
           }
         }
       )
@@ -114,5 +125,16 @@ export function useDeals(
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['deals'] }),
   });
 
-  return { deals: query.data ?? [], isLoading: query.isLoading, markSent, archive, queueSend };
+  const updatePipeline = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: PipelineStatus }) => {
+      const { error } = await supabase
+        .from('deals' as any)
+        .update({ pipeline_status: status })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['deals'] }),
+  });
+
+  return { deals: query.data ?? [], isLoading: query.isLoading, markSent, archive, queueSend, updatePipeline };
 }

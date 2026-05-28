@@ -1,4 +1,4 @@
-import { Package, Receipt, PieChart, BarChart3, Menu, LogOut, Moon, Sun, Wallet, Wrench, Target, CheckCircle2, Calendar, Bot, LayoutDashboard } from 'lucide-react';
+import { Package, Receipt, PieChart, BarChart3, Menu, LogOut, Moon, Sun, Wallet, Wrench, Target, CheckCircle2, Calendar, Bot, LayoutDashboard, GitCommitHorizontal } from 'lucide-react';
 import { useBotStatus, isBotOnline } from '@/hooks/useBotStatus';
 import { NavLink } from '@/components/NavLink';
 import {
@@ -34,6 +34,7 @@ const menuSections = [
     label: 'NUEVO',
     items: [
       { title: 'En directo', url: '/ofertas', icon: Target, highlight: true },
+      { title: 'Pipeline', url: '/pipeline', icon: GitCommitHorizontal, highlight: true },
       { title: 'Tareas', url: '/tareas', icon: CheckCircle2, highlight: true },
       { title: 'Agenda', url: '/agenda', icon: Calendar, highlight: true },
     ],

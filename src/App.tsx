@@ -18,6 +18,7 @@ import Tareas from "./pages/Tareas";
 import Agenda from "./pages/Agenda";
 import Dashboard from "./pages/Dashboard";
 import BotControl from "./pages/BotControl";
+import Pipeline from "./pages/Pipeline";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -137,6 +138,16 @@ const App = () => (
               <ProtectedRoute>
                 <MainLayout>
                   <BotControl />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pipeline"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <Pipeline />
                 </MainLayout>
               </ProtectedRoute>
             }
