@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react';
-import { Target, Flame, ExternalLink, Archive, Radio, Zap, MessageCircle, Bell, BellOff } from 'lucide-react';
+import { useState, useMemo, useCallback } from 'react';
+import { Target, Flame, ExternalLink, Archive, Radio, Zap, MessageCircle, Bell, BellOff, RefreshCw, AlertTriangle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
@@ -180,24 +181,30 @@ function DealCard({ deal, onContact, onArchive, queuePending, showSourceBadge = 
             </>
           ) : isQueued ? (
             <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/30 h-6 px-2 text-[10px] animate-pulse">
-              ⏳ Enviando...
+              ⏳ Bot enviando...
             </Badge>
           ) : isFailed ? (
-            <>
-              <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30 h-6 px-2 text-[10px]">
-                ❌ Error al enviar
-              </Badge>
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-6 text-[10px] px-2 text-destructive border-destructive/30 hover:bg-destructive/10"
-                onClick={onContact}
-                disabled={queuePending}
-                title="Reintentar envío"
-              >
-                <Zap className="h-2.5 w-2.5 mr-1" /> Reintentar
-              </Button>
-            </>
+            <div className="w-full space-y-1.5">
+              <div className="flex items-center gap-1.5 text-destructive">
+                <AlertTriangle className="h-3 w-3 shrink-0" />
+                <span className="text-[10px] font-semibold">El bot no pudo enviar el mensaje</span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                <Button
+                  size="sm"
+                  className="h-6 text-[10px] px-2 bg-destructive hover:bg-destructive/90 text-white"
+                  onClick={onContact}
+                  disabled={queuePending}
+                >
+                  <RefreshCw className="h-2.5 w-2.5 mr-1" /> Reintentar
+                </Button>
+                <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" asChild>
+                  <a href={deal.item_url} target="_blank" rel="noreferrer">
+                    <ExternalLink className="h-2.5 w-2.5 mr-1" /> Enviar manualmente
+                  </a>
+                </Button>
+              </div>
+            </div>
           ) : (
             <Button
               size="sm"
@@ -295,19 +302,53 @@ function KanbanColumn({ keyword, deals, onContact, onArchive, queuePending }: {
 // ─── Main page ─────────────────────────────────────────────────────────────
 const OfertasLive = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [onlyFire, setOnlyFire] = useState(false);
   const [maxPrice, setMaxPrice] = useState<number | undefined>(undefined);
   const [activeSource, setActiveSource] = useState<string | null | 'all'>('all');
 
-  const { deals, isLoading, archive, queueSend } = useDeals({ onlyFire, maxPrice });
+  const onDealFailed = useCallback((deal: import('@/hooks/useDeals').Deal) => {
+    toast({
+      title: '❌ El bot no pudo enviar el mensaje',
+      description: (
+        <div className="space-y-1">
+          <p className="text-xs">"{deal.title}"</p>
+          <p className="text-xs text-muted-foreground">
+            Comprueba que el bot esté logueado en Wallapop.{' '}
+            <button
+              className="underline font-semibold text-foreground"
+              onClick={() => navigate('/bot')}
+            >
+              Ver Panel del Bot →
+            </button>
+          </p>
+        </div>
+      ),
+      variant: 'destructive',
+      duration: 8000,
+    });
+  }, [toast, navigate]);
+
+  const onDealSent = useCallback((deal: import('@/hooks/useDeals').Deal) => {
+    toast({
+      title: '✅ Mensaje enviado',
+      description: `El bot contactó al vendedor de "${deal.title}"`,
+      duration: 5000,
+    });
+  }, [toast]);
+
+  const { deals, isLoading, archive, queueSend } = useDeals(
+    { onlyFire, maxPrice },
+    { onDealFailed, onDealSent }
+  );
   const { supported, isSubscribed, isLoading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
 
   const handleContact = (id: string) => {
     queueSend.mutate(id, {
       onSuccess: () =>
         toast({
-          title: '⚡ Enviando mensaje...',
-          description: 'El bot lo enviará en Wallapop en los próximos segundos.',
+          title: '⚡ Solicitud enviada al bot',
+          description: 'El bot enviará el mensaje en los próximos 15 segundos.',
         }),
     });
   };

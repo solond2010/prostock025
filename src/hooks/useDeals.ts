@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -23,9 +23,20 @@ export interface Deal {
   updated_at: string;
 }
 
-export function useDeals(filter: { onlyFire?: boolean; maxPrice?: number } = {}) {
+interface UseDealsCallbacks {
+  onDealFailed?: (deal: Deal) => void;
+  onDealSent?: (deal: Deal) => void;
+}
+
+export function useDeals(
+  filter: { onlyFire?: boolean; maxPrice?: number } = {},
+  callbacks?: UseDealsCallbacks
+) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  // Use ref so the Realtime subscription doesn't re-create on every render
+  const callbacksRef = useRef<UseDealsCallbacks | undefined>(callbacks);
+  callbacksRef.current = callbacks;
 
   const query = useQuery({
     queryKey: ['deals', filter],
@@ -45,7 +56,7 @@ export function useDeals(filter: { onlyFire?: boolean; maxPrice?: number } = {})
     },
   });
 
-  // Suscripción Realtime — cada vez que el bot inserta una oferta, se refresca
+  // Realtime: invalidate cache and fire callbacks on status changes
   useEffect(() => {
     if (!user) return;
     const channel = supabase
@@ -53,8 +64,15 @@ export function useDeals(filter: { onlyFire?: boolean; maxPrice?: number } = {})
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'deals', filter: `user_id=eq.${user.id}` },
-        () => {
+        (payload) => {
           queryClient.invalidateQueries({ queryKey: ['deals'] });
+          const updated = payload.new as unknown as Deal | undefined;
+          if (!updated) return;
+          if (updated.message_status === 'failed') {
+            callbacksRef.current?.onDealFailed?.(updated);
+          } else if (updated.message_status === 'sent') {
+            callbacksRef.current?.onDealSent?.(updated);
+          }
         }
       )
       .subscribe();
