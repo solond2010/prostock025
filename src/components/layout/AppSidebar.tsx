@@ -1,4 +1,4 @@
-import { Package, Receipt, PieChart, BarChart3, Menu, LogOut, Moon, Sun, Wallet, Wrench } from 'lucide-react';
+import { Package, Receipt, PieChart, BarChart3, Menu, LogOut, Moon, Sun, Wallet, Wrench, Target, CheckCircle2, Calendar } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import {
   Sheet,
@@ -16,6 +16,9 @@ import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
 const menuItems = [
+  { title: 'Ofertas en vivo', url: '/ofertas', icon: Target, highlight: true },
+  { title: 'Tareas', url: '/tareas', icon: CheckCircle2, highlight: true },
+  { title: 'Agenda', url: '/agenda', icon: Calendar, highlight: true },
   { title: 'Gestor de Stock', url: '/', icon: Package },
   { title: 'Gráficos Anuales', url: '/graficos', icon: BarChart3 },
   { title: 'Gasto en Material', url: '/gasto-material', icon: Receipt },
