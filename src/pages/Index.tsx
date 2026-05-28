@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { SummaryCards } from '@/components/stock/SummaryCards';
 import { StockFilters } from '@/components/stock/StockFilters';
 import { StockTable } from '@/components/stock/StockTable';
@@ -294,45 +295,34 @@ const Index = () => {
       <div className="min-h-screen bg-background">
         <div className="mx-auto max-w-[1600px] px-3 py-4 sm:px-6 sm:py-8 lg:px-10 xl:px-12 lg:py-10">
           {/* Header */}
-          <div className="mb-4 sm:mb-8 lg:mb-10 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-              <div className="rounded-xl bg-primary p-1.5 sm:p-2.5 shrink-0 shadow-sm">
-                <Package className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground" />
-              </div>
-              <div className="min-w-0">
-                <h1 className="text-lg sm:text-2xl lg:text-3xl font-bold text-foreground tracking-tight">Panel de Stock</h1>
-                <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Controla tu inventario y beneficios</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              {/* Desktop Export Button in header */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    onClick={handleExportCSV} 
-                    variant="outline" 
-                    size="sm"
-                    className="hidden lg:flex"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Exportar
+          <div className="mb-5 sm:mb-8">
+            <PageHeader
+              icon={Package}
+              title="Gestor de Stock"
+              iconColor="violet"
+              subtitle="Controla tu inventario y beneficios en tiempo real"
+              actions={
+                <div className="flex items-center gap-2">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button onClick={handleExportCSV} variant="outline" size="sm" className="hidden lg:flex">
+                        <Download className="h-4 w-4 mr-1.5" /> Exportar
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>Exportar a CSV</p></TooltipContent>
+                  </Tooltip>
+                  <Link to="/graficos" className="hidden sm:block">
+                    <Button variant="outline" size="sm">
+                      <BarChart3 className="h-4 w-4 mr-1.5" /> Gráficos
+                    </Button>
+                  </Link>
+                  <Button onClick={handleAddClick} size="sm" className="btn-primary-gradient">
+                    <Plus className="h-4 w-4 sm:mr-1.5" />
+                    <span className="hidden sm:inline">Añadir Producto</span>
                   </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Exportar productos a Excel/CSV</p>
-                </TooltipContent>
-              </Tooltip>
-              <Link to="/graficos" className="hidden sm:block">
-                <Button variant="outline">
-                  <BarChart3 className="mr-2 h-4 w-4" />
-                  Gráficos
-                </Button>
-              </Link>
-              <Button onClick={handleAddClick} size="sm" className="sm:size-default">
-                <Plus className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Añadir Producto</span>
-              </Button>
-            </div>
+                </div>
+              }
+            />
           </div>
 
           {/* Mobile Panel Button - opens Bottom Sheet with sidebar content */}

@@ -1,625 +1,618 @@
 import { useState, useMemo } from 'react';
-import { PieChart, TrendingUp, Package, DollarSign, Percent, ShoppingCart, Trophy, AlertTriangle, Search, Calendar, Receipt } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import {
+  PieChart, TrendingUp, Package, DollarSign, Percent, ShoppingCart,
+  Trophy, AlertTriangle, Search, Calendar, Receipt, ArrowUpRight, ArrowDownRight
+} from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { useStockItems } from '@/hooks/useStockItems';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { HistoricSummaryCards } from '@/components/stock/HistoricSummaryCards';
 import { StockSummary } from '@/types/stock';
 
+// ── formatters ────────────────────────────────────────────────────────────────
+const fmtEur = (v: number) =>
+  new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);
+const fmtEur0 = (v: number) =>
+  new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v);
+
+// ── Chart tooltip ─────────────────────────────────────────────────────────────
+function ChartTooltip({ active, payload, label }: any) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-card border border-border rounded-xl px-3 py-2.5 text-xs shadow-lg">
+      <p className="font-semibold mb-1 text-foreground">{label}</p>
+      {payload.map((p: any, i: number) => (
+        <p key={i} style={{ color: p.fill ?? p.color }}>
+          {fmtEur0(p.value)} · {p.payload.ventas} {p.payload.ventas === 1 ? 'venta' : 'ventas'}
+        </p>
+      ))}
+    </div>
+  );
+}
+
 const EstadisticasAvanzadas = () => {
   const currentDate = new Date();
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
-  const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
-  const [salesSearch, setSalesSearch] = useState('');
-  
+  const [selectedYear, setSelectedYear]   = useState(currentDate.getFullYear());
+  const [salesSearch, setSalesSearch]     = useState('');
+
   const { data: stockItems = [], isLoading } = useStockItems();
 
   const months = [
-    { value: 1, label: 'Enero' },
-    { value: 2, label: 'Febrero' },
-    { value: 3, label: 'Marzo' },
-    { value: 4, label: 'Abril' },
-    { value: 5, label: 'Mayo' },
-    { value: 6, label: 'Junio' },
-    { value: 7, label: 'Julio' },
-    { value: 8, label: 'Agosto' },
-    { value: 9, label: 'Septiembre' },
-    { value: 10, label: 'Octubre' },
-    { value: 11, label: 'Noviembre' },
-    { value: 12, label: 'Diciembre' },
+    { value: 1, label: 'Enero' }, { value: 2, label: 'Febrero' },
+    { value: 3, label: 'Marzo' }, { value: 4, label: 'Abril' },
+    { value: 5, label: 'Mayo' }, { value: 6, label: 'Junio' },
+    { value: 7, label: 'Julio' }, { value: 8, label: 'Agosto' },
+    { value: 9, label: 'Septiembre' }, { value: 10, label: 'Octubre' },
+    { value: 11, label: 'Noviembre' }, { value: 12, label: 'Diciembre' },
   ];
-
   const years = Array.from({ length: 10 }, (_, i) => currentDate.getFullYear() - i);
 
-  const calculateCosteTotal = (item: typeof stockItems[0]) => {
-    return item.purchase_price_per_unit + item.precio_envio + item.coste_reparacion;
-  };
+  // ── Calculations ─────────────────────────────────────────────────────────────
+  const calcCoste     = (i: typeof stockItems[0]) => i.purchase_price_per_unit + i.precio_envio + i.coste_reparacion;
+  const calcBenReal   = (i: typeof stockItems[0]) => i.precio_venta_real - calcCoste(i);
+  const calcMargen    = (i: typeof stockItems[0]) => i.precio_venta_real === 0 ? 0 : (calcBenReal(i) / i.precio_venta_real) * 100;
 
-  const calculateBeneficioReal = (item: typeof stockItems[0]) => {
-    const costeTotal = calculateCosteTotal(item);
-    return item.precio_venta_real - costeTotal;
-  };
+  const filteredSold = useMemo(() =>
+    stockItems.filter(i => {
+      if (i.estado !== 'Vendido' || !i.fecha_venta) return false;
+      const d = parseISO(i.fecha_venta);
+      return d.getMonth() + 1 === selectedMonth && d.getFullYear() === selectedYear;
+    }),
+    [stockItems, selectedMonth, selectedYear]
+  );
 
-  const calculateMargen = (item: typeof stockItems[0]) => {
-    if (item.precio_venta_real === 0) return 0;
-    const beneficio = calculateBeneficioReal(item);
-    return (beneficio / item.precio_venta_real) * 100;
-  };
+  const purchasedThisMonth = useMemo(() =>
+    stockItems.filter(i => {
+      const d = parseISO(i.purchase_date);
+      return d.getMonth() + 1 === selectedMonth && d.getFullYear() === selectedYear;
+    }),
+    [stockItems, selectedMonth, selectedYear]
+  );
 
-  const filteredSoldItems = useMemo(() => {
-    return stockItems.filter(item => {
-      if (item.estado !== 'Vendido' || !item.fecha_venta) return false;
-      const saleDate = parseISO(item.fecha_venta);
-      return saleDate.getMonth() + 1 === selectedMonth && saleDate.getFullYear() === selectedYear;
-    });
-  }, [stockItems, selectedMonth, selectedYear]);
-
-  const purchasedThisMonth = useMemo(() => {
-    return stockItems.filter(item => {
-      const purchaseDate = parseISO(item.purchase_date);
-      return purchaseDate.getMonth() + 1 === selectedMonth && purchaseDate.getFullYear() === selectedYear;
-    });
-  }, [stockItems, selectedMonth, selectedYear]);
-
-  // Sales history: sorted by date (most recent first) and filtered by search
-  const salesHistory = useMemo(() => {
-    return filteredSoldItems
-      .filter(item => 
-        salesSearch === '' || 
-        item.name.toLowerCase().includes(salesSearch.toLowerCase())
-      )
-      .sort((a, b) => {
-        const dateA = a.fecha_venta ? parseISO(a.fecha_venta).getTime() : 0;
-        const dateB = b.fecha_venta ? parseISO(b.fecha_venta).getTime() : 0;
-        return dateB - dateA;
-      });
-  }, [filteredSoldItems, salesSearch]);
+  const salesHistory = useMemo(() =>
+    filteredSold
+      .filter(i => !salesSearch || i.name.toLowerCase().includes(salesSearch.toLowerCase()))
+      .sort((a, b) => parseISO(b.fecha_venta!).getTime() - parseISO(a.fecha_venta!).getTime()),
+    [filteredSold, salesSearch]
+  );
 
   const metrics = useMemo(() => {
-    const totalProducts = filteredSoldItems.length;
-    const totalBeneficio = filteredSoldItems.reduce((sum, item) => sum + calculateBeneficioReal(item), 0);
-    const avgBeneficio = totalProducts > 0 ? totalBeneficio / totalProducts : 0;
-    const avgTicket = totalProducts > 0 
-      ? filteredSoldItems.reduce((sum, item) => sum + item.precio_venta_real, 0) / totalProducts 
-      : 0;
-    const avgMargen = totalProducts > 0 
-      ? filteredSoldItems.reduce((sum, item) => sum + calculateMargen(item), 0) / totalProducts 
-      : 0;
-
-    return {
-      totalProducts,
-      totalBeneficio,
-      avgBeneficio,
-      avgTicket,
-      avgMargen,
-      purchasedCount: purchasedThisMonth.length,
-    };
-  }, [filteredSoldItems, purchasedThisMonth]);
+    const n      = filteredSold.length;
+    const totBen = filteredSold.reduce((s, i) => s + calcBenReal(i), 0);
+    const avgBen = n > 0 ? totBen / n : 0;
+    const avgTkt = n > 0 ? filteredSold.reduce((s, i) => s + i.precio_venta_real, 0) / n : 0;
+    const avgMrg = n > 0 ? filteredSold.reduce((s, i) => s + calcMargen(i), 0) / n : 0;
+    return { n, totBen, avgBen, avgTkt, avgMrg, purchased: purchasedThisMonth.length };
+  }, [filteredSold, purchasedThisMonth]);
 
   const ranking = useMemo(() => {
-    if (filteredSoldItems.length === 0) return { best: null, worst: null, top5: [] };
-
-    const itemsWithBeneficio = filteredSoldItems.map(item => ({
-      ...item,
-      beneficioReal: calculateBeneficioReal(item),
-    })).sort((a, b) => b.beneficioReal - a.beneficioReal);
-
-    return {
-      best: itemsWithBeneficio[0] || null,
-      worst: itemsWithBeneficio[itemsWithBeneficio.length - 1] || null,
-      top5: itemsWithBeneficio.slice(0, 5),
-    };
-  }, [filteredSoldItems]);
+    if (!filteredSold.length) return { best: null, worst: null, top5: [] as any[] };
+    const sorted = filteredSold
+      .map(i => ({ ...i, _ben: calcBenReal(i) }))
+      .sort((a, b) => b._ben - a._ben);
+    return { best: sorted[0], worst: sorted[sorted.length - 1], top5: sorted.slice(0, 5) };
+  }, [filteredSold]);
 
   const categoryStats = useMemo(() => {
-    const stats: Record<string, { count: number; totalBeneficio: number }> = {};
-    
-    filteredSoldItems.forEach(item => {
-      if (!stats[item.category]) {
-        stats[item.category] = { count: 0, totalBeneficio: 0 };
-      }
-      stats[item.category].count += 1;
-      stats[item.category].totalBeneficio += calculateBeneficioReal(item);
+    const map: Record<string, { count: number; ben: number }> = {};
+    filteredSold.forEach(i => {
+      if (!map[i.category]) map[i.category] = { count: 0, ben: 0 };
+      map[i.category].count += 1;
+      map[i.category].ben   += calcBenReal(i);
     });
+    return Object.entries(map)
+      .map(([cat, d]) => ({ cat, count: d.count, ben: d.ben, avg: d.count ? d.ben / d.count : 0 }))
+      .sort((a, b) => b.ben - a.ben);
+  }, [filteredSold]);
 
-    return Object.entries(stats).map(([category, data]) => ({
-      category,
-      count: data.count,
-      totalBeneficio: data.totalBeneficio,
-      avgBeneficio: data.count > 0 ? data.totalBeneficio / data.count : 0,
-    })).sort((a, b) => b.totalBeneficio - a.totalBeneficio);
-  }, [filteredSoldItems]);
-
-  // Facturación mensual histórica (independiente del selector)
-  const monthlyBillingHistory = useMemo(() => {
-    const soldItems = stockItems.filter(item => item.estado === 'Vendido' && item.fecha_venta);
-    
-    const billingByMonth: Record<string, { facturacion: number; ventas: number; month: number; year: number }> = {};
-    
-    soldItems.forEach(item => {
-      const saleDate = parseISO(item.fecha_venta!);
-      const month = saleDate.getMonth() + 1;
-      const year = saleDate.getFullYear();
-      const key = `${year}-${month.toString().padStart(2, '0')}`;
-      
-      if (!billingByMonth[key]) {
-        billingByMonth[key] = { facturacion: 0, ventas: 0, month, year };
-      }
-      billingByMonth[key].facturacion += item.precio_venta_real;
-      billingByMonth[key].ventas += 1;
+  const monthlyHistory = useMemo(() => {
+    const map: Record<string, { fac: number; ventas: number; month: number; year: number }> = {};
+    stockItems.filter(i => i.estado === 'Vendido' && i.fecha_venta).forEach(i => {
+      const d = parseISO(i.fecha_venta!);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      if (!map[key]) map[key] = { fac: 0, ventas: 0, month: d.getMonth() + 1, year: d.getFullYear() };
+      map[key].fac    += i.precio_venta_real;
+      map[key].ventas += 1;
     });
-
-    return Object.entries(billingByMonth)
-      .map(([key, data]) => ({
-        key,
-        label: `${months.find(m => m.value === data.month)?.label.slice(0, 3)} ${data.year}`,
-        fullLabel: `${months.find(m => m.value === data.month)?.label} ${data.year}`,
-        facturacion: data.facturacion,
-        ventas: data.ventas,
-        month: data.month,
-        year: data.year,
+    return Object.entries(map)
+      .map(([, d]) => ({
+        label:  `${months.find(m => m.value === d.month)?.label.slice(0, 3)} ${d.year}`,
+        full:   `${months.find(m => m.value === d.month)?.label} ${d.year}`,
+        facturacion: d.fac,
+        ventas: d.ventas,
+        month:  d.month,
+        year:   d.year,
       }))
-      .sort((a, b) => {
-        if (a.year !== b.year) return b.year - a.year;
-        return b.month - a.month;
-      });
+      .sort((a, b) => b.year !== a.year ? b.year - a.year : b.month - a.month);
   }, [stockItems, months]);
 
-  // Últimos 12 meses para el gráfico
-  const chartData = useMemo(() => {
-    return [...monthlyBillingHistory].reverse().slice(-12);
-  }, [monthlyBillingHistory]);
+  const chartData = useMemo(() => [...monthlyHistory].reverse().slice(-12), [monthlyHistory]);
 
-  // Calculate historic summary for all items
   const historicSummary = useMemo<StockSummary>(() => {
-    let totalInvested = 0;
-    let totalExpectedRevenue = 0;
-    let totalRealProfit = 0;
-
-    stockItems.forEach((item) => {
-      const coste_total = calculateCosteTotal(item);
-      totalInvested += coste_total;
-      totalExpectedRevenue += Number(item.sale_price_per_unit);
-
-      if (item.estado === 'Vendido') {
-        totalRealProfit += Number(item.precio_venta_real) - coste_total;
-      }
+    let inv = 0, rev = 0, realProfit = 0;
+    stockItems.forEach(i => {
+      const c = calcCoste(i);
+      inv += c;
+      rev += Number(i.sale_price_per_unit);
+      if (i.estado === 'Vendido') realProfit += Number(i.precio_venta_real) - c;
     });
-
-    const totalExpectedProfit = totalExpectedRevenue - totalInvested;
-    const profitMargin = totalExpectedRevenue > 0 ? (totalExpectedProfit / totalExpectedRevenue) * 100 : 0;
-
-    return { totalInvested, totalExpectedRevenue, totalExpectedProfit, totalRealProfit, profitMargin };
+    const expProfit = rev - inv;
+    return {
+      totalInvested: inv,
+      totalExpectedRevenue: rev,
+      totalExpectedProfit: expProfit,
+      totalRealProfit: realProfit,
+      profitMargin: rev > 0 ? (expProfit / rev) * 100 : 0,
+    };
   }, [stockItems]);
 
-  const formatCurrency = (value: number) => 
-    new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(value);
+  const getMonthName = () => months.find(m => m.value === selectedMonth)?.label ?? '';
 
-  const getSelectedMonthName = () => {
-    const month = months.find(m => m.value === selectedMonth);
-    return month ? month.label : '';
-  };
+  // ── Month KPI cards definition ─────────────────────────────────────────────
+  const monthKpis = [
+    {
+      label: 'Productos vendidos',
+      value: metrics.n,
+      fmt: (v: number) => v.toString(),
+      icon: Package,
+      accent: 'hsl(262 73% 58%)',
+      accentBg: 'hsl(262 73% 58% / 0.1)',
+      trend: null as 'up' | 'down' | null,
+      sub: `${metrics.purchased} comprados este mes`,
+    },
+    {
+      label: 'Beneficio real total',
+      value: metrics.totBen,
+      fmt: fmtEur,
+      icon: DollarSign,
+      accent: metrics.totBen >= 0 ? 'hsl(160 84% 38%)' : 'hsl(0 72% 51%)',
+      accentBg: metrics.totBen >= 0 ? 'hsl(160 84% 38% / 0.1)' : 'hsl(0 72% 51% / 0.1)',
+      trend: (metrics.totBen >= 0 ? 'up' : 'down') as 'up' | 'down' | null,
+      sub: `${metrics.n} ventas en ${getMonthName()}`,
+    },
+    {
+      label: 'Beneficio medio',
+      value: metrics.avgBen,
+      fmt: fmtEur,
+      icon: TrendingUp,
+      accent: metrics.avgBen >= 0 ? 'hsl(160 84% 38%)' : 'hsl(0 72% 51%)',
+      accentBg: metrics.avgBen >= 0 ? 'hsl(160 84% 38% / 0.1)' : 'hsl(0 72% 51% / 0.1)',
+      trend: (metrics.avgBen >= 0 ? 'up' : 'down') as 'up' | 'down' | null,
+      sub: 'por unidad vendida',
+    },
+    {
+      label: 'Ticket medio',
+      value: metrics.avgTkt,
+      fmt: fmtEur,
+      icon: ShoppingCart,
+      accent: 'hsl(217 91% 60%)',
+      accentBg: 'hsl(217 91% 60% / 0.1)',
+      trend: null as 'up' | 'down' | null,
+      sub: 'precio de venta promedio',
+    },
+    {
+      label: 'Margen medio',
+      value: metrics.avgMrg,
+      fmt: (v: number) => `${v.toFixed(1)}%`,
+      icon: Percent,
+      accent: metrics.avgMrg >= 0 ? 'hsl(38 92% 50%)' : 'hsl(0 72% 51%)',
+      accentBg: metrics.avgMrg >= 0 ? 'hsl(38 92% 50% / 0.1)' : 'hsl(0 72% 51% / 0.1)',
+      trend: (metrics.avgMrg >= 0 ? 'up' : 'down') as 'up' | 'down' | null,
+      sub: 'sobre precio de venta',
+    },
+    {
+      label: 'Comprados este mes',
+      value: metrics.purchased,
+      fmt: (v: number) => v.toString(),
+      icon: Package,
+      accent: 'hsl(188 84% 40%)',
+      accentBg: 'hsl(188 84% 40% / 0.1)',
+      trend: null as 'up' | 'down' | null,
+      sub: 'nuevas entradas al stock',
+    },
+  ];
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Cargando datos...</p>
+      <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-10 py-6 space-y-5">
+        <Skeleton className="h-12 w-64 rounded-xl" />
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+          {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-xl" />)}
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
+          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-xl" />)}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-[1600px] px-4 py-8 sm:px-6 lg:px-10 xl:px-12">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-primary p-2">
-              <PieChart className="h-6 w-6 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-semibold text-foreground">Estadísticas Avanzadas</h1>
-              <p className="text-sm text-muted-foreground">Métricas detalladas por mes</p>
-            </div>
-          </div>
-          
-          {/* Filtros */}
-          <div className="flex items-center gap-3">
-            <Select value={selectedMonth.toString()} onValueChange={(v) => setSelectedMonth(parseInt(v))}>
-              <SelectTrigger className="w-[140px]">
+    <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-10 py-6 space-y-6">
+
+      {/* ── Header ── */}
+      <PageHeader
+        icon={PieChart}
+        title="Estadísticas"
+        iconColor="violet"
+        subtitle="Métricas detalladas por mes"
+        actions={
+          <div className="flex items-center gap-2">
+            <Select value={selectedMonth.toString()} onValueChange={v => setSelectedMonth(parseInt(v))}>
+              <SelectTrigger className="w-[130px] h-9 text-xs rounded-xl">
                 <SelectValue placeholder="Mes" />
               </SelectTrigger>
               <SelectContent>
-                {months.map((month) => (
-                  <SelectItem key={month.value} value={month.value.toString()}>
-                    {month.label}
-                  </SelectItem>
+                {months.map(m => (
+                  <SelectItem key={m.value} value={m.value.toString()}>{m.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            
-            <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(parseInt(v))}>
-              <SelectTrigger className="w-[100px]">
+            <Select value={selectedYear.toString()} onValueChange={v => setSelectedYear(parseInt(v))}>
+              <SelectTrigger className="w-[90px] h-9 text-xs rounded-xl">
                 <SelectValue placeholder="Año" />
               </SelectTrigger>
               <SelectContent>
-                {years.map((year) => (
-                  <SelectItem key={year} value={year.toString()}>
-                    {year}
-                  </SelectItem>
+                {years.map(y => (
+                  <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-        </div>
+        }
+      />
 
-        {/* Histórico Total */}
-        <div className="mb-8">
-          <HistoricSummaryCards summary={historicSummary} />
-        </div>
+      {/* ── Histórico total ── */}
+      <HistoricSummaryCards summary={historicSummary} />
 
-        {/* Tarjetas de resumen */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Productos vendidos</CardTitle>
-              <Package className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{metrics.totalProducts}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Beneficio real total</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className={`text-2xl font-bold ${metrics.totalBeneficio >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {formatCurrency(metrics.totalBeneficio)}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Beneficio medio</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className={`text-2xl font-bold ${metrics.avgBeneficio >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {formatCurrency(metrics.avgBeneficio)}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Ticket medio</CardTitle>
-              <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(metrics.avgTicket)}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Margen medio</CardTitle>
-              <Percent className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className={`text-2xl font-bold ${metrics.avgMargen >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {metrics.avgMargen.toFixed(1)}%
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Comprados este mes</CardTitle>
-              <Package className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{metrics.purchasedCount}</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Ranking de productos */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center gap-2">
-              <Trophy className="h-5 w-5 text-yellow-500" />
-              <CardTitle>Producto más rentable del mes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {ranking.best ? (
-                <div className="space-y-2">
-                  <p className="text-lg font-semibold">{ranking.best.name}</p>
-                  <p className="text-sm text-muted-foreground">{ranking.best.category}</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    {formatCurrency(ranking.best.beneficioReal)}
-                  </p>
+      {/* ── KPIs del mes ── */}
+      <div>
+        <h3 className="mb-3 text-[9px] font-bold tracking-[0.12em] text-muted-foreground/40 uppercase">
+          {getMonthName().toUpperCase()} {selectedYear}
+        </h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2 sm:gap-3">
+          {monthKpis.map((kpi, i) => (
+            <div key={kpi.label} className={`kpi-card animate-slide-up-${Math.min(i + 1, 4)} cursor-default`}>
+              <div className="h-[3px] w-full rounded-t-xl" style={{ background: kpi.accent }} />
+              <div className="p-3 sm:p-4">
+                <div className="flex items-start justify-between gap-1 mb-2.5">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg shrink-0"
+                    style={{ background: kpi.accentBg }}>
+                    <kpi.icon className="h-[15px] w-[15px]" style={{ color: kpi.accent }} />
+                  </div>
+                  {kpi.trend === 'up'   && <ArrowUpRight   className="h-3.5 w-3.5 text-success mt-0.5 shrink-0" />}
+                  {kpi.trend === 'down' && <ArrowDownRight className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" />}
                 </div>
-              ) : (
-                <p className="text-muted-foreground">Sin datos para este periodo</p>
-              )}
-            </CardContent>
-          </Card>
+                <p className="text-[10px] font-medium text-muted-foreground leading-snug mb-1">{kpi.label}</p>
+                <p
+                  className="stat-number font-bold leading-tight break-all"
+                  style={{ color: kpi.accent, fontSize: 'clamp(1rem, 1.8vw, 1.45rem)' }}
+                >
+                  {kpi.fmt(kpi.value)}
+                </p>
+                <p className="text-[10px] text-muted-foreground/60 mt-1.5 leading-snug">{kpi.sub}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-red-500" />
-              <CardTitle>Peor producto del mes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {ranking.worst ? (
-                <div className="space-y-2">
-                  <p className="text-lg font-semibold">{ranking.worst.name}</p>
-                  <p className="text-sm text-muted-foreground">{ranking.worst.category}</p>
-                  <p className={`text-2xl font-bold ${ranking.worst.beneficioReal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {formatCurrency(ranking.worst.beneficioReal)}
-                  </p>
-                </div>
-              ) : (
-                <p className="text-muted-foreground">Sin datos para este periodo</p>
-              )}
-            </CardContent>
-          </Card>
+      {/* ── Ranking del mes ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Mejor */}
+        <div className="rounded-2xl border border-border/60 bg-card overflow-hidden animate-slide-up">
+          <div className="h-[3px]" style={{ background: 'hsl(160 84% 38%)' }} />
+          <div className="p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/12">
+                <Trophy className="h-[18px] w-[18px] text-amber-500" />
+              </div>
+              <div>
+                <p className="text-sm font-bold">Producto más rentable</p>
+                <p className="text-[10px] text-muted-foreground">{getMonthName()} {selectedYear}</p>
+              </div>
+            </div>
+            {ranking.best ? (
+              <div>
+                <p className="text-lg font-bold leading-snug">{ranking.best.name}</p>
+                <p className="text-xs text-muted-foreground mb-3">{ranking.best.category}</p>
+                <p className="stat-number text-2xl font-bold" style={{ color: 'hsl(160 84% 38%)' }}>
+                  +{fmtEur(ranking.best._ben)}
+                </p>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground italic">Sin datos para este periodo</p>
+            )}
+          </div>
         </div>
 
-        {/* Top 5 productos */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Top 5 productos por beneficio</CardTitle>
+        {/* Peor */}
+        <div className="rounded-2xl border border-border/60 bg-card overflow-hidden animate-slide-up-2">
+          <div className="h-[3px]" style={{ background: ranking.worst?._ben < 0 ? 'hsl(0 72% 51%)' : 'hsl(38 92% 50%)' }} />
+          <div className="p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-destructive/12">
+                <AlertTriangle className="h-[18px] w-[18px] text-destructive" />
+              </div>
+              <div>
+                <p className="text-sm font-bold">Peor producto del mes</p>
+                <p className="text-[10px] text-muted-foreground">{getMonthName()} {selectedYear}</p>
+              </div>
+            </div>
+            {ranking.worst ? (
+              <div>
+                <p className="text-lg font-bold leading-snug">{ranking.worst.name}</p>
+                <p className="text-xs text-muted-foreground mb-3">{ranking.worst.category}</p>
+                <p
+                  className="stat-number text-2xl font-bold"
+                  style={{ color: ranking.worst._ben >= 0 ? 'hsl(160 84% 38%)' : 'hsl(0 72% 51%)' }}
+                >
+                  {ranking.worst._ben >= 0 ? '+' : ''}{fmtEur(ranking.worst._ben)}
+                </p>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground italic">Sin datos para este periodo</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Top 5 + Categorías ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Top 5 */}
+        <Card className="border-border/60 animate-slide-up">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-bold flex items-center gap-2">
+              <Trophy className="h-4 w-4 text-amber-500" />
+              Top 5 productos por beneficio
+            </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0">
             {ranking.top5.length > 0 ? (
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead>Categoría</TableHead>
-                    <TableHead className="text-right">Beneficio real</TableHead>
-                    <TableHead className="text-right">Fecha de venta</TableHead>
+                  <TableRow className="border-border/40">
+                    <TableHead className="pl-5 text-[11px]">Producto</TableHead>
+                    <TableHead className="text-right text-[11px]">Beneficio</TableHead>
+                    <TableHead className="text-right pr-5 text-[11px]">Fecha</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {ranking.top5.map((item, index) => (
-                    <TableRow key={item.id}>
-                      <TableCell className="font-medium">
-                        <span className="mr-2 text-muted-foreground">#{index + 1}</span>
-                        {item.name}
+                  {ranking.top5.map((item, idx) => (
+                    <TableRow key={item.id} className="table-row-premium">
+                      <TableCell className="pl-5 py-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold text-muted-foreground/40 w-4">#{idx + 1}</span>
+                          <div>
+                            <p className="text-xs font-semibold leading-snug">{item.name}</p>
+                            <p className="text-[10px] text-muted-foreground">{item.category}</p>
+                          </div>
+                        </div>
                       </TableCell>
-                      <TableCell>{item.category}</TableCell>
-                      <TableCell className={`text-right font-semibold ${item.beneficioReal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {formatCurrency(item.beneficioReal)}
+                      <TableCell className="text-right py-3">
+                        <span
+                          className="text-xs font-bold tabular-nums"
+                          style={{ color: item._ben >= 0 ? 'hsl(160 84% 38%)' : 'hsl(0 72% 51%)' }}
+                        >
+                          {item._ben >= 0 ? '+' : ''}{fmtEur0(item._ben)}
+                        </span>
                       </TableCell>
-                      <TableCell className="text-right">
-                        {item.fecha_venta ? format(parseISO(item.fecha_venta), 'dd MMM yyyy', { locale: es }) : '-'}
+                      <TableCell className="text-right pr-5 py-3 text-[11px] text-muted-foreground">
+                        {item.fecha_venta ? format(parseISO(item.fecha_venta), 'dd MMM', { locale: es }) : '—'}
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             ) : (
-              <p className="text-muted-foreground text-center py-8">Sin productos vendidos en este periodo</p>
+              <p className="text-sm text-muted-foreground text-center py-10 px-5">Sin productos vendidos este periodo</p>
             )}
           </CardContent>
         </Card>
 
-        {/* Resumen por categoría */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Resumen por categoría</CardTitle>
+        {/* Categorías */}
+        <Card className="border-border/60 animate-slide-up-2">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-bold flex items-center gap-2">
+              <PieChart className="h-4 w-4 text-primary" />
+              Por categoría
+            </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0">
             {categoryStats.length > 0 ? (
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Categoría</TableHead>
-                    <TableHead className="text-right">Productos vendidos</TableHead>
-                    <TableHead className="text-right">Beneficio real total</TableHead>
-                    <TableHead className="text-right">Beneficio medio</TableHead>
+                  <TableRow className="border-border/40">
+                    <TableHead className="pl-5 text-[11px]">Categoría</TableHead>
+                    <TableHead className="text-right text-[11px]">Uds</TableHead>
+                    <TableHead className="text-right text-[11px]">Beneficio</TableHead>
+                    <TableHead className="text-right pr-5 text-[11px]">Promedio</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {categoryStats.map((stat) => (
-                    <TableRow key={stat.category}>
-                      <TableCell className="font-medium">{stat.category}</TableCell>
-                      <TableCell className="text-right">{stat.count}</TableCell>
-                      <TableCell className={`text-right font-semibold ${stat.totalBeneficio >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {formatCurrency(stat.totalBeneficio)}
+                  {categoryStats.map(s => (
+                    <TableRow key={s.cat} className="table-row-premium">
+                      <TableCell className="pl-5 py-3 text-xs font-semibold">{s.cat}</TableCell>
+                      <TableCell className="text-right py-3 text-xs tabular-nums">{s.count}</TableCell>
+                      <TableCell className="text-right py-3">
+                        <span className="text-xs font-bold tabular-nums"
+                          style={{ color: s.ben >= 0 ? 'hsl(160 84% 38%)' : 'hsl(0 72% 51%)' }}>
+                          {s.ben >= 0 ? '+' : ''}{fmtEur0(s.ben)}
+                        </span>
                       </TableCell>
-                      <TableCell className={`text-right ${stat.avgBeneficio >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {formatCurrency(stat.avgBeneficio)}
+                      <TableCell className="text-right pr-5 py-3 text-xs tabular-nums text-muted-foreground">
+                        {fmtEur0(s.avg)}
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             ) : (
-              <p className="text-muted-foreground text-center py-8">Sin datos para este periodo</p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Facturación mensual histórica */}
-        <Card className="mb-8">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Receipt className="h-5 w-5 text-primary" />
-              <CardTitle>Facturación mensual (histórico)</CardTitle>
-            </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              Ingresos totales por mes (suma de precio de venta real)
-            </p>
-          </CardHeader>
-          <CardContent>
-            {monthlyBillingHistory.length > 0 ? (
-              <div className="space-y-6">
-                {/* Gráfico de barras */}
-                {chartData.length > 1 && (
-                  <div className="h-64 w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 20 }}>
-                        <XAxis 
-                          dataKey="label" 
-                          tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-                          axisLine={{ stroke: 'hsl(var(--border))' }}
-                          tickLine={{ stroke: 'hsl(var(--border))' }}
-                        />
-                        <YAxis 
-                          tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-                          axisLine={{ stroke: 'hsl(var(--border))' }}
-                          tickLine={{ stroke: 'hsl(var(--border))' }}
-                          tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
-                        />
-                        <Tooltip 
-                          contentStyle={{ 
-                            backgroundColor: 'hsl(var(--card))', 
-                            border: '1px solid hsl(var(--border))',
-                            borderRadius: '8px',
-                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
-                          }}
-                          labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 600 }}
-                          formatter={(value: number) => [formatCurrency(value), 'Facturación']}
-                        />
-                        <Bar 
-                          dataKey="facturacion" 
-                          radius={[4, 4, 0, 0]}
-                          maxBarSize={50}
-                        >
-                          {chartData.map((_, index) => (
-                            <Cell 
-                              key={`cell-${index}`} 
-                              fill={`hsl(var(--primary) / ${0.6 + (index / chartData.length) * 0.4})`}
-                            />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                )}
-
-                {/* Tabla de facturación */}
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Mes</TableHead>
-                        <TableHead className="text-right">Ventas</TableHead>
-                        <TableHead className="text-right">Facturación</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {monthlyBillingHistory.map((item) => (
-                        <TableRow key={item.key}>
-                          <TableCell className="font-medium">{item.fullLabel}</TableCell>
-                          <TableCell className="text-right">{item.ventas}</TableCell>
-                          <TableCell className="text-right font-semibold text-primary">
-                            {formatCurrency(item.facturacion)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-
-                {/* Total histórico */}
-                <div className="flex items-center justify-between pt-4 border-t border-border">
-                  <span className="text-sm font-medium text-muted-foreground">Facturación total histórica</span>
-                  <span className="text-xl font-bold text-primary">
-                    {formatCurrency(monthlyBillingHistory.reduce((sum, item) => sum + item.facturacion, 0))}
-                  </span>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <Receipt className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-                <p className="text-muted-foreground">Aún no hay ventas registradas para generar facturación mensual.</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Historial de ventas del mes */}
-        <Card>
-          <CardHeader>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-primary" />
-                <CardTitle>Historial de ventas del mes</CardTitle>
-              </div>
-              <div className="relative w-full sm:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar producto..."
-                  value={salesSearch}
-                  onChange={(e) => setSalesSearch(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {salesHistory.length > 0 ? (
-              <>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Fecha de venta</TableHead>
-                        <TableHead>Producto</TableHead>
-                        <TableHead>Categoría</TableHead>
-                        <TableHead className="text-right">Precio venta (€)</TableHead>
-                        <TableHead className="text-right">Coste total (€)</TableHead>
-                        <TableHead className="text-right">Beneficio real (€)</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {salesHistory.map((item) => {
-                        const costeTotal = calculateCosteTotal(item);
-                        const beneficioReal = calculateBeneficioReal(item);
-                        return (
-                          <TableRow key={item.id}>
-                            <TableCell>
-                              {item.fecha_venta ? format(parseISO(item.fecha_venta), 'dd MMM yyyy', { locale: es }) : '-'}
-                            </TableCell>
-                            <TableCell className="font-medium">{item.name}</TableCell>
-                            <TableCell>{item.category}</TableCell>
-                            <TableCell className="text-right">{formatCurrency(item.precio_venta_real)}</TableCell>
-                            <TableCell className="text-right">{formatCurrency(costeTotal)}</TableCell>
-                            <TableCell className={`text-right font-semibold ${beneficioReal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                              {formatCurrency(beneficioReal)}
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </div>
-                <p className="text-sm text-muted-foreground mt-4 text-center">
-                  Mostrando {salesHistory.length} {salesHistory.length === 1 ? 'venta' : 'ventas'} de {getSelectedMonthName()} {selectedYear}
-                </p>
-              </>
-            ) : (
-              <div className="text-center py-12">
-                <Calendar className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-                <p className="text-muted-foreground">No hay ventas registradas en este mes.</p>
-              </div>
+              <p className="text-sm text-muted-foreground text-center py-10 px-5">Sin datos este periodo</p>
             )}
           </CardContent>
         </Card>
       </div>
+
+      {/* ── Facturación mensual ── */}
+      <Card className="border-border/60 animate-slide-up">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/12">
+              <Receipt className="h-[15px] w-[15px] text-primary" />
+            </div>
+            <div>
+              <CardTitle className="text-sm font-bold">Facturación mensual</CardTitle>
+              <p className="text-[10px] text-muted-foreground">Ingresos totales por mes (histórico)</p>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {monthlyHistory.length > 0 ? (
+            <div className="space-y-5">
+              {chartData.length > 1 && (
+                <ResponsiveContainer width="100%" height={180}>
+                  <BarChart data={chartData} barSize={28} margin={{ top: 4, right: 4, left: -18, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                    <XAxis dataKey="label" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false}
+                      tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
+                    <Tooltip content={<ChartTooltip />} cursor={{ fill: 'hsl(var(--muted)/0.3)' }} />
+                    <Bar dataKey="facturacion" radius={[4, 4, 0, 0]}>
+                      {chartData.map((_, i) => (
+                        <Cell key={i}
+                          fill="hsl(var(--primary))"
+                          opacity={i === chartData.length - 1 ? 1 : 0.45 + (i / chartData.length) * 0.45}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-border/40">
+                    <TableHead className="text-[11px]">Mes</TableHead>
+                    <TableHead className="text-right text-[11px]">Ventas</TableHead>
+                    <TableHead className="text-right text-[11px]">Facturación</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {monthlyHistory.map(item => (
+                    <TableRow key={`${item.year}-${item.month}`} className="table-row-premium">
+                      <TableCell className="py-2.5 text-xs font-medium">{item.full}</TableCell>
+                      <TableCell className="text-right py-2.5 text-xs tabular-nums">{item.ventas}</TableCell>
+                      <TableCell className="text-right py-2.5 text-xs font-bold tabular-nums text-primary">
+                        {fmtEur0(item.facturacion)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+
+              <div className="flex items-center justify-between pt-3 border-t border-border/50">
+                <span className="text-xs font-medium text-muted-foreground">Total histórico</span>
+                <span className="text-lg font-bold text-primary tabular-nums">
+                  {fmtEur0(monthlyHistory.reduce((s, i) => s + i.facturacion, 0))}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <Receipt className="h-10 w-10 text-muted-foreground/20 mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground">Aún no hay ventas registradas</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* ── Historial de ventas del mes ── */}
+      <Card className="border-border/60 animate-slide-up">
+        <CardHeader className="pb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/12">
+                <Calendar className="h-[15px] w-[15px] text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-sm font-bold">Ventas del mes</CardTitle>
+                <p className="text-[10px] text-muted-foreground">{getMonthName()} {selectedYear}</p>
+              </div>
+            </div>
+            <div className="relative w-full sm:w-56">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                placeholder="Buscar producto..."
+                value={salesSearch}
+                onChange={e => setSalesSearch(e.target.value)}
+                className="pl-9 h-8 text-xs rounded-xl"
+              />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          {salesHistory.length > 0 ? (
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-border/40">
+                    <TableHead className="pl-5 text-[11px]">Fecha</TableHead>
+                    <TableHead className="text-[11px]">Producto</TableHead>
+                    <TableHead className="hidden sm:table-cell text-[11px]">Categoría</TableHead>
+                    <TableHead className="text-right text-[11px]">Venta</TableHead>
+                    <TableHead className="text-right text-[11px]">Coste</TableHead>
+                    <TableHead className="text-right pr-5 text-[11px]">Beneficio</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {salesHistory.map(item => {
+                    const coste = calcCoste(item);
+                    const ben   = calcBenReal(item);
+                    return (
+                      <TableRow key={item.id} className="table-row-premium">
+                        <TableCell className="pl-5 py-3 text-[11px] text-muted-foreground whitespace-nowrap">
+                          {item.fecha_venta ? format(parseISO(item.fecha_venta), 'dd MMM yyyy', { locale: es }) : '—'}
+                        </TableCell>
+                        <TableCell className="py-3 text-xs font-semibold">{item.name}</TableCell>
+                        <TableCell className="hidden sm:table-cell py-3 text-xs text-muted-foreground">{item.category}</TableCell>
+                        <TableCell className="text-right py-3 text-xs tabular-nums">{fmtEur(item.precio_venta_real)}</TableCell>
+                        <TableCell className="text-right py-3 text-xs tabular-nums text-muted-foreground">{fmtEur(coste)}</TableCell>
+                        <TableCell className="text-right pr-5 py-3">
+                          <span
+                            className="text-xs font-bold tabular-nums"
+                            style={{ color: ben >= 0 ? 'hsl(160 84% 38%)' : 'hsl(0 72% 51%)' }}
+                          >
+                            {ben >= 0 ? '+' : ''}{fmtEur(ben)}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+              <div className="px-5 py-3 border-t border-border/40">
+                <p className="text-[11px] text-muted-foreground">
+                  {salesHistory.length} {salesHistory.length === 1 ? 'venta' : 'ventas'} · {getMonthName()} {selectedYear}
+                </p>
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-14">
+              <Calendar className="h-10 w-10 text-muted-foreground/20 mb-3" />
+              <p className="text-sm text-muted-foreground">No hay ventas en este mes</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
     </div>
   );
 };
