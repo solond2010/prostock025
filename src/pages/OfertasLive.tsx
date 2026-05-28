@@ -177,7 +177,14 @@ function DealDetailSheet({ deal, open, onClose, onContact, onArchive, queuePendi
       <SheetContent side="bottom" className="rounded-t-2xl max-h-[90dvh] overflow-y-auto p-0">
         {/* Imagen hero */}
         {deal.image_url ? (
-          <img src={deal.image_url} alt={deal.title} className="w-full h-48 object-cover" />
+          <div className="w-full bg-muted/30 flex items-center justify-center" style={{ maxHeight: '55vw' }}>
+            <img
+              src={deal.image_url}
+              alt={deal.title}
+              className="w-full object-contain"
+              style={{ maxHeight: '55vw' }}
+            />
+          </div>
         ) : (
           <div className="w-full h-32 bg-muted/60 flex items-center justify-center text-5xl">📱</div>
         )}
