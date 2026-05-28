@@ -29,6 +29,8 @@ const MonthlyCharts = () => {
     return Array.from(years).sort((a, b) => b - a);
   }, [items, currentYear]);
 
+  const isAllTime = selectedYear === 'all';
+
   // Filter sold items and calculate monthly data
   const monthlyData = useMemo(() => {
     const data = MONTHS.map((month, index) => ({
@@ -45,7 +47,7 @@ const MonthlyCharts = () => {
         const saleYear = saleDate.getFullYear();
         const saleMonth = saleDate.getMonth();
 
-        if (saleYear.toString() === selectedYear) {
+        if (isAllTime || saleYear.toString() === selectedYear) {
           const precioVentaReal = Number(item.precio_venta_real) || 0;
           const costeTotal =
             Number(item.purchase_price_per_unit) +
@@ -61,7 +63,7 @@ const MonthlyCharts = () => {
     });
 
     return data;
-  }, [items, selectedYear]);
+  }, [items, selectedYear, isAllTime]);
 
   // Calculate totals for the year
   const yearTotals = useMemo(() => {
@@ -74,6 +76,9 @@ const MonthlyCharts = () => {
       { facturacion: 0, beneficio: 0, vendidos: 0 }
     );
   }, [monthlyData]);
+
+  const periodLabel = isAllTime ? 'Todo el tiempo' : selectedYear;
+
 
   const chartConfig = {
     facturacion: {
@@ -118,10 +123,11 @@ const MonthlyCharts = () => {
             </div>
           </div>
           <Select value={selectedYear} onValueChange={setSelectedYear}>
-            <SelectTrigger className="w-32">
+            <SelectTrigger className="w-40">
               <SelectValue placeholder="Año" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="all">Todo el tiempo</SelectItem>
               {availableYears.map((year) => (
                 <SelectItem key={year} value={year.toString()}>
                   {year}
@@ -131,12 +137,13 @@ const MonthlyCharts = () => {
           </Select>
         </div>
 
+
         {/* Year Summary Cards */}
         <div className="mb-8 grid gap-4 sm:grid-cols-3">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Facturación Total {selectedYear}
+                Facturación Total {periodLabel}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -148,7 +155,7 @@ const MonthlyCharts = () => {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Beneficio Total {selectedYear}
+                Beneficio Total {periodLabel}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -160,7 +167,7 @@ const MonthlyCharts = () => {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Productos Vendidos {selectedYear}
+                Productos Vendidos {periodLabel}
               </CardTitle>
             </CardHeader>
             <CardContent>
