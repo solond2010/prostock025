@@ -17,6 +17,7 @@ import OfertasLive from "./pages/OfertasLive";
 import Tareas from "./pages/Tareas";
 import Agenda from "./pages/Agenda";
 import Dashboard from "./pages/Dashboard";
+import BotControl from "./pages/BotControl";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -126,6 +127,16 @@ const App = () => (
               <ProtectedRoute>
                 <MainLayout>
                   <Dashboard />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/bot"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <BotControl />
                 </MainLayout>
               </ProtectedRoute>
             }

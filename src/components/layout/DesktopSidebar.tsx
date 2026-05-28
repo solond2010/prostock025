@@ -1,4 +1,5 @@
-import { Package, Receipt, PieChart, BarChart3, LogOut, Moon, Sun, Wallet, Wrench, Target, CheckCircle2, Calendar, Bot, LayoutDashboard } from 'lucide-react';
+import { Package, Receipt, PieChart, BarChart3, LogOut, Moon, Sun, Wallet, Wrench, Target, CheckCircle2, Calendar, Bot, LayoutDashboard, Settings } from 'lucide-react';
+import { useBotStatus, isBotOnline } from '@/hooks/useBotStatus';
 import { NavLink } from '@/components/NavLink';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -36,6 +37,8 @@ export function DesktopSidebar() {
   const { theme, toggleTheme } = useTheme();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { status } = useBotStatus();
+  const botOnline = isBotOnline(status);
 
   const handleSignOut = async () => {
     const { error } = await signOut();
@@ -95,14 +98,18 @@ export function DesktopSidebar() {
           <p className="text-[9px] font-bold tracking-widest text-muted-foreground/50 px-2 mb-1">
             SISTEMA
           </p>
-          <div className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium text-muted-foreground">
+          <NavLink
+            to="/bot"
+            className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium text-muted-foreground transition-all hover:bg-secondary hover:text-foreground"
+            activeClassName="bg-primary/10 text-primary hover:bg-primary/15 font-semibold"
+          >
             <Bot className="h-3.5 w-3.5 shrink-0" />
-            <span className="flex-1">Bot Wallapop</span>
-            <span className="flex items-center gap-1 text-[9px] text-success font-bold">
-              <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
-              ON
+            <span className="flex-1">Panel del Bot</span>
+            <span className={`flex items-center gap-1 text-[9px] font-bold ${botOnline ? 'text-success' : 'text-muted-foreground'}`}>
+              <span className={`h-1.5 w-1.5 rounded-full ${botOnline ? 'bg-success animate-pulse' : 'bg-muted-foreground'}`} />
+              {botOnline ? 'ON' : 'OFF'}
             </span>
-          </div>
+          </NavLink>
         </div>
       </nav>
 

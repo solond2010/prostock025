@@ -1,4 +1,5 @@
 import { Package, Receipt, PieChart, BarChart3, Menu, LogOut, Moon, Sun, Wallet, Wrench, Target, CheckCircle2, Calendar, Bot, LayoutDashboard } from 'lucide-react';
+import { useBotStatus, isBotOnline } from '@/hooks/useBotStatus';
 import { NavLink } from '@/components/NavLink';
 import {
   Sheet,
@@ -45,6 +46,8 @@ export function AppSidebar() {
   const { theme, toggleTheme } = useTheme();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { status } = useBotStatus();
+  const botOnline = isBotOnline(status);
 
   const handleSignOut = async () => {
     const { error } = await signOut();
@@ -112,14 +115,19 @@ export function AppSidebar() {
               SISTEMA
             </p>
             <div className="flex flex-col gap-0.5">
-              <div className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground">
+              <NavLink
+                to="/bot"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-secondary hover:text-foreground"
+                activeClassName="bg-primary/10 text-primary hover:bg-primary/15"
+              >
                 <Bot className="h-4 w-4 shrink-0" />
-                <span className="flex-1">Bot Wallapop</span>
-                <span className="flex items-center gap-1 text-[10px] text-success font-semibold">
-                  <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
-                  Activo
+                <span className="flex-1">Panel del Bot</span>
+                <span className={`flex items-center gap-1 text-[10px] font-semibold ${botOnline ? 'text-success' : 'text-muted-foreground'}`}>
+                  <span className={`h-1.5 w-1.5 rounded-full ${botOnline ? 'bg-success animate-pulse' : 'bg-muted-foreground'}`} />
+                  {botOnline ? 'Activo' : 'Parado'}
                 </span>
-              </div>
+              </NavLink>
             </div>
           </div>
         </nav>
