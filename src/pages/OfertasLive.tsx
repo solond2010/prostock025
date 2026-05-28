@@ -97,6 +97,7 @@ function DealCard({ deal, onContact, onArchive, queuePending, showSourceBadge = 
   queuePending: boolean;
   showSourceBadge?: boolean;
 }) {
+  const [descExpanded, setDescExpanded] = useState(false);
   const score = SCORE_CONFIG[deal.score];
   const searchCfg = getSearchConfig(deal.search_keyword);
   const isFresh = Date.now() - new Date(deal.created_at).getTime() < 5 * 60 * 1000;
@@ -107,6 +108,7 @@ function DealCard({ deal, onContact, onArchive, queuePending, showSourceBadge = 
   const sentTime = deal.message_sent_at
     ? format(new Date(deal.message_sent_at), 'HH:mm')
     : null;
+  const descLong = deal.description && deal.description.length > 80;
 
   return (
     <div
@@ -161,9 +163,19 @@ function DealCard({ deal, onContact, onArchive, queuePending, showSourceBadge = 
 
         {/* Descripción */}
         {deal.description && (
-          <p className="text-xs text-muted-foreground line-clamp-1 mb-1.5">
-            {deal.description}
-          </p>
+          <div className="mb-1.5">
+            <p className={`text-xs text-muted-foreground ${descExpanded ? '' : 'line-clamp-2'}`}>
+              {deal.description}
+            </p>
+            {descLong && (
+              <button
+                className="text-[10px] text-primary font-semibold mt-0.5 hover:underline"
+                onClick={() => setDescExpanded(v => !v)}
+              >
+                {descExpanded ? 'Ver menos ▲' : 'Ver más ▼'}
+              </button>
+            )}
+          </div>
         )}
 
         {/* Acciones */}
