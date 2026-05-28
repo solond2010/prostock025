@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
+import ReactMarkdown from 'react-markdown';
 
 // ─── OpenRouter config ────────────────────────────────────────────────────────
 const OPENROUTER_API_KEY_LS = 'prostock_openrouter_key';
@@ -388,7 +389,38 @@ export function AIChat() {
                           : 'bg-muted/60 text-foreground rounded-bl-sm'
                       }`}
                     >
-                      <p className="text-xs leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                      {msg.role === 'user' || msg.error ? (
+                        <p className="text-xs leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                      ) : (
+                        <div className="text-xs leading-relaxed prose-chat">
+                          <ReactMarkdown
+                            components={{
+                              p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                              strong: ({ children }) => <strong className="font-semibold text-foreground">{children}</strong>,
+                              h3: ({ children }) => <h3 className="font-bold text-foreground text-xs mt-3 mb-1.5 first:mt-0">{children}</h3>,
+                              h2: ({ children }) => <h2 className="font-bold text-foreground text-sm mt-3 mb-1.5 first:mt-0">{children}</h2>,
+                              ul: ({ children }) => <ul className="list-disc list-inside space-y-0.5 mb-2 pl-1">{children}</ul>,
+                              ol: ({ children }) => <ol className="list-decimal list-inside space-y-0.5 mb-2 pl-1">{children}</ol>,
+                              li: ({ children }) => <li className="text-xs leading-relaxed">{children}</li>,
+                              table: ({ children }) => (
+                                <div className="overflow-x-auto my-2 rounded-lg border border-border/50">
+                                  <table className="w-full text-[11px] border-collapse">{children}</table>
+                                </div>
+                              ),
+                              thead: ({ children }) => <thead className="bg-primary/10">{children}</thead>,
+                              tbody: ({ children }) => <tbody>{children}</tbody>,
+                              tr: ({ children }) => <tr className="border-b border-border/30 last:border-0">{children}</tr>,
+                              th: ({ children }) => <th className="px-2.5 py-1.5 text-left font-semibold text-foreground">{children}</th>,
+                              td: ({ children }) => <td className="px-2.5 py-1.5 text-muted-foreground">{children}</td>,
+                              code: ({ children }) => <code className="bg-background/50 rounded px-1 py-0.5 font-mono text-[10px]">{children}</code>,
+                              blockquote: ({ children }) => <blockquote className="border-l-2 border-primary/40 pl-2 text-muted-foreground italic my-1">{children}</blockquote>,
+                              hr: () => <hr className="border-border/40 my-2" />,
+                            }}
+                          >
+                            {msg.content}
+                          </ReactMarkdown>
+                        </div>
+                      )}
                       {msg.model && (
                         <p className="text-[9px] mt-1 opacity-50 truncate">
                           {msg.model.split('/').pop()?.replace(':free', '')}
