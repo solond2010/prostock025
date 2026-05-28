@@ -2,7 +2,8 @@ import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   TrendingUp, TrendingDown, Package, CheckCircle2, Target,
-  ArrowRight, AlertTriangle, Trophy, Flame, Clock, ShoppingCart
+  ArrowRight, AlertTriangle, Trophy, Flame, Clock, ShoppingCart,
+  Zap, BarChart2, Calendar, Bot
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,14 +11,16 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LineChart, Line, CartesianGrid
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
+  LineChart, Line, CartesianGrid, Area, AreaChart
 } from 'recharts';
 import { useStockItems } from '@/hooks/useStockItems';
 import { useTasks } from '@/hooks/useTasks';
 import { useDeals } from '@/hooks/useDeals';
 import {
   format, parseISO, startOfMonth, endOfMonth, isWithinInterval,
-  subMonths, differenceInDays, formatDistanceToNow
+  subMonths, differenceInDays, formatDistanceToNow, startOfWeek,
+  startOfYear, subDays, eachDayOfInterval
 } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -38,10 +41,29 @@ const SCORE_COLOR: Record<string, string> = {
   ok:   'text-primary border-primary/20 bg-primary/5',
 };
 
+// ─── Custom tooltip ───────────────────────────────────────────────────────────
+function ChartTooltip({ active, payload, label }: any) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-card border border-border rounded-lg px-3 py-2 text-xs shadow-lg">
+      <p className="font-semibold mb-1">{label}</p>
+      {payload.map((p: any, i: number) => (
+        <p key={i} style={{ color: p.color || p.fill }}>
+          {p.name === 'beneficio' ? `Beneficio: ${p.value}€`
+           : p.name === 'ventas' ? `Ventas: ${p.value}`
+           : p.name === 'deals' ? `Ofertas: ${p.value}`
+           : `${p.name}: ${p.value}`}
+        </p>
+      ))}
+    </div>
+  );
+}
+
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 export default function Dashboard() {
   const { data: items = [], isLoading: loadingStock } = useStockItems();
   const { tasks, isLoading: loadingTasks } = useTasks();
+  // Load all deals (no filter) for bot stats
   const { deals, isLoading: loadingDeals } = useDeals();
 
   const now = new Date();
@@ -52,6 +74,7 @@ export default function Dashboard() {
     const monthEnd   = endOfMonth(now);
     const prevStart  = startOfMonth(subMonths(now, 1));
     const prevEnd    = endOfMonth(subMonths(now, 1));
+    const yearStart  = startOfYear(now);
 
     const soldThis = items.filter(i =>
       i.estado === 'Vendido' && i.fecha_venta &&
@@ -61,10 +84,15 @@ export default function Dashboard() {
       i.estado === 'Vendido' && i.fecha_venta &&
       isWithinInterval(parseISO(i.fecha_venta), { start: prevStart, end: prevEnd })
     );
+    const soldYear = items.filter(i =>
+      i.estado === 'Vendido' && i.fecha_venta &&
+      parseISO(i.fecha_venta) >= yearStart
+    );
 
     const benMes  = soldThis.reduce((a, i) => a + beneficioReal(i), 0);
     const benPrev = soldPrev.reduce((a, i) => a + beneficioReal(i), 0);
     const benDelta = benPrev !== 0 ? ((benMes - benPrev) / Math.abs(benPrev)) * 100 : 0;
+    const benYear  = soldYear.reduce((a, i) => a + beneficioReal(i), 0);
 
     const inStock = items.filter(i => i.estado === 'En stock');
     const invertido = inStock.reduce((a, i) => a + coste(i), 0);
@@ -74,9 +102,16 @@ export default function Dashboard() {
       ? soldThis.reduce((a, i) => a + margen(i), 0) / soldThis.length
       : 0;
 
+    // días promedio de venta (items con purchase_date y fecha_venta)
+    const withBothDates = items.filter(i => i.estado === 'Vendido' && i.fecha_venta && i.purchase_date);
+    const avgDaysToSell = withBothDates.length
+      ? withBothDates.reduce((a, i) =>
+          a + differenceInDays(parseISO(i.fecha_venta!), parseISO(i.purchase_date)), 0
+        ) / withBothDates.length
+      : 0;
+
     // items en riesgo (21+ días en stock)
     const atRisk = inStock.filter(i => differenceInDays(now, parseISO(i.purchase_date)) >= 21);
-    // muertos (35+ días)
     const dead   = inStock.filter(i => differenceInDays(now, parseISO(i.purchase_date)) >= 35);
 
     // últimas 5 ventas
@@ -85,10 +120,10 @@ export default function Dashboard() {
       .sort((a, b) => parseISO(b.fecha_venta!).getTime() - parseISO(a.fecha_venta!).getTime())
       .slice(0, 5);
 
-    // top 3 márgenes del mes
-    const topItems = [...soldThis]
-      .sort((a, b) => beneficioReal(b) - beneficioReal(a))
-      .slice(0, 3);
+    // Mejor venta del mes
+    const bestSale = soldThis.length
+      ? soldThis.reduce((best, i) => beneficioReal(i) > beneficioReal(best) ? i : best, soldThis[0])
+      : null;
 
     // chart: últimos 6 meses
     const monthlyChart = Array.from({ length: 6 }, (_, k) => {
@@ -120,40 +155,55 @@ export default function Dashboard() {
     const urgentTasks  = pendingTasks.filter(t => t.priority === 'high');
 
     return {
-      benMes, benPrev, benDelta,
+      benMes, benPrev, benDelta, benYear,
       soldThisCount: soldThis.length,
+      soldYearCount: soldYear.length,
       inStockCount: inStock.length, invertido,
       margenMedio,
+      avgDaysToSell,
       atRisk, dead,
-      recentSales, topItems,
+      recentSales, bestSale,
       monthlyChart, catChart,
       pendingTasks, urgentTasks,
     };
   }, [items, tasks, now]);
 
-  const isLoading = loadingStock || loadingTasks || loadingDeals;
+  // ── Bot stats ─────────────────────────────────────────────────────────────
+  const botStats = useMemo(() => {
+    const fire  = deals.filter(d => d.score === 'fire').length;
+    const good  = deals.filter(d => d.score === 'good').length;
+    const sent  = deals.filter(d => d.message_status === 'sent').length;
+    const today = deals.filter(d =>
+      Date.now() - new Date(d.created_at).getTime() < 24 * 60 * 60 * 1000
+    ).length;
 
-  // ── Custom tooltip para recharts ──────────────────────────────────────────
-  const ChartTooltip = ({ active, payload, label }: any) => {
-    if (!active || !payload?.length) return null;
-    return (
-      <div className="bg-card border border-border rounded-lg px-3 py-2 text-xs shadow-lg">
-        <p className="font-semibold mb-1">{label}</p>
-        {payload.map((p: any) => (
-          <p key={p.name} style={{ color: p.color }}>
-            {p.name === 'beneficio' ? `Beneficio: ${p.value}€` : `Ventas: ${p.value}`}
-          </p>
-        ))}
-      </div>
-    );
-  };
+    // Últimas 7 días: nuevas ofertas por día
+    const last7 = eachDayOfInterval({ start: subDays(now, 6), end: now }).map(day => {
+      const label = format(day, 'EEE', { locale: es });
+      const count = deals.filter(d => {
+        const dd = new Date(d.created_at);
+        return dd.toDateString() === day.toDateString();
+      }).length;
+      const fireCount = deals.filter(d => {
+        const dd = new Date(d.created_at);
+        return dd.toDateString() === day.toDateString() && d.score === 'fire';
+      }).length;
+      return { label, deals: count, fire: fireCount };
+    });
+
+    const fireRate = deals.length > 0 ? Math.round((fire / deals.length) * 100) : 0;
+
+    return { fire, good, sent, today, last7, fireRate, total: deals.length };
+  }, [deals, now]);
+
+  const isLoading = loadingStock || loadingTasks || loadingDeals;
 
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-6 space-y-5">
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
             {format(now, "EEEE d 'de' MMMM", { locale: es })
@@ -163,6 +213,18 @@ export default function Dashboard() {
             Resumen general de tu negocio
           </p>
         </div>
+        {/* YTD pill */}
+        {!loadingStock && (
+          <div className="flex items-center gap-2 bg-success/10 border border-success/20 rounded-xl px-4 py-2">
+            <Calendar className="h-3.5 w-3.5 text-success" />
+            <div>
+              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Acumulado {new Date().getFullYear()}</p>
+              <p className="text-base font-bold text-success leading-tight">
+                +{stats.benYear.toFixed(0)}€ · {stats.soldYearCount} ventas
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── KPI row ──────────────────────────────────────────────────────── */}
@@ -194,7 +256,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* En stock */}
+          {/* En stock + días rotación */}
           <Card className="border-border/60">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-2">
@@ -204,12 +266,19 @@ export default function Dashboard() {
                 </div>
               </div>
               <p className="text-2xl font-bold">{stats.inStockCount}</p>
-              <p className="text-[11px] text-muted-foreground mt-1">
-                {stats.invertido.toFixed(0)}€ invertido
-                {stats.dead.length > 0 && (
-                  <span className="text-destructive font-medium"> · {stats.dead.length} parados</span>
+              <div className="flex items-center justify-between mt-1">
+                <p className="text-[11px] text-muted-foreground">
+                  {stats.invertido.toFixed(0)}€ invertido
+                  {stats.dead.length > 0 && (
+                    <span className="text-destructive font-medium"> · {stats.dead.length} parados</span>
+                  )}
+                </p>
+                {stats.avgDaysToSell > 0 && (
+                  <span className="text-[10px] text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded-md font-medium">
+                    ~{Math.round(stats.avgDaysToSell)}d/ud
+                  </span>
                 )}
-              </p>
+              </div>
             </CardContent>
           </Card>
 
@@ -223,27 +292,34 @@ export default function Dashboard() {
                 </div>
               </div>
               <p className="text-2xl font-bold">{stats.margenMedio.toFixed(1)}%</p>
-              <p className="text-[11px] text-muted-foreground mt-1">{stats.soldThisCount} ventas este mes</p>
+              <div className="flex items-center justify-between mt-1">
+                <p className="text-[11px] text-muted-foreground">{stats.soldThisCount} ventas este mes</p>
+                {stats.bestSale && (
+                  <span className="text-[10px] text-success font-medium bg-success/10 px-1.5 py-0.5 rounded-md">
+                    🏆 +{beneficioReal(stats.bestSale).toFixed(0)}€
+                  </span>
+                )}
+              </div>
             </CardContent>
           </Card>
 
-          {/* Tareas / bot */}
+          {/* Bot */}
           <Card className="border-border/60">
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-muted-foreground">Tareas / Bot</span>
+                <span className="text-xs font-medium text-muted-foreground">Bot · hoy</span>
                 <div className="h-7 w-7 rounded-lg bg-destructive/10 flex items-center justify-center">
-                  <Target className="h-3.5 w-3.5 text-destructive" />
+                  <Bot className="h-3.5 w-3.5 text-destructive" />
                 </div>
               </div>
               <div className="flex items-end gap-3">
                 <div>
-                  <p className="text-2xl font-bold">{stats.urgentTasks.length}</p>
-                  <p className="text-[11px] text-muted-foreground mt-1">urgentes</p>
+                  <p className="text-2xl font-bold">{botStats.today}</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">ofertas nuevas</p>
                 </div>
-                <div className="pb-1 text-right">
-                  <p className="text-sm font-bold text-destructive">{deals.filter(d => d.score === 'fire').length}</p>
-                  <p className="text-[11px] text-muted-foreground">🔥 deals</p>
+                <div className="pb-0.5">
+                  <p className="text-sm font-bold text-destructive">{botStats.fire} 🔥</p>
+                  <p className="text-[11px] text-muted-foreground">{botStats.fireRate}% fuego</p>
                 </div>
               </div>
             </CardContent>
@@ -257,7 +333,15 @@ export default function Dashboard() {
         {/* Beneficio últimos 6 meses */}
         <Card className="lg:col-span-2 border-border/60">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold">Beneficio últimos 6 meses</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-semibold">Beneficio últimos 6 meses</CardTitle>
+              <div className="flex gap-3 text-[11px] text-muted-foreground">
+                {stats.monthlyChart.map((m, i) => i === stats.monthlyChart.length - 1 && m.ventas > 0
+                  ? <span key={i} className="text-primary font-medium">{m.ventas} venta{m.ventas !== 1 ? 's' : ''} este mes</span>
+                  : null
+                )}
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             {loadingStock ? <Skeleton className="h-44 w-full" /> : (
@@ -272,7 +356,7 @@ export default function Dashboard() {
                       <Cell
                         key={i}
                         fill={entry.beneficio >= 0 ? 'hsl(var(--primary))' : 'hsl(var(--destructive))'}
-                        opacity={i === stats.monthlyChart.length - 1 ? 1 : 0.6}
+                        opacity={i === stats.monthlyChart.length - 1 ? 1 : 0.55}
                       />
                     ))}
                   </Bar>
@@ -309,8 +393,60 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* ── Bottom row ──────────────────────────────────────────────────── */}
+      {/* ── Middle row: bot activity + ventas ──────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+        {/* Bot — últimos 7 días (area chart) */}
+        <Card className="border-border/60">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-semibold flex items-center gap-1.5">
+                <Bot className="h-3.5 w-3.5 text-destructive" /> Actividad del bot
+              </CardTitle>
+              <div className="flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
+                <span className="text-[10px] text-muted-foreground">activo</span>
+              </div>
+            </div>
+            <p className="text-[11px] text-muted-foreground">Ofertas encontradas · últimos 7 días</p>
+          </CardHeader>
+          <CardContent>
+            {loadingDeals ? <Skeleton className="h-36 w-full" /> : (
+              <>
+                <ResponsiveContainer width="100%" height={110}>
+                  <AreaChart data={botStats.last7} margin={{ top: 4, right: 4, left: -32, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="dealsGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                    <XAxis dataKey="label" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} allowDecimals={false} />
+                    <Tooltip content={<ChartTooltip />} cursor={{ stroke: 'hsl(var(--border))' }} />
+                    <Area type="monotone" dataKey="deals" name="deals" stroke="hsl(var(--primary))" fill="url(#dealsGrad)" strokeWidth={2} dot={{ r: 3, fill: 'hsl(var(--primary))' }} />
+                  </AreaChart>
+                </ResponsiveContainer>
+                {/* Bot mini stats */}
+                <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-border/50">
+                  <div className="text-center">
+                    <p className="text-base font-bold text-destructive">{botStats.fire}</p>
+                    <p className="text-[10px] text-muted-foreground">🔥 fuego</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-base font-bold text-amber-500">{botStats.good}</p>
+                    <p className="text-[10px] text-muted-foreground">⭐ buenos</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-base font-bold text-success">{botStats.sent}</p>
+                    <p className="text-[10px] text-muted-foreground">✅ enviados</p>
+                  </div>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Últimas ventas */}
         <Card className="border-border/60">
@@ -330,12 +466,17 @@ export default function Dashboard() {
                 ? <p className="text-xs text-muted-foreground text-center py-6">Sin ventas recientes</p>
                 : stats.recentSales.map(item => {
                   const ben = beneficioReal(item);
+                  const isTop = stats.bestSale?.id === item.id;
                   return (
-                    <div key={item.id} className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-secondary/40 transition-colors">
+                    <div key={item.id} className={`flex items-center gap-2.5 p-2 rounded-lg transition-colors ${isTop ? 'bg-success/5 border border-success/20' : 'hover:bg-secondary/40'}`}>
+                      {isTop && <span className="text-base shrink-0">🏆</span>}
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-medium truncate">{item.name}</p>
                         <p className="text-[10px] text-muted-foreground">
                           {item.fecha_venta ? format(parseISO(item.fecha_venta), 'd MMM', { locale: es }) : '—'}
+                          {item.purchase_date && item.fecha_venta
+                            ? ` · ${differenceInDays(parseISO(item.fecha_venta), parseISO(item.purchase_date))}d en stock`
+                            : ''}
                         </p>
                       </div>
                       <span className={`text-xs font-bold shrink-0 ${ben >= 0 ? 'text-success' : 'text-destructive'}`}>
@@ -387,54 +528,63 @@ export default function Dashboard() {
             }
           </CardContent>
         </Card>
+      </div>
 
-        {/* Últimas ofertas bot */}
-        <Card className="border-border/60">
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-semibold flex items-center gap-1.5">
-                <Flame className="h-3.5 w-3.5 text-destructive" /> Ofertas bot
-              </CardTitle>
-              <Button variant="ghost" size="sm" className="h-6 text-[11px] gap-0.5 px-2" asChild>
-                <Link to="/ofertas">En directo <ArrowRight className="h-3 w-3" /></Link>
-              </Button>
+      {/* ── Últimas ofertas bot (full width) ─────────────────────────── */}
+      <Card className="border-border/60">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm font-semibold flex items-center gap-1.5">
+              <Flame className="h-3.5 w-3.5 text-destructive" /> Últimas ofertas del bot
+              <Badge variant="outline" className="border-destructive/30 text-destructive text-[10px] font-bold ml-1">
+                {botStats.total} total
+              </Badge>
+            </CardTitle>
+            <Button variant="ghost" size="sm" className="h-6 text-[11px] gap-0.5 px-2" asChild>
+              <Link to="/ofertas">Ver feed en directo <ArrowRight className="h-3 w-3" /></Link>
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0">
+          {loadingDeals ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-20" />)}
             </div>
-          </CardHeader>
-          <CardContent className="space-y-2 pt-0">
-            {loadingDeals ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-14" />) :
-              deals.length === 0
-                ? <p className="text-xs text-muted-foreground text-center py-6">Sin ofertas aún</p>
-                : deals.slice(0, 4).map(deal => (
-                  <a
-                    key={deal.id}
-                    href={deal.item_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-2.5 p-2 rounded-lg border border-border/60 hover:bg-secondary/40 transition-colors block"
-                  >
-                    <div className="w-9 h-9 rounded-lg bg-muted/60 flex items-center justify-center text-base shrink-0 overflow-hidden">
-                      {deal.image_url
-                        ? <img src={deal.image_url} alt="" className="w-9 h-9 object-cover" />
-                        : '📱'}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[11px] font-medium truncate leading-tight">{deal.title}</p>
-                      <p className="text-[10px] text-muted-foreground">
-                        hace {formatDistanceToNow(new Date(deal.created_at), { locale: es })}
-                      </p>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-sm font-bold">{deal.price ? `${deal.price}€` : '—'}</p>
+          ) : deals.length === 0 ? (
+            <p className="text-xs text-muted-foreground text-center py-6">Sin ofertas aún</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {deals.slice(0, 8).map(deal => (
+                <a
+                  key={deal.id}
+                  href={deal.item_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex gap-2.5 p-2.5 rounded-xl border border-border/60 hover:bg-secondary/40 transition-colors"
+                >
+                  <div className="w-11 h-11 rounded-lg bg-muted/60 flex items-center justify-center text-lg shrink-0 overflow-hidden">
+                    {deal.image_url
+                      ? <img src={deal.image_url} alt="" className="w-11 h-11 object-cover" />
+                      : '📱'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] font-medium truncate leading-tight">{deal.title}</p>
+                    <div className="flex items-center justify-between mt-1">
                       <Badge variant="outline" className={`text-[9px] h-4 px-1 ${SCORE_COLOR[deal.score]}`}>
                         {deal.score === 'fire' ? '🔥' : deal.score === 'good' ? '⭐' : '·'} {deal.score}
                       </Badge>
+                      <p className="text-xs font-bold">{deal.price ? `${deal.price}€` : '—'}</p>
                     </div>
-                  </a>
-                ))
-            }
-          </CardContent>
-        </Card>
-      </div>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      {formatDistanceToNow(new Date(deal.created_at), { locale: es, addSuffix: true })}
+                    </p>
+                  </div>
+                </a>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* ── Tareas urgentes (si las hay) ──────────────────────────────── */}
       {!loadingTasks && stats.urgentTasks.length > 0 && (
