@@ -18,6 +18,13 @@ export default defineConfig(({ mode }) => ({
       includeAssets: ["icon-192.png", "icon-512.png", "apple-touch-icon.png"],
       manifest: false, // Usamos /public/manifest.webmanifest manualmente
       workbox: {
+        // Carga nuestro handler de push DENTRO del SW que genera Workbox.
+        // Sin esto, el SW generado no tiene evento 'push' y las notificaciones
+        // nunca se muestran (causa raíz del bug en iPhone).
+        importScripts: ["push-sw.js"],
+        // El SW nuevo toma el control de inmediato (clave para autoUpdate).
+        clientsClaim: true,
+        skipWaiting: true,
         // Cachea el shell y permite uso offline
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webmanifest}"],
         // No cachear las llamadas a Supabase (queremos datos frescos)

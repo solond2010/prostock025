@@ -11,56 +11,82 @@ function urlBase64ToUint8Array(base64String: string) {
   return new Uint8Array([...rawData].map(c => c.charCodeAt(0)));
 }
 
+// iOS (incl. iPadOS que se hace pasar por Mac) instalado en pantalla de inicio.
+function detectStandalone() {
+  const iosStandalone = (window.navigator as any).standalone === true;
+  const displayStandalone = window.matchMedia?.('(display-mode: standalone)')?.matches === true;
+  return iosStandalone || displayStandalone;
+}
+
 export function usePushNotifications() {
   const { user } = useAuth();
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const isIOS = /iP(hone|od|ad)/.test(navigator.userAgent);
-  const isStandalone = isIOS && (window.navigator as any).standalone === true;
-  // Push works on: non-iOS browsers OR iOS PWA (added to home screen)
-  const supported = ('serviceWorker' in navigator && 'PushManager' in window) || isStandalone;
-  // iOS Safari but not installed as PWA — needs to be added to home screen first
+  const isIOS =
+    /iP(hone|od|ad)/.test(navigator.userAgent) ||
+    // iPadOS 13+ se reporta como Mac con pantalla táctil
+    (navigator.platform === 'MacIntel' && (navigator as any).maxTouchPoints > 1);
+  const isStandalone = detectStandalone();
+  // En navegador hace falta SW + PushManager. En iOS además debe estar instalada.
+  const hasPushApi = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+  const supported = hasPushApi && (!isIOS || isStandalone);
+  // iOS en Safari pero sin instalar como PWA → hay que añadir a pantalla de inicio.
   const needsInstall = isIOS && !isStandalone;
 
   useEffect(() => {
-    if (!('serviceWorker' in navigator && 'PushManager' in window)) return;
+    if (!hasPushApi) return;
     setPermission(Notification.permission);
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
-    navigator.serviceWorker.ready.then(reg =>
-      reg.pushManager.getSubscription()
-    ).then(sub => {
-      setIsSubscribed(!!sub);
-    }).catch(() => {});
-  }, []);
+    // No registramos el SW aquí: vite-plugin-pwa ya lo registra (/sw.js).
+    // Esperamos a que esté listo y comprobamos si hay suscripción.
+    navigator.serviceWorker.ready
+      .then(reg => reg.pushManager.getSubscription())
+      .then(sub => setIsSubscribed(!!sub))
+      .catch(() => {});
+  }, [hasPushApi]);
 
   const subscribe = async () => {
-    if (!user) return;
-    if (!('serviceWorker' in navigator && 'PushManager' in window)) return;
+    if (!user || !hasPushApi) return;
     setIsLoading(true);
     try {
+      // 1) Pedir permiso explícitamente (requerido en iOS, debe venir de un gesto).
+      const perm = await Notification.requestPermission();
+      setPermission(perm);
+      if (perm !== 'granted') return;
+
       const reg = await navigator.serviceWorker.ready;
+
+      // 2) Si ya hay una suscripción vieja (p.ej. con otra clave VAPID), la limpiamos.
+      const existing = await reg.pushManager.getSubscription();
+      if (existing) {
+        try { await existing.unsubscribe(); } catch { /* noop */ }
+      }
+
+      // 3) Suscribir con la clave actual.
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       });
+
       const subJson = sub.toJSON();
-      await supabase.from('push_subscriptions' as any).upsert({
+      const { error } = await supabase.from('push_subscriptions' as any).upsert({
         user_id: user.id,
         subscription: subJson,
       }, { onConflict: 'user_id' });
-      setPermission('granted');
+      if (error) throw error;
+
       setIsSubscribed(true);
     } catch (e) {
       console.error('Push subscribe error:', e);
+      setIsSubscribed(false);
     } finally {
       setIsLoading(false);
     }
   };
 
   const unsubscribe = async () => {
-    if (!user) return;
+    if (!user || !hasPushApi) return;
     setIsLoading(true);
     try {
       const reg = await navigator.serviceWorker.ready;
@@ -75,5 +101,5 @@ export function usePushNotifications() {
     }
   };
 
-  return { supported, needsInstall, isIOS, permission, isSubscribed, isLoading, subscribe, unsubscribe };
+  return { supported, needsInstall, isIOS, isStandalone, permission, isSubscribed, isLoading, subscribe, unsubscribe };
 }
