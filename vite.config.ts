@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === "development" && componentTagger(),
     VitePWA({
-      registerType: "prompt",
+      registerType: "autoUpdate",
       includeAssets: ["icon-192.png", "icon-512.png", "apple-touch-icon.png"],
       manifest: false, // Usamos /public/manifest.webmanifest manualmente
       workbox: {
