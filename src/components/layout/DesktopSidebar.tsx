@@ -25,19 +25,19 @@ const menuSections = [
     ],
   },
   {
-    label: 'LIVE',
+    label: 'DIRECTO',
     items: [
-      { title: 'En directo', url: '/ofertas',  icon: Target,              badge: 'LIVE' },
-      { title: 'Pipeline',   url: '/pipeline', icon: GitCommitHorizontal, badge: 'NEW' },
-      { title: 'Tareas',     url: '/tareas',   icon: CheckCircle2,        badge: 'NEW' },
-      { title: 'Agenda',     url: '/agenda',   icon: Calendar,            badge: 'NEW' },
+      { title: 'En directo', url: '/ofertas',  icon: Target,              badge: 'DIRECTO' },
+      { title: 'Pipeline',   url: '/pipeline', icon: GitCommitHorizontal, badge: 'NUEVO' },
+      { title: 'Tareas',     url: '/tareas',   icon: CheckCircle2,        badge: 'NUEVO' },
+      { title: 'Agenda',     url: '/agenda',   icon: Calendar,            badge: 'NUEVO' },
     ],
   },
 ];
 
 const BADGE_STYLES: Record<string, string> = {
-  LIVE: 'bg-destructive/15 text-destructive border border-destructive/30',
-  NEW:  'bg-primary/12 text-primary border border-primary/20',
+  DIRECTO: 'bg-destructive/15 text-destructive border border-destructive/30',
+  NUEVO:   'bg-primary/12 text-primary border border-primary/20',
 };
 
 export function DesktopSidebar() {
@@ -117,7 +117,7 @@ export function DesktopSidebar() {
                   <span className="flex-1 truncate">{item.title}</span>
                   {item.badge && (
                     <span className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[8px] font-bold leading-none ${BADGE_STYLES[item.badge] ?? 'bg-muted text-muted-foreground'}`}>
-                      {item.badge === 'LIVE' && <span className="mr-0.5 h-1.5 w-1.5 rounded-full bg-destructive animate-pulse inline-block" />}
+                      {item.badge === 'DIRECTO' && <span className="mr-0.5 h-1.5 w-1.5 rounded-full bg-destructive animate-pulse inline-block" />}
                       {item.badge}
                     </span>
                   )}

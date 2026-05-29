@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -39,14 +39,18 @@ export function SellProductDialog({
   const [fechaVenta, setFechaVenta] = useState<Date>(new Date());
   const [precioVentaReal, setPrecioVentaReal] = useState<string>('');
 
-  // Reset form when dialog opens with new item
-  const handleOpenChange = (newOpen: boolean) => {
-    if (newOpen && item) {
+  // Rellenar el formulario cada vez que el diálogo se abre (también al abrirlo
+  // programáticamente desde el botón "Vender", donde onOpenChange no se dispara).
+  useEffect(() => {
+    if (open && item) {
       setFechaVenta(new Date());
       setPrecioVentaReal(
         item.sale_price_per_unit ? item.sale_price_per_unit.toString() : ''
       );
     }
+  }, [open, item]);
+
+  const handleOpenChange = (newOpen: boolean) => {
     onOpenChange(newOpen);
   };
 

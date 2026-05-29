@@ -600,7 +600,7 @@ const OfertasLive = () => {
         subtitle="El bot encuentra ofertas y aparecen aquí en tiempo real"
         badge={
           <Badge variant="outline" className="border-destructive/30 text-destructive text-[10px] font-bold px-2 gap-1">
-            <Radio className="h-2.5 w-2.5 animate-pulse" /> EN VIVO
+            <Radio className="h-2.5 w-2.5 animate-pulse" /> EN DIRECTO
           </Badge>
         }
         actions={notifAction ?? undefined}

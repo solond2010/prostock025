@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -29,6 +29,12 @@ export function DuplicateProductDialog({
 }: DuplicateProductDialogProps) {
   const [count, setCount] = useState(1);
 
+  // Resetear el contador cada vez que se abre (también al abrirlo desde la tabla,
+  // donde onOpenChange no se dispara y el valor anterior quedaría pegado).
+  useEffect(() => {
+    if (open) setCount(1);
+  }, [open]);
+
   const handleConfirm = () => {
     if (count > 0) {
       onConfirm(count);
@@ -36,9 +42,6 @@ export function DuplicateProductDialog({
   };
 
   const handleOpenChange = (newOpen: boolean) => {
-    if (!newOpen) {
-      setCount(1);
-    }
     onOpenChange(newOpen);
   };
 

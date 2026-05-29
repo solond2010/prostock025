@@ -30,12 +30,12 @@ const menuSections = [
     ],
   },
   {
-    label: 'LIVE',
+    label: 'DIRECTO',
     items: [
-      { title: 'En directo', url: '/ofertas',  icon: Target,              badge: 'LIVE' },
-      { title: 'Pipeline',   url: '/pipeline', icon: GitCommitHorizontal, badge: 'NEW' },
-      { title: 'Tareas',     url: '/tareas',   icon: CheckCircle2,        badge: 'NEW' },
-      { title: 'Agenda',     url: '/agenda',   icon: Calendar,            badge: 'NEW' },
+      { title: 'En directo', url: '/ofertas',  icon: Target,              badge: 'DIRECTO' },
+      { title: 'Pipeline',   url: '/pipeline', icon: GitCommitHorizontal, badge: 'NUEVO' },
+      { title: 'Tareas',     url: '/tareas',   icon: CheckCircle2,        badge: 'NUEVO' },
+      { title: 'Agenda',     url: '/agenda',   icon: Calendar,            badge: 'NUEVO' },
     ],
   },
 ];
