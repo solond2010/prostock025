@@ -157,39 +157,39 @@ export function StockTable({
 
   if (items.length === 0) {
     return (
-      <div className="flex h-48 items-center justify-center rounded-lg border border-dashed border-border bg-card text-muted-foreground">
+      <div className="flex h-48 items-center justify-center rounded-xl border border-dashed border-border/60 bg-card text-muted-foreground text-sm">
         No hay productos en stock. Añade tu primer producto para empezar.
       </div>
     );
   }
 
-  const thCls = "font-semibold text-foreground/80 cursor-pointer select-none hover:text-foreground transition-colors";
+  const thCls = "font-semibold text-xs text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors uppercase tracking-wide";
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {/* Aggregate summary bar */}
       {filteredItems.length > 0 && (
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-1 text-xs text-muted-foreground">
-          <span className="font-medium text-foreground">{aggStats.count} productos</span>
-          <span>·</span>
-          <span>{aggStats.enStock} en stock</span>
-          <span>·</span>
-          <span>{aggStats.vendidos} vendidos</span>
-          <span className="ml-auto flex gap-3">
-            <span>Coste total: <strong className="text-foreground">{fmt(aggStats.totalCoste)}</strong></span>
-            <span className={aggStats.totalBen >= 0 ? 'text-success font-semibold' : 'text-destructive font-semibold'}>
-              Beneficio: {aggStats.totalBen >= 0 ? '+' : ''}{fmt(aggStats.totalBen)}
+          <span className="font-semibold text-foreground">{aggStats.count} producto{aggStats.count !== 1 ? 's' : ''}</span>
+          <span className="text-border">·</span>
+          <span><span className="inline-block w-2 h-2 rounded-full bg-success mr-1" />{aggStats.enStock} en stock</span>
+          <span className="text-border">·</span>
+          <span><span className="inline-block w-2 h-2 rounded-full bg-primary/60 mr-1" />{aggStats.vendidos} vendidos</span>
+          <span className="ml-auto flex items-center gap-4">
+            <span>Coste: <strong className="text-foreground">{fmt(aggStats.totalCoste)}</strong></span>
+            <span className={`font-bold ${aggStats.totalBen >= 0 ? 'text-success' : 'text-destructive'}`}>
+              {aggStats.totalBen >= 0 ? '+' : ''}{fmt(aggStats.totalBen)}
             </span>
           </span>
         </div>
       )}
 
-      <div className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm">
+      <div className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm" style={{ borderTop: '3px solid hsl(262,73%,55%)' }}>
         <Table className="crm-table">
           <TableHeader>
-            <TableRow className="bg-muted/50 hover:bg-muted/50 border-b border-border/60">
+            <TableRow className="bg-muted/40 hover:bg-muted/40 border-b border-border/50">
               <TableHead className={thCls} onClick={() => handleSort('name')}>
-                Nombre <SortIcon col="name" sortKey={sortKey} sortDir={sortDir} />
+                Producto <SortIcon col="name" sortKey={sortKey} sortDir={sortDir} />
               </TableHead>
               <TableHead className={thCls} onClick={() => handleSort('estado')}>
                 Estado <SortIcon col="estado" sortKey={sortKey} sortDir={sortDir} />
@@ -197,39 +197,33 @@ export function StockTable({
               <TableHead className={thCls} onClick={() => handleSort('category')}>
                 Categoría <SortIcon col="category" sortKey={sortKey} sortDir={sortDir} />
               </TableHead>
-              <TableHead className="text-center font-semibold text-foreground/80">
+              <TableHead className={`text-center ${thCls}`}>
                 <div className="flex items-center justify-center gap-2">
-                  <span
-                    className="cursor-pointer hover:text-foreground transition-colors"
-                    onClick={() => handleSort('days')}
-                  >
-                    Días en stock <SortIcon col="days" sortKey={sortKey} sortDir={sortDir} />
+                  <span className="cursor-pointer hover:text-foreground transition-colors" onClick={() => handleSort('days')}>
+                    Días <SortIcon col="days" sortKey={sortKey} sortDir={sortDir} />
                   </span>
                   {onDaysInStockFilterChange && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md border border-border/60 bg-background/50 hover:bg-muted/80 transition-colors backdrop-blur-sm">
+                        <button className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium rounded-md border border-border/60 bg-background/50 hover:bg-muted/80 transition-colors">
                           {daysInStockFilter !== 'all' && (
                             <span className={`w-1.5 h-1.5 rounded-full ${
                               daysInStockFilter === 'recent' ? 'bg-success' :
-                              daysInStockFilter === 'atrisk' ? 'bg-warning' :
-                              'bg-destructive'
+                              daysInStockFilter === 'atrisk' ? 'bg-warning' : 'bg-destructive'
                             }`} />
                           )}
-                          <span className="text-foreground/70">{selectedOption.shortLabel}</span>
+                          <span className="normal-case text-foreground/70">{selectedOption.shortLabel}</span>
                           <ChevronDown className="h-3 w-3 text-muted-foreground" />
                         </button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="center" className="min-w-[180px] bg-popover border border-border/60 backdrop-blur-sm">
+                      <DropdownMenuContent align="center" className="min-w-[180px]">
                         {filterOptions.map((option) => {
                           const Icon = option.icon;
                           return (
                             <DropdownMenuItem
                               key={option.value}
                               onClick={() => onDaysInStockFilterChange(option.value)}
-                              className={`flex items-center gap-2 cursor-pointer ${
-                                daysInStockFilter === option.value ? 'bg-muted/50' : ''
-                              }`}
+                              className={`flex items-center gap-2 cursor-pointer ${daysInStockFilter === option.value ? 'bg-muted/50' : ''}`}
                             >
                               <Icon className={`h-3.5 w-3.5 ${option.colorClass}`} />
                               <span className="text-sm">{option.label}</span>
@@ -250,7 +244,7 @@ export function StockTable({
               <TableHead className={`text-right ${thCls}`} onClick={() => handleSort('margen')}>
                 Margen <SortIcon col="margen" sortKey={sortKey} sortDir={sortDir} />
               </TableHead>
-              <TableHead className="w-[150px] text-center font-semibold text-foreground/80">Acciones</TableHead>
+              <TableHead className={`w-[150px] text-center ${thCls}`}>Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -258,8 +252,8 @@ export function StockTable({
               <TableRow>
                 <TableCell colSpan={8} className="h-32 text-center">
                   <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
-                    <SelectedIcon className={`h-8 w-8 ${selectedOption.colorClass} opacity-50`} />
-                    <span>No hay productos en este rango de días.</span>
+                    <SelectedIcon className={`h-8 w-8 ${selectedOption.colorClass} opacity-40`} />
+                    <span className="text-sm">No hay productos en este rango de días.</span>
                   </div>
                 </TableCell>
               </TableRow>
@@ -275,57 +269,69 @@ export function StockTable({
                   ? (beneficio / item.coste_total) * 100
                   : null;
 
+                // Row accent color by status
+                const rowAccent = isEnStock ? 'hsl(160,84%,38%)' : 'hsl(262,73%,55%)';
+
                 return (
                   <TableRow
                     key={item.id}
-                    className={`group border-b border-border/50 last:border-b-0 ${isRecentlySold ? 'sale-highlight' : ''}`}
+                    className={`group border-b border-border/40 last:border-b-0 transition-colors duration-100 ${
+                      isRecentlySold ? 'sale-highlight' :
+                      isEnStock ? 'hover:bg-success/[0.03]' : 'hover:bg-primary/[0.03] opacity-80'
+                    }`}
+                    style={isRecentlySold ? undefined : { borderLeft: `3px solid transparent` }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderLeftColor = rowAccent; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderLeftColor = 'transparent'; }}
                   >
                     <TableCell>
                       <ProductNameTooltip item={item} onClick={() => onItemClick(item)} />
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant={item.estado === 'Vendido' ? 'default' : 'secondary'}
-                        className={`badge-animated ${item.estado === 'Vendido' ? 'bg-success text-success-foreground' : ''}`}
-                      >
-                        {item.estado}
-                      </Badge>
+                      {isEnStock ? (
+                        <span className="inline-flex items-center gap-1.5 h-6 px-2 rounded-lg text-[11px] font-bold border"
+                          style={{ color: 'hsl(160,84%,38%)', background: 'hsl(160 84% 38% / 0.1)', borderColor: 'hsl(160 84% 38% / 0.3)' }}>
+                          <span className="status-dot-online" style={{ width: '6px', height: '6px' }} />
+                          En stock
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 h-6 px-2 rounded-lg text-[11px] font-bold border"
+                          style={{ color: 'hsl(262,73%,55%)', background: 'hsl(262 73% 55% / 0.1)', borderColor: 'hsl(262 73% 55% / 0.3)' }}>
+                          ✓ Vendido
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="font-normal">
+                      <span className="inline-flex items-center h-5 px-1.5 rounded-md text-[10px] font-medium border border-border/50 bg-muted/40 text-muted-foreground">
                         {item.category}
-                      </Badge>
+                      </span>
                     </TableCell>
                     <TableCell className="text-center">
                       {daysInStock !== null ? (
-                        <Badge
-                          variant="outline"
-                          className={`font-medium ${
-                            daysVariant === 'success'
-                              ? 'bg-success/15 text-success border-success/30'
-                              : daysVariant === 'warning'
-                              ? 'bg-warning/15 text-warning border-warning/30'
-                              : 'bg-destructive/15 text-destructive border-destructive/30'
+                        <span
+                          className={`inline-flex items-center justify-center h-6 min-w-[2rem] px-1.5 rounded-lg text-[11px] font-bold border ${
+                            daysVariant === 'success' ? 'bg-success/12 text-success border-success/30' :
+                            daysVariant === 'warning' ? 'bg-warning/12 text-warning border-warning/30' :
+                            'bg-destructive/12 text-destructive border-destructive/30'
                           }`}
                         >
                           {daysInStock}d
-                        </Badge>
+                        </span>
                       ) : (
-                        <span className="text-muted-foreground">—</span>
+                        <span className="text-muted-foreground/40 text-sm">—</span>
                       )}
                     </TableCell>
-                    <TableCell className="table-cell-numeric">
+                    <TableCell className="table-cell-numeric text-muted-foreground">
                       {fmt(item.coste_total)}
                     </TableCell>
-                    <TableCell className={`table-cell-numeric font-semibold ${isPositive ? 'text-success' : 'text-destructive'}`}>
-                      {beneficio !== null ? `${beneficio >= 0 ? '+' : ''}${fmt(beneficio)}` : '-'}
+                    <TableCell className={`table-cell-numeric font-bold ${isPositive ? 'text-success' : 'text-destructive'}`}>
+                      {beneficio !== null ? `${beneficio >= 0 ? '+' : ''}${fmt(beneficio)}` : '—'}
                     </TableCell>
                     <TableCell className="table-cell-numeric">
                       {margen !== null ? (
-                        <span className={margen >= 0 ? 'text-success' : 'text-destructive'}>
-                          {margen >= 0 ? '' : ''}{margen.toFixed(1)}%
+                        <span className={`font-semibold ${margen >= 0 ? 'text-success' : 'text-destructive'}`}>
+                          {margen.toFixed(1)}%
                         </span>
-                      ) : '-'}
+                      ) : '—'}
                     </TableCell>
                     <TableCell className="text-center">
                       <div className="flex items-center justify-center gap-0.5">
@@ -336,9 +342,9 @@ export function StockTable({
                                 variant="ghost"
                                 size="icon"
                                 onClick={(e) => { e.stopPropagation(); onSellClick(item); }}
-                                className="h-9 w-9 text-success/90 hover:text-success hover:bg-success/20 hover:scale-110 hover:shadow-[0_0_12px_hsl(var(--success)/0.5)] transition-all duration-200 rounded-full"
+                                className="h-8 w-8 text-success/80 hover:text-success hover:bg-success/15 hover:scale-110 hover:shadow-[0_0_10px_hsl(var(--success)/0.4)] transition-all duration-200 rounded-lg"
                               >
-                                <ShoppingCart className="h-4 w-4" />
+                                <ShoppingCart className="h-3.5 w-3.5" />
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent side="top" className="text-xs">Vender</TooltipContent>
@@ -351,9 +357,9 @@ export function StockTable({
                                 variant="ghost"
                                 size="icon"
                                 onClick={(e) => { e.stopPropagation(); onEditClick(item); }}
-                                className="h-9 w-9 text-primary/90 hover:text-primary hover:bg-primary/20 hover:scale-110 hover:shadow-[0_0_12px_hsl(var(--primary)/0.5)] transition-all duration-200 rounded-full"
+                                className="h-8 w-8 text-primary/70 hover:text-primary hover:bg-primary/15 hover:scale-110 hover:shadow-[0_0_10px_hsl(var(--primary)/0.4)] transition-all duration-200 rounded-lg"
                               >
-                                <Pencil className="h-4 w-4" />
+                                <Pencil className="h-3.5 w-3.5" />
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent side="top" className="text-xs">Editar</TooltipContent>
@@ -366,9 +372,9 @@ export function StockTable({
                                 variant="ghost"
                                 size="icon"
                                 onClick={(e) => { e.stopPropagation(); onDeleteClick(item); }}
-                                className="h-9 w-9 text-destructive/90 hover:text-destructive hover:bg-destructive/20 hover:scale-110 hover:shadow-[0_0_12px_hsl(var(--destructive)/0.5)] transition-all duration-200 rounded-full"
+                                className="h-8 w-8 text-muted-foreground/40 hover:text-destructive hover:bg-destructive/15 hover:scale-110 transition-all duration-200 rounded-lg"
                               >
-                                <Trash2 className="h-4 w-4" />
+                                <Trash2 className="h-3.5 w-3.5" />
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent side="top" className="text-xs">Eliminar</TooltipContent>
@@ -380,9 +386,9 @@ export function StockTable({
                               variant="ghost"
                               size="icon"
                               onClick={(e) => { e.stopPropagation(); onDuplicateClick(item); }}
-                              className="h-9 w-9 text-muted-foreground/90 hover:text-foreground hover:bg-muted/60 hover:scale-110 transition-all duration-200 rounded-full"
+                              className="h-8 w-8 text-muted-foreground/40 hover:text-foreground hover:bg-muted/60 hover:scale-110 transition-all duration-200 rounded-lg"
                             >
-                              <Copy className="h-4 w-4" />
+                              <Copy className="h-3.5 w-3.5" />
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent side="top" className="text-xs">Duplicar</TooltipContent>
