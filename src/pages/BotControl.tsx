@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { Bot, Square, RefreshCw, Clock, Search, MessageCircle, Eye, AlertTriangle, CheckCircle2, Terminal } from 'lucide-react';
+import { Bot, Square, Search, MessageCircle, Eye, Clock, Terminal, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -16,14 +15,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useBotStatus, isBotOnline } from '@/hooks/useBotStatus';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { useBotStatus } from '@/hooks/useBotStatus';
 import { useToast } from '@/hooks/use-toast';
 
 const SEARCHES_INFO = [
-  { name: 'iphone pantalla rota', emoji: '💥', color: 'text-destructive', bg: 'bg-destructive/10 border-destructive/25' },
-  { name: 'iphone roto',          emoji: '🔧', color: 'text-amber-500',   bg: 'bg-amber-500/10 border-amber-500/25' },
-  { name: 'iphone chollo 30km',   emoji: '⚡', color: 'text-success',     bg: 'bg-success/10 border-success/25' },
+  { name: 'iphone pantalla rota', emoji: '💥', accent: 'hsl(var(--destructive))', bg: 'hsl(var(--destructive) / 0.08)', border: 'hsl(var(--destructive) / 0.25)' },
+  { name: 'iphone roto',          emoji: '🔧', accent: 'hsl(38,92%,46%)',          bg: 'hsl(38 92% 46% / 0.08)',          border: 'hsl(38 92% 46% / 0.25)' },
+  { name: 'iphone chollo 30km',   emoji: '⚡', accent: 'hsl(var(--success))',      bg: 'hsl(var(--success) / 0.08)',      border: 'hsl(var(--success) / 0.25)' },
 ];
+
+const BLACKLIST = ['watch', 'airpod', 'funda', 'cargador', 'cable', 'auricular', 'ipad', 'pencil', 'macbook', 'accesor', 'correa', 'carcasa'];
 
 export default function BotControl() {
   const { status, isLoading, online, sendCommand } = useBotStatus();
@@ -33,15 +35,8 @@ export default function BotControl() {
   const handleStop = async () => {
     setConfirmStop(false);
     sendCommand.mutate('stop', {
-      onSuccess: () => toast({
-        title: '🛑 Comando enviado',
-        description: 'El bot se detendrá en menos de 20 segundos.',
-      }),
-      onError: () => toast({
-        title: 'Error',
-        description: 'No se pudo enviar el comando al bot.',
-        variant: 'destructive',
-      }),
+      onSuccess: () => toast({ title: '🛑 Comando enviado', description: 'El bot se detendrá en menos de 20 segundos.' }),
+      onError: () => toast({ title: 'Error', description: 'No se pudo enviar el comando al bot.', variant: 'destructive' }),
     });
   };
 
@@ -49,9 +44,7 @@ export default function BotControl() {
     ? formatDistanceToNow(new Date(status.updated_at), { locale: es, addSuffix: true })
     : null;
 
-  const nextSearch = status?.next_search_at
-    ? new Date(status.next_search_at)
-    : null;
+  const nextSearch = status?.next_search_at ? new Date(status.next_search_at) : null;
   const nextSearchIn = nextSearch && nextSearch > new Date()
     ? Math.ceil((nextSearch.getTime() - Date.now()) / 1000)
     : null;
@@ -64,228 +57,193 @@ export default function BotControl() {
     ? status.last_logs.split('\n').filter(Boolean).reverse()
     : [];
 
+  const statusBadge = isLoading ? (
+    <Skeleton className="h-5 w-16 rounded-full" />
+  ) : online ? (
+    <Badge className="bg-success/15 text-success border-success/30 text-[10px] font-bold">
+      <span className="status-dot-online mr-1.5" />
+      ONLINE
+    </Badge>
+  ) : (
+    <Badge variant="outline" className="text-muted-foreground text-[10px]">OFFLINE</Badge>
+  );
+
+  const kpis = [
+    {
+      icon: Search,
+      label: 'Búsquedas hoy',
+      value: status?.searches_today ?? 0,
+      sub: uptime ? `activo ${uptime}` : '—',
+      accent: 'hsl(262,73%,55%)',
+    },
+    {
+      icon: MessageCircle,
+      label: 'Mensajes enviados',
+      value: status?.messages_today ?? 0,
+      sub: 'por el bot hoy',
+      accent: 'hsl(160,84%,38%)',
+    },
+    {
+      icon: Eye,
+      label: 'Anuncios vistos',
+      value: status?.items_seen_today ?? 0,
+      sub: 'acumulado total',
+      accent: 'hsl(38,92%,46%)',
+    },
+    {
+      icon: Clock,
+      label: 'Próxima búsqueda',
+      value: online && nextSearchIn !== null ? `${nextSearchIn}s` : '—',
+      sub: nextSearch && online ? `a las ${format(nextSearch, 'HH:mm:ss')}` : 'sin datos',
+      accent: 'hsl(217,91%,54%)',
+    },
+  ];
+
   return (
-    <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+    <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className={`flex h-11 w-11 items-center justify-center rounded-xl border ${
-            online ? 'bg-success/10 border-success/20' : 'bg-muted/60 border-border/60'
-          }`}>
-            <Bot className={`h-6 w-6 ${online ? 'text-success' : 'text-muted-foreground'}`} />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-              Panel del Bot
-              {isLoading ? (
-                <Skeleton className="h-5 w-16 rounded-full" />
-              ) : online ? (
-                <Badge className="bg-success/15 text-success border-success/30 text-[10px] font-bold">
-                  <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse mr-1" />
-                  ONLINE
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="text-muted-foreground text-[10px]">
-                  OFFLINE
-                </Badge>
-              )}
-            </h1>
-            <p className="text-xs text-muted-foreground">
-              {lastSeen ? `Última actividad ${lastSeen}` : 'Sin datos del bot aún'}
-            </p>
-          </div>
-        </div>
-
-        {/* Botón stop */}
-        {online && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-destructive/30 text-destructive hover:bg-destructive/10"
-            onClick={() => setConfirmStop(true)}
-            disabled={sendCommand.isPending}
-          >
-            <Square className="h-3.5 w-3.5 mr-1.5" />
-            Parar bot
-          </Button>
-        )}
-      </div>
+      <PageHeader
+        icon={Bot}
+        title="Panel del Bot"
+        subtitle={lastSeen ? `Última actividad ${lastSeen}` : 'Sin datos del bot aún'}
+        iconColor={online ? 'green' : 'violet'}
+        badge={statusBadge}
+        actions={
+          online ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-destructive/30 text-destructive hover:bg-destructive/10"
+              onClick={() => setConfirmStop(true)}
+              disabled={sendCommand.isPending}
+            >
+              <Square className="h-3.5 w-3.5 mr-1.5" />
+              Parar bot
+            </Button>
+          ) : undefined
+        }
+      />
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {isLoading ? Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-24 rounded-xl" />
-        )) : (<>
-          <Card className="border-border/60">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Search className="h-3.5 w-3.5 text-primary" />
-                <span className="text-xs text-muted-foreground font-medium">Búsquedas hoy</span>
-              </div>
-              <p className="text-2xl font-bold">{status?.searches_today ?? 0}</p>
-              {uptime && <p className="text-[11px] text-muted-foreground mt-0.5">activo {uptime}</p>}
-            </CardContent>
-          </Card>
-
-          <Card className="border-border/60">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <MessageCircle className="h-3.5 w-3.5 text-success" />
-                <span className="text-xs text-muted-foreground font-medium">Mensajes hoy</span>
-              </div>
-              <p className="text-2xl font-bold text-success">{status?.messages_today ?? 0}</p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">enviados por el bot</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-border/60">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Eye className="h-3.5 w-3.5 text-amber-500" />
-                <span className="text-xs text-muted-foreground font-medium">Anuncios vistos</span>
-              </div>
-              <p className="text-2xl font-bold">{status?.items_seen_today ?? 0}</p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">acumulado total</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-border/60">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground font-medium">Próxima búsqueda</span>
-              </div>
-              {online && nextSearchIn !== null ? (
-                <>
-                  <p className="text-2xl font-bold">{nextSearchIn}s</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
-                    a las {nextSearch ? format(nextSearch, 'HH:mm:ss') : '—'}
-                  </p>
-                </>
-              ) : (
-                <p className="text-lg font-bold text-muted-foreground">—</p>
-              )}
-            </CardContent>
-          </Card>
-        </>)}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 animate-slide-up-1">
+        {isLoading
+          ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-xl" />)
+          : kpis.map((kpi) => {
+              const Icon = kpi.icon;
+              return (
+                <div key={kpi.label} className="kpi-card p-4" style={{ borderTop: `3px solid ${kpi.accent}` }}>
+                  <div className="flex items-center gap-2 mb-2.5">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-lg" style={{ background: `${kpi.accent}18` }}>
+                      <Icon className="h-3.5 w-3.5" style={{ color: kpi.accent }} />
+                    </div>
+                    <span className="text-xs text-muted-foreground font-medium leading-tight">{kpi.label}</span>
+                  </div>
+                  <p className="text-2xl font-bold leading-none" style={{ color: kpi.accent }}>{kpi.value}</p>
+                  <p className="text-[11px] text-muted-foreground mt-1">{kpi.sub}</p>
+                </div>
+              );
+            })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 animate-slide-up-2">
 
         {/* Búsquedas activas */}
-        <Card className="border-border/60">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <Search className="h-4 w-4" /> Búsquedas activas
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 pt-0">
+        <div className="rounded-xl border border-border/60 bg-card overflow-hidden">
+          <div className="flex items-center gap-2 px-4 py-3 border-b border-border/40 bg-muted/20">
+            <Search className="h-4 w-4 text-primary" />
+            <span className="text-sm font-semibold">Búsquedas activas</span>
+            <Badge variant="outline" className="ml-auto text-[10px] h-5">{SEARCHES_INFO.length} activas</Badge>
+          </div>
+          <div className="p-4 space-y-2">
             {SEARCHES_INFO.map(s => (
-              <div key={s.name} className={`flex items-center gap-3 p-3 rounded-xl border ${s.bg}`}>
-                <span className="text-xl">{s.emoji}</span>
-                <div className="flex-1">
-                  <p className={`text-sm font-semibold ${s.color}`}>{s.name}</p>
-                </div>
-                <CheckCircle2 className={`h-4 w-4 ${s.color} opacity-80`} />
+              <div
+                key={s.name}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
+                style={{ background: s.bg, border: `1px solid ${s.border}` }}
+              >
+                <span className="text-lg leading-none">{s.emoji}</span>
+                <p className="flex-1 text-sm font-semibold" style={{ color: s.accent }}>{s.name}</p>
+                <CheckCircle2 className="h-4 w-4 opacity-70" style={{ color: s.accent }} />
               </div>
             ))}
 
-            {/* Blacklist info */}
-            <div className="mt-3 pt-3 border-t border-border/50">
-              <p className="text-[11px] text-muted-foreground font-medium mb-2">
-                🚫 Blacklist activa (chollo 30km)
-              </p>
+            <div className="mt-3 pt-3 border-t border-border/40">
+              <p className="text-[11px] text-muted-foreground font-semibold mb-2">🚫 Blacklist — chollo 30km</p>
               <div className="flex flex-wrap gap-1.5">
-                {['watch', 'airpod', 'funda', 'cargador', 'cable', 'auricular', 'ipad', 'pencil', 'macbook', 'accesor', 'correa', 'carcasa'].map(w => (
-                  <Badge key={w} variant="outline" className="text-[10px] h-5 px-1.5 font-normal text-muted-foreground">
+                {BLACKLIST.map(w => (
+                  <span key={w} className="inline-flex items-center h-5 px-1.5 rounded-md text-[10px] font-medium border border-border/60 text-muted-foreground bg-muted/40">
                     {w}
-                  </Badge>
+                  </span>
                 ))}
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        {/* Estado detallado */}
-        <Card className="border-border/60">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <Bot className="h-4 w-4" /> Estado del proceso
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 pt-0">
+        {/* Estado del proceso */}
+        <div className="rounded-xl border border-border/60 bg-card overflow-hidden">
+          <div className="flex items-center gap-2 px-4 py-3 border-b border-border/40 bg-muted/20">
+            <Bot className="h-4 w-4 text-primary" />
+            <span className="text-sm font-semibold">Estado del proceso</span>
+          </div>
+          <div className="p-4">
             {isLoading ? (
               <div className="space-y-2">
-                {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-8" />)}
+                {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-9 rounded-lg" />)}
               </div>
             ) : status ? (
-              <>
-                <div className="flex justify-between items-center py-2 border-b border-border/40">
-                  <span className="text-xs text-muted-foreground">Estado</span>
-                  <span className={`text-xs font-bold ${online ? 'text-success' : 'text-destructive'}`}>
-                    {online ? '● Online' : '● Offline'}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-border/40">
-                  <span className="text-xs text-muted-foreground">PID proceso</span>
-                  <span className="text-xs font-mono font-medium">{status.pid ?? '—'}</span>
-                </div>
-                {status.started_at && (
-                  <div className="flex justify-between items-center py-2 border-b border-border/40">
-                    <span className="text-xs text-muted-foreground">Arrancado</span>
-                    <span className="text-xs font-medium">
-                      {format(new Date(status.started_at), 'dd/MM HH:mm')}
-                    </span>
+              <div className="space-y-0">
+                {[
+                  {
+                    label: 'Estado',
+                    value: online ? '● Online' : '● Offline',
+                    valueClass: online ? 'text-success font-bold' : 'text-destructive font-bold',
+                  },
+                  { label: 'PID proceso', value: status.pid ?? '—', valueClass: 'font-mono' },
+                  status.started_at ? { label: 'Arrancado', value: format(new Date(status.started_at), 'dd/MM HH:mm'), valueClass: '' } : null,
+                  status.last_search_at ? { label: 'Última búsqueda', value: format(new Date(status.last_search_at), 'HH:mm:ss'), valueClass: '' } : null,
+                  { label: 'Actualización', value: lastSeen ?? '—', valueClass: '' },
+                ].filter(Boolean).map((row: any) => (
+                  <div key={row.label} className="table-row-premium flex items-center justify-between py-2.5 px-1">
+                    <span className="text-xs text-muted-foreground">{row.label}</span>
+                    <span className={`text-xs ${row.valueClass}`}>{row.value}</span>
                   </div>
-                )}
-                {status.last_search_at && (
-                  <div className="flex justify-between items-center py-2 border-b border-border/40">
-                    <span className="text-xs text-muted-foreground">Última búsqueda</span>
-                    <span className="text-xs font-medium">
-                      {format(new Date(status.last_search_at), 'HH:mm:ss')}
-                    </span>
-                  </div>
-                )}
-                <div className="flex justify-between items-center py-2">
-                  <span className="text-xs text-muted-foreground">Última actualización</span>
-                  <span className="text-xs font-medium">{lastSeen}</span>
-                </div>
+                ))}
 
                 {!online && status.updated_at && (
-                  <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/25">
-                    <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                  <div className="flex items-start gap-2.5 p-3 rounded-xl mt-3" style={{ background: 'hsl(38 92% 46% / 0.08)', border: '1px solid hsl(38 92% 46% / 0.25)' }}>
+                    <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: 'hsl(38,92%,46%)' }} />
                     <div>
-                      <p className="text-xs font-semibold text-amber-500">Bot detenido o sin conexión</p>
+                      <p className="text-xs font-semibold" style={{ color: 'hsl(38,92%,46%)' }}>Bot detenido o sin conexión</p>
                       <p className="text-[11px] text-muted-foreground mt-0.5">
-                        Arranca el bot desde tu Mac: <code className="bg-muted px-1 rounded text-[10px]">node check_deals.js</code>
+                        Arranca desde tu Mac: <code className="bg-muted px-1 rounded text-[10px]">node check_deals.js</code>
                       </p>
                     </div>
                   </div>
                 )}
-              </>
+              </div>
             ) : (
-              <div className="text-center py-6 text-muted-foreground">
-                <Bot className="h-10 w-10 mx-auto mb-2 opacity-20" />
-                <p className="text-sm">Sin datos del bot aún</p>
-                <p className="text-xs mt-1 opacity-70">Arranca el bot para ver el estado aquí</p>
+              <div className="flex flex-col items-center justify-center py-10 text-center text-muted-foreground">
+                <Bot className="h-10 w-10 mb-3 opacity-15" />
+                <p className="text-sm font-medium">Sin datos del bot</p>
+                <p className="text-xs mt-1 opacity-60">Arranca el bot para ver el estado aquí</p>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Log viewer */}
       {logs.length > 0 && (
-        <Card className="border-border/60">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <Terminal className="h-4 w-4" /> Últimos logs
-              <Badge variant="outline" className="text-[10px] h-5">{logs.length} líneas</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="bg-muted/40 rounded-xl border border-border/40 p-3 max-h-72 overflow-y-auto font-mono text-[11px] space-y-0.5">
+        <div className="rounded-xl border border-border/60 bg-card overflow-hidden animate-slide-up-3">
+          <div className="flex items-center gap-2 px-4 py-3 border-b border-border/40 bg-muted/20">
+            <Terminal className="h-4 w-4 text-primary" />
+            <span className="text-sm font-semibold">Últimos logs</span>
+            <Badge variant="outline" className="ml-auto text-[10px] h-5">{logs.length} líneas</Badge>
+          </div>
+          <div className="p-3">
+            <div className="rounded-xl bg-[hsl(var(--card))] border border-border/30 p-3 max-h-64 overflow-y-auto font-mono text-[11px] space-y-0.5"
+              style={{ background: 'hsl(220 13% 10% / 0.5)' }}>
               {logs.map((line, i) => (
                 <div
                   key={i}
@@ -293,34 +251,32 @@ export default function BotControl() {
                     line.includes('❌') || line.includes('⚠️') ? 'text-destructive' :
                     line.includes('✅') || line.includes('🔔') ? 'text-success' :
                     line.includes('📤') || line.includes('🆕') ? 'text-primary' :
-                    line.includes('🚫') ? 'text-amber-500' :
-                    'text-muted-foreground'
+                    line.includes('🚫') ? '' :
+                    'text-muted-foreground/70'
                   }`}
+                  style={line.includes('🚫') ? { color: 'hsl(38,92%,46%)' } : undefined}
                 >
                   {line}
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
-      {/* Confirm stop dialog */}
+      {/* Confirm stop */}
       <AlertDialog open={confirmStop} onOpenChange={setConfirmStop}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>¿Parar el bot?</AlertDialogTitle>
             <AlertDialogDescription>
-              El bot dejará de buscar anuncios en Wallapop. Para volver a arrancarlo
-              tendrás que hacerlo desde tu Mac (<code className="bg-muted px-1 rounded text-xs">node check_deals.js</code>).
+              El bot dejará de buscar anuncios. Para volver a arrancarlo tendrás que hacerlo desde tu Mac:{' '}
+              <code className="bg-muted px-1 rounded text-xs">node check_deals.js</code>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleStop}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
+            <AlertDialogAction onClick={handleStop} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Sí, parar bot
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -1,9 +1,8 @@
 import { useState, useMemo } from 'react';
-import { Receipt, Plus, Trash2, Calendar, Euro, History } from 'lucide-react';
+import { Receipt, Plus, Trash2, Calendar, History, Euro } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -22,14 +21,6 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -40,33 +31,28 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { useGastosMaterial, GastoMaterialInsert } from '@/hooks/useGastosMaterial';
 
 const CATEGORIAS = ['Pantallas', 'Baterías', 'Repuestos', 'Herramientas', 'Otros'];
 
-const months = [
-  { value: 1, label: 'Enero' },
-  { value: 2, label: 'Febrero' },
-  { value: 3, label: 'Marzo' },
-  { value: 4, label: 'Abril' },
-  { value: 5, label: 'Mayo' },
-  { value: 6, label: 'Junio' },
-  { value: 7, label: 'Julio' },
-  { value: 8, label: 'Agosto' },
-  { value: 9, label: 'Septiembre' },
-  { value: 10, label: 'Octubre' },
-  { value: 11, label: 'Noviembre' },
-  { value: 12, label: 'Diciembre' },
+const MESES = [
+  { value: 1, label: 'Enero' }, { value: 2, label: 'Febrero' }, { value: 3, label: 'Marzo' },
+  { value: 4, label: 'Abril' }, { value: 5, label: 'Mayo' }, { value: 6, label: 'Junio' },
+  { value: 7, label: 'Julio' }, { value: 8, label: 'Agosto' }, { value: 9, label: 'Septiembre' },
+  { value: 10, label: 'Octubre' }, { value: 11, label: 'Noviembre' }, { value: 12, label: 'Diciembre' },
 ];
+
+const fmtEur = (v: number) =>
+  new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 }).format(v);
 
 const GastoMaterial = () => {
   const { gastos, isLoading, addGasto, deleteGasto } = useGastosMaterial();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  
+
   const currentDate = new Date();
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
-  
   const years = Array.from({ length: 10 }, (_, i) => currentDate.getFullYear() - i);
 
   const [formData, setFormData] = useState<GastoMaterialInsert>({
@@ -77,333 +63,197 @@ const GastoMaterial = () => {
     notas: '',
   });
 
-  // Gasto total histórico (todos los meses)
-  const gastoHistoricoTotal = useMemo(() => {
-    return gastos.reduce((total, gasto) => total + Number(gasto.coste), 0);
-  }, [gastos]);
+  const gastoHistoricoTotal = useMemo(() => gastos.reduce((t, g) => t + Number(g.coste), 0), [gastos]);
 
-  // Gastos filtrados por mes/año seleccionado
   const gastosFiltrados = useMemo(() => {
     return gastos
-      .filter((gasto) => {
-        const gastoDate = parseISO(gasto.fecha);
-        return (
-          gastoDate.getMonth() + 1 === selectedMonth &&
-          gastoDate.getFullYear() === selectedYear
-        );
+      .filter(g => {
+        const d = parseISO(g.fecha);
+        return d.getMonth() + 1 === selectedMonth && d.getFullYear() === selectedYear;
       })
-      .sort((a, b) => {
-        const dateA = parseISO(a.fecha).getTime();
-        const dateB = parseISO(b.fecha).getTime();
-        return dateB - dateA;
-      });
+      .sort((a, b) => parseISO(b.fecha).getTime() - parseISO(a.fecha).getTime());
   }, [gastos, selectedMonth, selectedYear]);
 
-  // Gasto del mes seleccionado
-  const gastoMesSeleccionado = useMemo(() => {
-    return gastosFiltrados.reduce((total, gasto) => total + Number(gasto.coste), 0);
-  }, [gastosFiltrados]);
+  const gastoMes = useMemo(() => gastosFiltrados.reduce((t, g) => t + Number(g.coste), 0), [gastosFiltrados]);
 
-  const getSelectedMonthName = () => {
-    const month = months.find(m => m.value === selectedMonth);
-    return month ? month.label : '';
-  };
+  const mesNombre = MESES.find(m => m.value === selectedMonth)?.label ?? '';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.concepto || !formData.categoria || formData.coste <= 0) {
-      return;
-    }
+    if (!formData.concepto || !formData.categoria || formData.coste <= 0) return;
     addGasto.mutate(formData, {
       onSuccess: () => {
         setIsDialogOpen(false);
-        setFormData({
-          fecha: format(new Date(), 'yyyy-MM-dd'),
-          concepto: '',
-          categoria: '',
-          coste: 0,
-          notas: '',
-        });
+        setFormData({ fecha: format(new Date(), 'yyyy-MM-dd'), concepto: '', categoria: '', coste: 0, notas: '' });
       },
     });
   };
 
-  const handleDelete = (id: string) => {
-    deleteGasto.mutate(id);
-  };
-
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-[1600px] px-4 py-8 sm:px-6 lg:px-10 xl:px-12">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-primary p-2">
-              <Receipt className="h-6 w-6 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-semibold text-foreground">
-                Gasto en Material
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                Registra y gestiona tus gastos en materiales
-              </p>
-            </div>
-          </div>
+    <div className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-10 xl:px-12 py-6 space-y-6">
 
-          <div className="flex items-center gap-3 flex-wrap">
-            {/* Month/Year Selector */}
-            <Select value={selectedMonth.toString()} onValueChange={(v) => setSelectedMonth(parseInt(v))}>
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Mes" />
-              </SelectTrigger>
+      <PageHeader
+        icon={Receipt}
+        title="Gasto en Material"
+        subtitle="Registra y gestiona tus gastos en materiales de reparación"
+        iconColor="amber"
+        actions={
+          <div className="flex items-center gap-2 flex-wrap">
+            <Select value={selectedMonth.toString()} onValueChange={v => setSelectedMonth(parseInt(v))}>
+              <SelectTrigger className="h-9 w-[130px]"><SelectValue /></SelectTrigger>
               <SelectContent>
-                {months.map((month) => (
-                  <SelectItem key={month.value} value={month.value.toString()}>
-                    {month.label}
-                  </SelectItem>
-                ))}
+                {MESES.map(m => <SelectItem key={m.value} value={m.value.toString()}>{m.label}</SelectItem>)}
               </SelectContent>
             </Select>
-            
-            <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(parseInt(v))}>
-              <SelectTrigger className="w-[100px]">
-                <SelectValue placeholder="Año" />
-              </SelectTrigger>
+            <Select value={selectedYear.toString()} onValueChange={v => setSelectedYear(parseInt(v))}>
+              <SelectTrigger className="h-9 w-[95px]"><SelectValue /></SelectTrigger>
               <SelectContent>
-                {years.map((year) => (
-                  <SelectItem key={year} value={year.toString()}>
-                    {year}
-                  </SelectItem>
-                ))}
+                {years.map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
               </SelectContent>
             </Select>
-
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Añadir gasto
+                <Button className="btn-primary-gradient h-9 text-white">
+                  <Plus className="h-4 w-4 mr-1.5" /> Añadir gasto
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                   <DialogTitle>Nuevo gasto en material</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="fecha">Fecha</Label>
-                    <Input
-                      id="fecha"
-                      type="date"
-                      value={formData.fecha}
-                      onChange={(e) =>
-                        setFormData({ ...formData, fecha: e.target.value })
-                      }
-                      required
-                    />
+                <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+                  <div className="space-y-1.5">
+                    <Label>Fecha</Label>
+                    <Input type="date" value={formData.fecha} onChange={e => setFormData({ ...formData, fecha: e.target.value })} required />
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="concepto">Concepto</Label>
-                    <Input
-                      id="concepto"
-                      placeholder="Ej: Pantalla iPhone 12"
-                      value={formData.concepto}
-                      onChange={(e) =>
-                        setFormData({ ...formData, concepto: e.target.value })
-                      }
-                      required
-                    />
+                  <div className="space-y-1.5">
+                    <Label>Concepto</Label>
+                    <Input placeholder="Ej: Pantalla iPhone 12" value={formData.concepto} onChange={e => setFormData({ ...formData, concepto: e.target.value })} required />
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="categoria">Categoría</Label>
-                    <Select
-                      value={formData.categoria}
-                      onValueChange={(value) =>
-                        setFormData({ ...formData, categoria: value })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecciona una categoría" />
-                      </SelectTrigger>
+                  <div className="space-y-1.5">
+                    <Label>Categoría</Label>
+                    <Select value={formData.categoria} onValueChange={v => setFormData({ ...formData, categoria: v })}>
+                      <SelectTrigger><SelectValue placeholder="Selecciona una categoría" /></SelectTrigger>
                       <SelectContent>
-                        {CATEGORIAS.map((cat) => (
-                          <SelectItem key={cat} value={cat}>
-                            {cat}
-                          </SelectItem>
-                        ))}
+                        {CATEGORIAS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="coste">Coste (€)</Label>
-                    <Input
-                      id="coste"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      placeholder="0.00"
+                  <div className="space-y-1.5">
+                    <Label>Coste (€)</Label>
+                    <Input type="number" step="0.01" min="0" placeholder="0.00"
                       value={formData.coste || ''}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          coste: parseFloat(e.target.value) || 0,
-                        })
-                      }
+                      onChange={e => setFormData({ ...formData, coste: parseFloat(e.target.value) || 0 })}
                       required
                     />
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="notas">Notas (opcional)</Label>
-                    <Textarea
-                      id="notas"
-                      placeholder="Notas adicionales..."
-                      value={formData.notas || ''}
-                      onChange={(e) =>
-                        setFormData({ ...formData, notas: e.target.value })
-                      }
-                    />
+                  <div className="space-y-1.5">
+                    <Label>Notas (opcional)</Label>
+                    <Textarea placeholder="Notas adicionales..." value={formData.notas || ''} onChange={e => setFormData({ ...formData, notas: e.target.value })} />
                   </div>
-
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={addGasto.isPending}
-                  >
+                  <Button type="submit" className="w-full btn-primary-gradient text-white" disabled={addGasto.isPending}>
                     {addGasto.isPending ? 'Guardando...' : 'Guardar gasto'}
                   </Button>
                 </form>
               </DialogContent>
             </Dialog>
           </div>
+        }
+      />
+
+      {/* KPI cards */}
+      <div className="grid grid-cols-2 gap-4 animate-slide-up-1">
+        <div className="kpi-card p-4" style={{ borderTop: '3px solid hsl(var(--destructive))' }}>
+          <div className="flex items-center gap-2 mb-2">
+            <History className="h-3.5 w-3.5 text-destructive" />
+            <span className="text-xs text-muted-foreground font-medium">Gasto histórico total</span>
+          </div>
+          <p className="text-2xl font-bold text-destructive leading-none">{fmtEur(gastoHistoricoTotal)}</p>
+          <p className="text-[11px] text-muted-foreground mt-1">Suma de todos los gastos registrados</p>
+        </div>
+        <div className="kpi-card p-4" style={{ borderTop: '3px solid hsl(38,92%,46%)' }}>
+          <div className="flex items-center gap-2 mb-2">
+            <Euro className="h-3.5 w-3.5" style={{ color: 'hsl(38,92%,46%)' }} />
+            <span className="text-xs text-muted-foreground font-medium">Gasto del mes</span>
+          </div>
+          <p className="text-2xl font-bold leading-none" style={{ color: 'hsl(38,92%,46%)' }}>{fmtEur(gastoMes)}</p>
+          <p className="text-[11px] text-muted-foreground mt-1">{mesNombre} {selectedYear}</p>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="rounded-xl border border-border/60 bg-card overflow-hidden animate-slide-up-2">
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-border/40 bg-muted/20">
+          <Calendar className="h-4 w-4 text-primary" />
+          <span className="text-sm font-semibold">Historial — {mesNombre} {selectedYear}</span>
+          {gastosFiltrados.length > 0 && (
+            <span className="ml-auto text-xs text-muted-foreground">{gastosFiltrados.length} gasto{gastosFiltrados.length !== 1 ? 's' : ''}</span>
+          )}
         </div>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-          {/* Gasto total histórico */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Gasto total histórico
-              </CardTitle>
-              <History className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-destructive">
-                {gastoHistoricoTotal.toFixed(2)} €
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Suma de todos los gastos registrados
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Gasto del mes seleccionado */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Gasto del mes seleccionado
-              </CardTitle>
-              <Euro className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-destructive">
-                {gastoMesSeleccionado.toFixed(2)} €
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {getSelectedMonthName()} {selectedYear}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Historial de gastos - {getSelectedMonthName()} {selectedYear}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="text-center py-8 text-muted-foreground">
-                Cargando gastos...
-              </div>
-            ) : gastosFiltrados.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No hay gastos registrados en este mes.
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Fecha</TableHead>
-                      <TableHead>Concepto</TableHead>
-                      <TableHead>Categoría</TableHead>
-                      <TableHead className="text-right">Coste (€)</TableHead>
-                      <TableHead className="w-[50px]"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {gastosFiltrados.map((gasto) => (
-                      <TableRow key={gasto.id}>
-                        <TableCell>
-                          {format(parseISO(gasto.fecha), 'dd/MM/yyyy')}
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          {gasto.concepto}
-                        </TableCell>
-                        <TableCell>{gasto.categoria}</TableCell>
-                        <TableCell className="text-right font-medium">
-                          {Number(gasto.coste).toFixed(2)} €
-                        </TableCell>
-                        <TableCell>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-destructive hover:text-destructive"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                  ¿Eliminar gasto?
-                                </AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Esta acción no se puede deshacer. Se eliminará
-                                  permanentemente el gasto "{gasto.concepto}".
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleDelete(gasto.id)}
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                >
-                                  Eliminar
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {isLoading ? (
+          <div className="text-center py-8 text-sm text-muted-foreground">Cargando gastos...</div>
+        ) : gastosFiltrados.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-14 text-muted-foreground">
+            <Receipt className="h-10 w-10 mb-3 opacity-15" />
+            <p className="text-sm">No hay gastos en este mes</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border/40 bg-muted/10">
+                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-muted-foreground">Fecha</th>
+                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-muted-foreground">Concepto</th>
+                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-muted-foreground">Categoría</th>
+                  <th className="text-right px-4 py-2.5 text-xs font-semibold text-muted-foreground">Coste</th>
+                  <th className="w-[52px]" />
+                </tr>
+              </thead>
+              <tbody>
+                {gastosFiltrados.map(g => (
+                  <tr key={g.id} className="table-row-premium">
+                    <td className="px-4 py-3 text-sm text-muted-foreground tabular-nums">
+                      {format(parseISO(g.fecha), 'dd/MM/yy', { locale: es })}
+                    </td>
+                    <td className="px-4 py-3 font-medium">{g.concepto}</td>
+                    <td className="px-4 py-3">
+                      <span className="inline-flex items-center h-5 px-1.5 rounded-md text-[10px] font-semibold border border-border/50 bg-muted/40 text-muted-foreground">
+                        {g.categoria}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right font-semibold text-destructive tabular-nums">
+                      {fmtEur(Number(g.coste))}
+                    </td>
+                    <td className="px-2 py-3 text-center">
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <button className="h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 transition-colors mx-auto">
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>¿Eliminar gasto?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Esta acción no se puede deshacer. Se eliminará permanentemente "{g.concepto}".
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deleteGasto.mutate(g.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                              Eliminar
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
