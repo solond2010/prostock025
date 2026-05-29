@@ -124,15 +124,15 @@ export default function InventarioPiezas() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm min-w-[600px]">
               <thead>
                 <tr className="border-b border-border/40 bg-muted/10">
-                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-muted-foreground">Nombre</th>
-                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-muted-foreground">Marca</th>
-                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-muted-foreground">Dispositivo</th>
-                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-muted-foreground">Modelo</th>
-                  <th className="text-center px-4 py-2.5 text-xs font-semibold text-muted-foreground w-24">Cantidad</th>
-                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-muted-foreground">Notas</th>
+                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Nombre</th>
+                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Marca</th>
+                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Dispositivo</th>
+                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Modelo</th>
+                  <th className="text-center px-4 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-24">Cantidad</th>
+                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Notas</th>
                   <th className="w-14" />
                 </tr>
               </thead>

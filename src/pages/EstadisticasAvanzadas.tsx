@@ -381,7 +381,8 @@ const EstadisticasAvanzadas = () => {
           </CardHeader>
           <CardContent className="p-0">
             {ranking.top5.length > 0 ? (
-              <Table>
+              <div className="overflow-x-auto">
+              <Table className="min-w-[320px]">
                 <TableHeader>
                   <TableRow className="border-border/40">
                     <TableHead className="pl-5 text-[11px]">Producto</TableHead>
@@ -416,6 +417,7 @@ const EstadisticasAvanzadas = () => {
                   ))}
                 </TableBody>
               </Table>
+              </div>
             ) : (
               <p className="text-sm text-muted-foreground text-center py-10 px-5">Sin productos vendidos este periodo</p>
             )}
@@ -432,7 +434,8 @@ const EstadisticasAvanzadas = () => {
           </CardHeader>
           <CardContent className="p-0">
             {categoryStats.length > 0 ? (
-              <Table>
+              <div className="overflow-x-auto">
+              <Table className="min-w-[320px]">
                 <TableHeader>
                   <TableRow className="border-border/40">
                     <TableHead className="pl-5 text-[11px]">Categoría</TableHead>
@@ -459,6 +462,7 @@ const EstadisticasAvanzadas = () => {
                   ))}
                 </TableBody>
               </Table>
+              </div>
             ) : (
               <p className="text-sm text-muted-foreground text-center py-10 px-5">Sin datos este periodo</p>
             )}
@@ -502,7 +506,8 @@ const EstadisticasAvanzadas = () => {
                 </ResponsiveContainer>
               )}
 
-              <Table>
+              <div className="overflow-x-auto">
+              <Table className="min-w-[300px]">
                 <TableHeader>
                   <TableRow className="border-border/40">
                     <TableHead className="text-[11px]">Mes</TableHead>
@@ -522,6 +527,7 @@ const EstadisticasAvanzadas = () => {
                   ))}
                 </TableBody>
               </Table>
+              </div>
 
               <div className="flex items-center justify-between pt-3 border-t border-border/50">
                 <span className="text-xs font-medium text-muted-foreground">Total histórico</span>
@@ -566,10 +572,11 @@ const EstadisticasAvanzadas = () => {
         <CardContent className="p-0">
           {salesHistory.length > 0 ? (
             <>
-              <Table>
+              <div className="overflow-x-auto">
+              <Table className="min-w-[500px]">
                 <TableHeader>
                   <TableRow className="border-border/40">
-                    <TableHead className="pl-5 text-[11px]">Fecha</TableHead>
+                    <TableHead className="pl-5 text-[11px] whitespace-nowrap">Fecha</TableHead>
                     <TableHead className="text-[11px]">Producto</TableHead>
                     <TableHead className="hidden sm:table-cell text-[11px]">Categoría</TableHead>
                     <TableHead className="text-right text-[11px]">Venta</TableHead>
@@ -588,11 +595,11 @@ const EstadisticasAvanzadas = () => {
                         </TableCell>
                         <TableCell className="py-3 text-xs font-semibold">{item.name}</TableCell>
                         <TableCell className="hidden sm:table-cell py-3 text-xs text-muted-foreground">{item.category}</TableCell>
-                        <TableCell className="text-right py-3 text-xs tabular-nums">{fmtEur(item.precio_venta_real)}</TableCell>
-                        <TableCell className="text-right py-3 text-xs tabular-nums text-muted-foreground">{fmtEur(coste)}</TableCell>
+                        <TableCell className="text-right py-3 text-xs tabular-nums whitespace-nowrap">{fmtEur(item.precio_venta_real)}</TableCell>
+                        <TableCell className="text-right py-3 text-xs tabular-nums text-muted-foreground whitespace-nowrap">{fmtEur(coste)}</TableCell>
                         <TableCell className="text-right pr-5 py-3">
                           <span
-                            className="text-xs font-bold tabular-nums"
+                            className="text-xs font-bold tabular-nums whitespace-nowrap"
                             style={{ color: ben >= 0 ? 'hsl(160 84% 38%)' : 'hsl(0 72% 51%)' }}
                           >
                             {ben >= 0 ? '+' : ''}{fmtEur(ben)}
@@ -603,6 +610,7 @@ const EstadisticasAvanzadas = () => {
                   })}
                 </TableBody>
               </Table>
+              </div>
               <div className="px-5 py-3 border-t border-border/40">
                 <p className="text-[11px] text-muted-foreground">
                   {salesHistory.length} {salesHistory.length === 1 ? 'venta' : 'ventas'} · {getMonthName()} {selectedYear}

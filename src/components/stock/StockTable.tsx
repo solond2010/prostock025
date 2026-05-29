@@ -184,14 +184,15 @@ export function StockTable({
         </div>
       )}
 
-      <div className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm" style={{ borderTop: '3px solid hsl(262,73%,55%)' }}>
-        <Table className="crm-table">
+      <div className="rounded-xl border border-border/60 bg-card shadow-sm" style={{ borderTop: '3px solid hsl(262,73%,55%)' }}>
+        <div className="overflow-x-auto">
+        <Table className="crm-table min-w-[720px]">
           <TableHeader>
             <TableRow className="bg-muted/40 hover:bg-muted/40 border-b border-border/50">
               <TableHead className={thCls} onClick={() => handleSort('name')}>
                 Producto <SortIcon col="name" sortKey={sortKey} sortDir={sortDir} />
               </TableHead>
-              <TableHead className={thCls} onClick={() => handleSort('estado')}>
+              <TableHead className={`min-w-[100px] ${thCls}`} onClick={() => handleSort('estado')}>
                 Estado <SortIcon col="estado" sortKey={sortKey} sortDir={sortDir} />
               </TableHead>
               <TableHead className={thCls} onClick={() => handleSort('category')}>
@@ -288,13 +289,13 @@ export function StockTable({
                     </TableCell>
                     <TableCell>
                       {isEnStock ? (
-                        <span className="inline-flex items-center gap-1.5 h-6 px-2 rounded-lg text-[11px] font-bold border"
+                        <span className="inline-flex items-center gap-1.5 h-6 px-2 rounded-lg text-[11px] font-bold border whitespace-nowrap"
                           style={{ color: 'hsl(160,84%,38%)', background: 'hsl(160 84% 38% / 0.1)', borderColor: 'hsl(160 84% 38% / 0.3)' }}>
                           <span className="status-dot-online" style={{ width: '6px', height: '6px' }} />
                           En stock
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 h-6 px-2 rounded-lg text-[11px] font-bold border"
+                        <span className="inline-flex items-center gap-1.5 h-6 px-2 rounded-lg text-[11px] font-bold border whitespace-nowrap"
                           style={{ color: 'hsl(262,73%,55%)', background: 'hsl(262 73% 55% / 0.1)', borderColor: 'hsl(262 73% 55% / 0.3)' }}>
                           ✓ Vendido
                         </span>
@@ -401,6 +402,7 @@ export function StockTable({
             )}
           </TableBody>
         </Table>
+        </div>
       </div>
     </div>
   );

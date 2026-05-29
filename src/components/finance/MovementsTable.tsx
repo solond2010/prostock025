@@ -117,7 +117,7 @@ export function MovementsTable({ movements, monthLabel, onDelete, isDeleting }: 
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm min-w-[560px]">
             <thead>
               <tr className="border-b border-border/40 bg-muted/10">
                 <th className="text-left px-4 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Fecha</th>
@@ -139,7 +139,7 @@ export function MovementsTable({ movements, monthLabel, onDelete, isDeleting }: 
                     </td>
                     <td className="px-4 py-3">
                       <span
-                        className="inline-flex items-center gap-1 h-5 px-1.5 rounded-md text-[10px] font-bold border"
+                        className="inline-flex items-center gap-1 h-5 px-1.5 rounded-md text-[10px] font-bold border whitespace-nowrap"
                         style={{ color: accent, background: `${accent.replace(')', '/0.1)').replace('hsl', 'hsl')}`, borderColor: `${accent.replace(')', '/0.3)').replace('hsl', 'hsl')}` }}
                       >
                         {isIncome
@@ -148,7 +148,9 @@ export function MovementsTable({ movements, monthLabel, onDelete, isDeleting }: 
                         {isIncome ? 'Ingreso' : 'Gasto'}
                       </span>
                     </td>
-                    <td className="px-4 py-3 font-medium max-w-[180px] truncate">{mov.concept}</td>
+                    <td className="px-4 py-3 font-medium max-w-[200px]">
+                      <span className="block truncate">{mov.concept}</span>
+                    </td>
                     <td className="px-4 py-3">
                       <span className="inline-flex items-center h-5 px-1.5 rounded-md text-[10px] font-medium border border-border/50 bg-muted/40 text-muted-foreground">
                         {mov.category}
