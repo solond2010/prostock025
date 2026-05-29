@@ -549,7 +549,7 @@ export function StockItemDialog({
                 <div className="flex items-center gap-1.5 mb-2.5">
                   <Calculator className="h-3.5 w-3.5 text-muted-foreground" />
                   <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
-                    Calculadora en vivo
+                    Calculadora en directo
                   </span>
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-center">

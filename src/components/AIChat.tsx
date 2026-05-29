@@ -159,7 +159,8 @@ async function fetchStockContext(): Promise<string> {
       ? vendidos.reduce((s: number, i: any) => {
           const ingresos = i.precio_venta_real || i.sale_price_per_unit || 0;
           const costes = (i.purchase_price_per_unit || 0) + (i.coste_reparacion || 0) + (i.precio_envio || 0);
-          return s + (costes > 0 ? ((ingresos - costes) / costes) * 100 : 0);
+          // Margen comercial: beneficio / precio de venta * 100
+          return s + (ingresos > 0 ? ((ingresos - costes) / ingresos) * 100 : 0);
         }, 0) / vendidos.length
       : 0;
 
