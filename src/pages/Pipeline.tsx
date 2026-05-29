@@ -10,6 +10,7 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
+import { DealImage } from '@/components/ui/DealImage';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
@@ -218,10 +219,7 @@ function PipelineCard({ deal, onMoveBack, onMoveForward, onArchive, isPending }:
     >
       {/* Image + title */}
       <div className="flex gap-2.5">
-        {deal.image_url
-          ? <img src={deal.image_url} alt="" className="w-11 h-11 rounded-lg object-cover bg-muted shrink-0" loading="lazy" />
-          : <div className="w-11 h-11 rounded-lg bg-muted/60 flex items-center justify-center text-lg shrink-0">📱</div>
-        }
+        <DealImage src={deal.image_url} alt={deal.title} className="w-11 h-11 rounded-lg object-cover shrink-0" iconClassName="h-5 w-5" />
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-xs leading-snug line-clamp-2">{deal.title}</p>
           <div className="flex items-center gap-1.5 mt-0.5">

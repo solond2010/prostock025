@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { DealImage } from '@/components/ui/DealImage';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -592,11 +593,7 @@ export default function Dashboard() {
                   rel="noreferrer"
                   className="flex gap-2.5 p-2.5 rounded-xl border border-border/60 hover:bg-secondary/40 transition-colors"
                 >
-                  <div className="w-11 h-11 rounded-lg bg-muted/60 flex items-center justify-center text-lg shrink-0 overflow-hidden">
-                    {deal.image_url
-                      ? <img src={deal.image_url} alt="" className="w-11 h-11 object-cover" />
-                      : '📱'}
-                  </div>
+                  <DealImage src={deal.image_url} alt={deal.title} className="w-11 h-11 rounded-lg object-cover shrink-0" iconClassName="h-5 w-5" />
                   <div className="flex-1 min-w-0">
                     <p className="text-[11px] font-medium truncate leading-tight">{deal.title}</p>
                     <div className="flex items-center justify-between mt-1">

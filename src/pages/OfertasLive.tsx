@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { DealImage } from '@/components/ui/DealImage';
 import { useDeals, Deal } from '@/hooks/useDeals';
 import { useToast } from '@/hooks/use-toast';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
@@ -208,18 +209,13 @@ function DealDetailSheet({ deal, open, onClose, onContact, onArchive, queuePendi
     <Sheet open={open} onOpenChange={v => { if (!v) onClose(); }}>
       <SheetContent side="bottom" className="rounded-t-2xl max-h-[92dvh] overflow-y-auto p-0">
         {/* Hero image */}
-        {deal.image_url ? (
-          <div className="w-full bg-muted/20 overflow-hidden" style={{ maxHeight: '52vw' }}>
-            <img
-              src={deal.image_url}
-              alt={deal.title}
-              className="w-full object-cover"
-              style={{ maxHeight: '52vw' }}
-            />
-          </div>
-        ) : (
-          <div className="w-full h-36 bg-gradient-to-br from-muted/60 to-muted/30 flex items-center justify-center text-6xl">📱</div>
-        )}
+        <DealImage
+          src={deal.image_url}
+          alt={deal.title}
+          className="w-full object-cover"
+          style={{ maxHeight: '52vw', minHeight: '120px' }}
+          iconClassName="h-12 w-12"
+        />
 
         {/* Drag handle */}
         <div className="flex justify-center pt-3 pb-1">
@@ -310,18 +306,7 @@ function DealCard({ deal, onContact, onArchive, queuePending, showSourceBadge = 
 
         <div className="flex gap-3 p-3 flex-1">
           {/* Image */}
-          {deal.image_url ? (
-            <div className="shrink-0">
-              <img
-                src={deal.image_url}
-                alt={deal.title}
-                className="w-16 h-16 rounded-xl object-cover bg-muted"
-                loading="lazy"
-              />
-            </div>
-          ) : (
-            <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-muted to-muted/60 flex items-center justify-center text-2xl shrink-0">📱</div>
-          )}
+          <DealImage src={deal.image_url} alt={deal.title} className="w-16 h-16 rounded-xl object-cover shrink-0" iconClassName="h-7 w-7" />
 
           <div className="flex-1 min-w-0">
             {/* Title + price row */}
