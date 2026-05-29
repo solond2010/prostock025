@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { MonthlyGoal } from '@/components/dashboard/MonthlyGoal';
 import {
   TrendingUp, TrendingDown, Package, CheckCircle2, Target,
   ArrowRight, AlertTriangle, Trophy, Flame, Clock, ShoppingCart,
@@ -352,6 +353,9 @@ export default function Dashboard() {
           </div>
         </>)}
       </div>
+
+      {/* ── Monthly goal ─────────────────────────────────────────────── */}
+      {!isLoading && <MonthlyGoal benMes={stats.benMes} />}
 
       {/* ── Charts row ──────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
