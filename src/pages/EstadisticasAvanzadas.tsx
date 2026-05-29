@@ -1,8 +1,12 @@
 import { useState, useMemo } from 'react';
 import {
   PieChart, TrendingUp, Package, DollarSign, Percent, ShoppingCart,
-  Trophy, AlertTriangle, Search, Calendar, Receipt, ArrowUpRight, ArrowDownRight
+  Trophy, AlertTriangle, Search, Calendar, Receipt, ArrowUpRight, ArrowDownRight,
+  FileDown, Loader2
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import { generateMonthlyReport } from '@/lib/monthlyReport';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -156,6 +160,29 @@ const EstadisticasAvanzadas = () => {
 
   const getMonthName = () => months.find(m => m.value === selectedMonth)?.label ?? '';
 
+  const [generatingReport, setGeneratingReport] = useState(false);
+  const handleDownloadReport = async () => {
+    setGeneratingReport(true);
+    try {
+      const facturacion = filteredSold.reduce((s, i) => s + Number(i.precio_venta_real), 0);
+      const invertido = filteredSold.reduce((s, i) => s + calcCoste(i), 0);
+      await generateMonthlyReport({
+        monthLabel: `${getMonthName()} ${selectedYear}`,
+        facturacion,
+        beneficio: metrics.totBen,
+        ventas: metrics.n,
+        margenMedio: metrics.avgMrg,
+        invertido,
+        top: ranking.top5.map((i: any) => ({ name: i.name, beneficio: i._ben, precio: Number(i.precio_venta_real) })),
+      });
+    } catch (e) {
+      toast.error('No se pudo generar el informe');
+      console.error(e);
+    } finally {
+      setGeneratingReport(false);
+    }
+  };
+
   // ── Month KPI cards definition ─────────────────────────────────────────────
   const monthKpis = [
     {
@@ -265,6 +292,16 @@ const EstadisticasAvanzadas = () => {
                 ))}
               </SelectContent>
             </Select>
+            <Button
+              onClick={handleDownloadReport}
+              disabled={generatingReport}
+              className="btn-primary-gradient h-9 text-white gap-1.5 text-xs"
+            >
+              {generatingReport
+                ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                : <FileDown className="h-3.5 w-3.5" />}
+              Informe
+            </Button>
           </div>
         }
       />

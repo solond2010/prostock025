@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { toast as sonnerToast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { SummaryCards } from '@/components/stock/SummaryCards';
@@ -56,6 +57,9 @@ const Index = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<StockItem | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  // IDs ocultados temporalmente mientras dura la ventana de "Deshacer".
+  const [pendingDeleteIds, setPendingDeleteIds] = useState<Set<string>>(new Set());
+  const deleteTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'En stock' | 'Vendido'>('all');
@@ -202,10 +206,41 @@ const Index = () => {
   };
 
   const confirmDelete = () => {
-    if (deleteId) {
-      deleteMutation.mutate(deleteId);
-      setDeleteId(null);
-    }
+    if (!deleteId) return;
+    const id = deleteId;
+    const item = items.find((i) => i.id === id);
+    setDeleteId(null);
+
+    // Ocultar de la lista al instante (sensación de borrado inmediato).
+    setPendingDeleteIds((prev) => new Set(prev).add(id));
+
+    // Borrado real diferido 5s; si se pulsa "Deshacer" se cancela.
+    deleteTimers.current[id] = setTimeout(() => {
+      deleteMutation.mutate(id);
+      setPendingDeleteIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+      delete deleteTimers.current[id];
+    }, 5000);
+
+    sonnerToast('Producto eliminado', {
+      description: item?.name ?? undefined,
+      duration: 5000,
+      action: {
+        label: 'Deshacer',
+        onClick: () => {
+          clearTimeout(deleteTimers.current[id]);
+          delete deleteTimers.current[id];
+          setPendingDeleteIds((prev) => {
+            const next = new Set(prev);
+            next.delete(id);
+            return next;
+          });
+        },
+      },
+    });
   };
 
   const handleSubmit = (data: StockItemFormData) => {
@@ -371,8 +406,8 @@ const Index = () => {
               </div>
 
               {/* Table */}
-              <StockTable 
-                items={processedItems} 
+              <StockTable
+                items={processedItems.filter((i) => !pendingDeleteIds.has(i.id))}
                 onItemClick={handleItemClick} 
                 onDuplicateClick={handleDuplicateClick}
                 onSellClick={handleSellClick}
