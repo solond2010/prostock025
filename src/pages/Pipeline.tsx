@@ -241,30 +241,35 @@ function PipelineCard({ deal, onMoveBack, onMoveForward, onArchive, isPending }:
       {/* Actions */}
       <div className="flex items-center gap-1 flex-wrap">
         {canGoBack && (
-          <Button size="sm" variant="ghost" className="h-6 px-1.5 text-[10px] text-muted-foreground" onClick={onMoveBack} disabled={isPending}>
+          <Button size="sm" variant="ghost" className="h-7 px-1.5 text-[10px] text-muted-foreground hover:text-foreground border border-border/50" onClick={onMoveBack} disabled={isPending}>
             <ChevronLeft className="h-3 w-3" />
           </Button>
         )}
-        {nextStage && (
-          <Button
-            size="sm"
-            className={`h-6 px-2 text-[10px] flex-1 font-semibold ${
-              STAGE_ORDER[stageIdx + 1] === 'bought' ? 'bg-success hover:bg-success/90 text-white' :
-              STAGE_ORDER[stageIdx + 1] === 'sold' ? 'text-white' : 'text-primary'
-            }`}
-            style={STAGE_ORDER[stageIdx + 1] === 'sold' ? { background: 'hsl(262,73%,55%)' } :
-                   STAGE_ORDER[stageIdx + 1] !== 'bought' ? { background: nextStage.accent + '15' } : undefined}
-            onClick={onMoveForward}
-            disabled={isPending}
-          >
-            {nextStage.emoji} {nextStage.label} <ChevronRight className="h-2.5 w-2.5 ml-0.5" />
-          </Button>
-        )}
-        <Button size="sm" variant="outline" className="h-6 px-1.5" asChild>
-          <a href={deal.item_url} target="_blank" rel="noreferrer"><ExternalLink className="h-2.5 w-2.5" /></a>
+        {nextStage && (() => {
+          const next = STAGE_ORDER[stageIdx + 1];
+          // CTAs fuertes (Comprado / Vendido) → relleno sólido + texto blanco.
+          // Fases intermedias → fondo tintado + texto del color de acento (legible).
+          const solid = next === 'bought' || next === 'sold';
+          return (
+            <Button
+              size="sm"
+              className="h-7 px-2 text-[10px] flex-1 min-w-0 font-semibold gap-1 border"
+              style={solid
+                ? { background: nextStage.accent, color: '#fff', borderColor: 'transparent' }
+                : { background: nextStage.bg, color: nextStage.accent, borderColor: nextStage.border }}
+              onClick={onMoveForward}
+              disabled={isPending}
+            >
+              <span className="truncate">{nextStage.emoji} {nextStage.label}</span>
+              <ChevronRight className="h-2.5 w-2.5 shrink-0" />
+            </Button>
+          );
+        })()}
+        <Button size="sm" variant="outline" className="h-7 px-1.5" asChild>
+          <a href={deal.item_url} target="_blank" rel="noreferrer"><ExternalLink className="h-3 w-3" /></a>
         </Button>
-        <Button size="sm" variant="ghost" className="h-6 px-1.5 text-muted-foreground/50 hover:text-muted-foreground" onClick={onArchive} disabled={isPending}>
-          <Archive className="h-2.5 w-2.5" />
+        <Button size="sm" variant="ghost" className="h-7 px-1.5 text-muted-foreground/50 hover:text-destructive border border-border/50" onClick={onArchive} disabled={isPending}>
+          <Archive className="h-3 w-3" />
         </Button>
       </div>
     </div>
