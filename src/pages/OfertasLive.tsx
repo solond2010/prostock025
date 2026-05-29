@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from 'react';
 import {
   Target, Flame, ExternalLink, Archive, Radio, Zap, MessageCircle,
   Bell, BellOff, RefreshCw, AlertTriangle, MapPin, Clock, ChevronRight,
-  MessageSquare, CheckCircle2
+  MessageSquare, CheckCircle2, X
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow, format } from 'date-fns';
@@ -10,7 +10,7 @@ import { es } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
+import { Dialog, DialogContent, DialogClose, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { DealImage } from '@/components/ui/DealImage';
@@ -206,32 +206,36 @@ function DealDetailSheet({ deal, open, onClose, onContact, onArchive, queuePendi
   const timeAgo   = formatDistanceToNow(new Date(deal.created_at), { locale: es, addSuffix: true });
 
   return (
-    <Sheet open={open} onOpenChange={v => { if (!v) onClose(); }}>
-      <SheetContent side="bottom" className="rounded-t-2xl max-h-[92dvh] overflow-y-auto p-0">
-        {/* Hero image */}
-        <DealImage
-          src={deal.image_url}
-          alt={deal.title}
-          className="w-full object-cover"
-          style={{ maxHeight: '52vw', minHeight: '120px' }}
-          iconClassName="h-12 w-12"
-        />
-
-        {/* Drag handle */}
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="h-1 w-10 rounded-full bg-muted-foreground/20" />
+    <Dialog open={open} onOpenChange={v => { if (!v) onClose(); }}>
+      <DialogContent
+        className="p-0 gap-0 overflow-hidden rounded-2xl w-[calc(100%-1.5rem)] max-w-md max-h-[88vh] flex flex-col [&>button]:hidden"
+      >
+        {/* Hero image (altura fija → nunca gigante en PC ni cortada en móvil) */}
+        <div className="relative shrink-0">
+          <DealImage
+            src={deal.image_url}
+            alt={deal.title}
+            className="w-full h-48 sm:h-56 object-cover"
+            iconClassName="h-12 w-12"
+          />
+          {/* Degradado superior para legibilidad del botón cerrar */}
+          <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/45 to-transparent pointer-events-none" />
+          {/* Cerrar */}
+          <DialogClose className="absolute top-3 right-3 h-8 w-8 flex items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-sm hover:bg-black/65 transition-colors">
+            <X className="h-4 w-4" />
+            <span className="sr-only">Cerrar</span>
+          </DialogClose>
+          {/* Precio sobre la imagen */}
+          <div className="absolute bottom-3 right-3 rounded-xl bg-background/90 backdrop-blur px-3 py-1.5 shadow-lg">
+            <span className="text-xl font-bold text-primary tabular-nums leading-none">
+              {deal.price != null ? `${deal.price}€` : '—'}
+            </span>
+          </div>
         </div>
 
-        <div className="px-5 pb-8 space-y-4">
-          {/* Title + price */}
-          <div className="flex justify-between items-start gap-3">
-            <SheetTitle className="text-lg font-bold leading-snug flex-1">{deal.title}</SheetTitle>
-            <div className="shrink-0 text-right">
-              <p className="text-2xl font-bold text-primary tabular-nums">
-                {deal.price != null ? `${deal.price}€` : '—'}
-              </p>
-            </div>
-          </div>
+        {/* Cuerpo con scroll */}
+        <div className="flex-1 min-h-0 overflow-y-auto px-5 py-4 space-y-4">
+          <DialogTitle className="text-lg font-bold leading-snug pr-1">{deal.title}</DialogTitle>
 
           {/* Badges */}
           <div className="flex flex-wrap gap-1.5">
@@ -259,14 +263,17 @@ function DealDetailSheet({ deal, open, onClose, onContact, onArchive, queuePendi
           {deal.description ? (
             <div>
               <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-2">Descripción</p>
-              <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/80">{deal.description}</p>
+              <DialogDescription className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/80">
+                {deal.description}
+              </DialogDescription>
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground italic">Sin descripción</p>
+            <DialogDescription className="text-sm text-muted-foreground italic">Sin descripción</DialogDescription>
           )}
+        </div>
 
-          <Separator />
-
+        {/* Acciones fijas abajo (Contactar siempre visible) */}
+        <div className="shrink-0 border-t border-border/60 bg-card p-4">
           <DealActions
             deal={deal}
             onContact={() => { onContact(); onClose(); }}
@@ -275,8 +282,8 @@ function DealDetailSheet({ deal, open, onClose, onContact, onArchive, queuePendi
             size="lg"
           />
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }
 
