@@ -52,13 +52,9 @@ const getDaysFilterCategory = (days: number | null): DaysInStockFilter | null =>
   return 'dead';
 };
 
-// Precio de venta de referencia: real si está vendido, esperado si está en stock.
-const saleRef = (i: StockItemWithCalculations): number =>
-  i.estado === 'Vendido' ? Number(i.precio_venta_real) || 0 : Number(i.sale_price_per_unit) || 0;
-
-// Margen comercial = beneficio / precio de venta * 100 (nunca pasa de 100%).
-const calcMargen = (beneficio: number | null, venta: number): number | null =>
-  beneficio !== null && venta > 0 ? (beneficio / venta) * 100 : null;
+// Margen = beneficio / coste * 100 (sobre lo invertido).
+const calcMargen = (beneficio: number | null, coste: number): number | null =>
+  beneficio !== null && coste > 0 ? (beneficio / coste) * 100 : null;
 
 interface StockTableProps {
   items: StockItemWithCalculations[];
@@ -125,8 +121,8 @@ export function StockTable({
       let va: any, vb: any;
       const benA = a.estado === 'Vendido' ? a.beneficio_real ?? 0 : a.beneficio_esperado ?? 0;
       const benB = b.estado === 'Vendido' ? b.beneficio_real ?? 0 : b.beneficio_esperado ?? 0;
-      const marA = calcMargen(benA, saleRef(a)) ?? 0;
-      const marB = calcMargen(benB, saleRef(b)) ?? 0;
+      const marA = calcMargen(benA, a.coste_total) ?? 0;
+      const marB = calcMargen(benB, b.coste_total) ?? 0;
       const daysA = getDaysInStock(a.purchase_date, a.estado) ?? Infinity;
       const daysB = getDaysInStock(b.purchase_date, b.estado) ?? Infinity;
 
@@ -274,7 +270,7 @@ export function StockTable({
                 const isRecentlySold = item.id === recentlySoldId;
                 const daysInStock = getDaysInStock(item.purchase_date, item.estado);
                 const daysVariant = getDaysInStockVariant(daysInStock);
-                const margen = calcMargen(beneficio, saleRef(item));
+                const margen = calcMargen(beneficio, item.coste_total);
 
                 // Row accent color by status
                 const rowAccent = isEnStock ? 'hsl(160,84%,38%)' : 'hsl(262,73%,55%)';

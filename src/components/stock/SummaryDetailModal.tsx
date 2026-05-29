@@ -77,15 +77,16 @@ export function SummaryDetailModal({ open, onOpenChange, type, stockItems }: Sum
   };
 
   const calculateItemMargin = (item: StockItem) => {
-    if (item.sale_price_per_unit === 0) return 0;
-    return (calculateItemProfit(item) / item.sale_price_per_unit) * 100;
+    const cost = calculateItemCost(item);
+    if (cost === 0) return 0;
+    return (calculateItemProfit(item) / cost) * 100;
   };
 
   const totals = useMemo(() => {
     const totalInvested = inStockItems.reduce((sum, item) => sum + calculateItemCost(item), 0);
     const totalRevenue = inStockItems.reduce((sum, item) => sum + item.sale_price_per_unit, 0);
     const totalProfit = totalRevenue - totalInvested;
-    const margin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
+    const margin = totalInvested > 0 ? (totalProfit / totalInvested) * 100 : 0;
     return { totalInvested, totalRevenue, totalProfit, margin };
   }, [inStockItems]);
 

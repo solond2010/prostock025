@@ -58,7 +58,7 @@ const EstadisticasAvanzadas = () => {
   // ── Calculations ─────────────────────────────────────────────────────────────
   const calcCoste     = (i: typeof stockItems[0]) => i.purchase_price_per_unit + i.precio_envio + i.coste_reparacion;
   const calcBenReal   = (i: typeof stockItems[0]) => i.precio_venta_real - calcCoste(i);
-  const calcMargen    = (i: typeof stockItems[0]) => i.precio_venta_real === 0 ? 0 : (calcBenReal(i) / i.precio_venta_real) * 100;
+  const calcMargen    = (i: typeof stockItems[0]) => calcCoste(i) === 0 ? 0 : (calcBenReal(i) / calcCoste(i)) * 100;
 
   const filteredSold = useMemo(() =>
     stockItems.filter(i => {
@@ -150,7 +150,7 @@ const EstadisticasAvanzadas = () => {
       totalExpectedRevenue: rev,
       totalExpectedProfit: expProfit,
       totalRealProfit: realProfit,
-      profitMargin: rev > 0 ? (expProfit / rev) * 100 : 0,
+      profitMargin: inv > 0 ? (expProfit / inv) * 100 : 0,
     };
   }, [stockItems]);
 

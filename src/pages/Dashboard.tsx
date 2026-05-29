@@ -33,9 +33,9 @@ function coste(i: any) {
 }
 function beneficioReal(i: any) { return Number(i.precio_venta_real) - coste(i); }
 function margen(i: any) {
-  const pv = Number(i.precio_venta_real);
-  if (!pv) return 0;
-  return ((pv - coste(i)) / pv) * 100;
+  const c = coste(i);
+  if (!c) return 0;
+  return ((Number(i.precio_venta_real) - c) / c) * 100;
 }
 
 const SCORE_COLOR: Record<string, string> = {

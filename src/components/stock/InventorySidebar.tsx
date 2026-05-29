@@ -46,7 +46,7 @@ export function InventorySidebar({ items, className }: InventorySidebarProps) {
       ? vendidosEsteMesItems.reduce((sum, item) => {
           const costeTotal = Number(item.purchase_price_per_unit) + Number(item.precio_envio) + Number(item.coste_reparacion);
           const pv = Number(item.precio_venta_real);
-          return sum + (pv > 0 ? ((pv - costeTotal) / pv) * 100 : 0);
+          return sum + (costeTotal > 0 ? ((pv - costeTotal) / costeTotal) * 100 : 0);
         }, 0) / vendidosEsteMesItems.length
       : 0;
 

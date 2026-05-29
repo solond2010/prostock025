@@ -113,7 +113,7 @@ const Index = () => {
     });
 
     const totalExpectedProfit = totalExpectedRevenue - totalInvested;
-    const profitMargin = totalExpectedRevenue > 0 ? (totalExpectedProfit / totalExpectedRevenue) * 100 : 0;
+    const profitMargin = totalInvested > 0 ? (totalExpectedProfit / totalInvested) * 100 : 0;
 
     return { totalInvested, totalExpectedRevenue, totalExpectedProfit, totalRealProfit, profitMargin };
   }, [items]);
@@ -135,7 +135,7 @@ const Index = () => {
     });
 
     const possibleProfitCurrent = expectedRevenueCurrent - totalInvestedCurrent;
-    const possibleMarginCurrent = expectedRevenueCurrent > 0 ? (possibleProfitCurrent / expectedRevenueCurrent) * 100 : 0;
+    const possibleMarginCurrent = totalInvestedCurrent > 0 ? (possibleProfitCurrent / totalInvestedCurrent) * 100 : 0;
 
     return { totalInvestedCurrent, expectedRevenueCurrent, possibleProfitCurrent, possibleMarginCurrent };
   }, [items]);

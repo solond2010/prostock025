@@ -131,7 +131,7 @@ export function StockItemDialog({
   const liveCoste = Number(watchPurchase || 0) + Number(watchEnvio || 0) + Number(watchReparacion || 0);
   const referencePrice = watchEstado === 'Vendido' ? Number(watchSaleReal || 0) : Number(watchSale || 0);
   const liveBeneficio = referencePrice - liveCoste;
-  const liveMargen = referencePrice > 0 ? (liveBeneficio / referencePrice) * 100 : 0;
+  const liveMargen = liveCoste > 0 ? (liveBeneficio / liveCoste) * 100 : 0;
   const showCalculator = !isReparacion && liveCoste > 0;
 
   useEffect(() => {
