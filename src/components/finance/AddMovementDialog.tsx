@@ -73,7 +73,7 @@ export function AddMovementDialog({ onSave, isLoading }: AddMovementDialogProps)
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2">
+        <Button className="btn-primary-gradient h-9 text-white gap-2">
           <Plus className="h-4 w-4" />
           Añadir movimiento
         </Button>

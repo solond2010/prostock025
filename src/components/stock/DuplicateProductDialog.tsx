@@ -73,7 +73,7 @@ export function DuplicateProductDialog({
           <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isLoading}>
             Cancelar
           </Button>
-          <Button onClick={handleConfirm} disabled={isLoading || count < 1}>
+          <Button onClick={handleConfirm} disabled={isLoading || count < 1} className="btn-primary-gradient text-white">
             {isLoading ? 'Duplicando...' : `Crear ${count} ${count === 1 ? 'copia' : 'copias'}`}
           </Button>
         </DialogFooter>

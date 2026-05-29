@@ -254,7 +254,7 @@ export function StockItemDialog({
 
             {/* Campos específicos de Telefonía */}
             {isTelefonia && (
-              <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
+              <div className="space-y-4 rounded-xl border border-border/60 bg-muted/20 p-4">
                 <p className="text-sm font-medium text-muted-foreground">Detalles del Dispositivo</p>
                 <div className="grid grid-cols-2 gap-3">
                   <FormField
@@ -366,7 +366,7 @@ export function StockItemDialog({
 
             {/* Campos específicos de Ropa */}
             {isRopa && (
-              <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
+              <div className="space-y-4 rounded-xl border border-border/60 bg-muted/20 p-4">
                 <p className="text-sm font-medium text-muted-foreground">Detalles de Ropa</p>
                 <FormField
                   control={form.control}
@@ -397,7 +397,7 @@ export function StockItemDialog({
 
             {/* Campos específicos de Reparación */}
             {isReparacion && (
-              <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
+              <div className="space-y-4 rounded-xl border border-border/60 bg-muted/20 p-4">
                 <p className="text-sm font-medium text-muted-foreground">Detalles de Reparación</p>
                 <div className="grid grid-cols-2 gap-3">
                   <FormField
@@ -616,7 +616,7 @@ export function StockItemDialog({
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancelar
               </Button>
-              <Button type="submit" disabled={isLoading}>
+              <Button type="submit" disabled={isLoading} className="btn-primary-gradient text-white">
                 {isLoading ? 'Guardando...' : item ? 'Actualizar' : 'Añadir'}
               </Button>
             </div>
