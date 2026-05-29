@@ -18,6 +18,7 @@ const GastoMaterial = lazy(() => import("./pages/GastoMaterial"));
 const EstadisticasAvanzadas = lazy(() => import("./pages/EstadisticasAvanzadas"));
 const FinanzasPersonales = lazy(() => import("./pages/FinanzasPersonales"));
 const Auth = lazy(() => import("./pages/Auth"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const RegistroAdmin = lazy(() => import("./pages/RegistroAdmin"));
 const InventarioPiezas = lazy(() => import("./pages/InventarioPiezas"));
 const OfertasLive = lazy(() => import("./pages/OfertasLive"));
@@ -58,6 +59,7 @@ const App = () => (
           <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/auth" element={<Auth />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/registro-admin-secreto" element={<RegistroAdmin />} />
               <Route path="/" element={<Protected><Index /></Protected>} />
               <Route path="/graficos" element={<Protected><MonthlyCharts /></Protected>} />

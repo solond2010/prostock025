@@ -19,9 +19,33 @@ export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
-  const { signIn, user, loading } = useAuth();
+  const [mode, setMode] = useState<'login' | 'reset'>('login');
+  const { signIn, resetPassword, user, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const handleResetRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors({});
+    const emailCheck = z.string().email().safeParse(email);
+    if (!emailCheck.success) {
+      setErrors({ email: 'Introduce un email válido' });
+      return;
+    }
+    setIsLoading(true);
+    const { error } = await resetPassword(email);
+    setIsLoading(false);
+    if (error) {
+      toast({ title: 'Error', description: 'No se pudo enviar el email. Inténtalo de nuevo.', variant: 'destructive' });
+    } else {
+      toast({
+        title: '📧 Email enviado',
+        description: 'Revisa tu correo para restablecer la contraseña.',
+        duration: 6000,
+      });
+      setMode('login');
+    }
+  };
 
   useEffect(() => {
     if (!loading && user) navigate('/');
@@ -92,7 +116,7 @@ export default function Auth() {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={mode === 'login' ? handleSubmit : handleResetRequest} className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="email" className="text-sm font-medium">Email</Label>
               <Input
@@ -108,20 +132,37 @@ export default function Auth() {
               {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
             </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="password" className="text-sm font-medium">Contraseña</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={isLoading}
-                className="h-11 rounded-xl border-border/60 focus-visible:ring-primary/30"
-                autoComplete="current-password"
-              />
-              {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
-            </div>
+            {mode === 'login' && (
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password" className="text-sm font-medium">Contraseña</Label>
+                  <button
+                    type="button"
+                    onClick={() => { setMode('reset'); setErrors({}); }}
+                    className="text-xs text-primary hover:underline font-medium"
+                  >
+                    ¿Olvidaste tu contraseña?
+                  </button>
+                </div>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={isLoading}
+                  className="h-11 rounded-xl border-border/60 focus-visible:ring-primary/30"
+                  autoComplete="current-password"
+                />
+                {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
+              </div>
+            )}
+
+            {mode === 'reset' && (
+              <p className="text-xs text-muted-foreground -mt-1">
+                Te enviaremos un enlace a tu email para crear una contraseña nueva.
+              </p>
+            )}
 
             <Button
               type="submit"
@@ -130,11 +171,21 @@ export default function Auth() {
               disabled={isLoading}
             >
               {isLoading ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Iniciando sesión...</>
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{mode === 'login' ? 'Iniciando sesión...' : 'Enviando...'}</>
               ) : (
-                'Entrar'
+                mode === 'login' ? 'Entrar' : 'Enviar enlace de recuperación'
               )}
             </Button>
+
+            {mode === 'reset' && (
+              <button
+                type="button"
+                onClick={() => { setMode('login'); setErrors({}); }}
+                className="w-full text-center text-xs text-muted-foreground hover:text-foreground"
+              >
+                ← Volver al inicio de sesión
+              </button>
+            )}
           </form>
         </div>
 

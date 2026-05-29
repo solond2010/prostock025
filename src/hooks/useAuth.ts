@@ -53,6 +53,20 @@ export function useAuth() {
     return { error };
   };
 
+  // Envía el email con el enlace para restablecer la contraseña.
+  const resetPassword = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    return { error };
+  };
+
+  // Establece la nueva contraseña (tras volver desde el enlace del email).
+  const updatePassword = async (password: string) => {
+    const { error } = await supabase.auth.updateUser({ password });
+    return { error };
+  };
+
   return {
     user,
     session,
@@ -60,5 +74,7 @@ export function useAuth() {
     signIn,
     signUp,
     signOut,
+    resetPassword,
+    updatePassword,
   };
 }
