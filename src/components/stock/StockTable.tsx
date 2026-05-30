@@ -78,7 +78,7 @@ const filterOptions: { value: DaysInStockFilter; label: string; shortLabel: stri
   { value: 'dead', label: 'Muerto (21+ días)', shortLabel: 'Muerto', icon: Flame, colorClass: 'text-destructive' },
 ];
 
-function SortIcon({ col, sortKey, sortDir }: { col: SortKey; sortKey: SortKey; sortDir: SortDir }) {
+function SortIcon({ col, sortKey, sortDir }: { col: SortKey; sortKey: SortKey | null; sortDir: SortDir }) {
   if (col !== sortKey) return <ArrowUpDown className="h-3 w-3 opacity-30 ml-1 inline" />;
   return sortDir === 'asc'
     ? <ArrowUp className="h-3 w-3 ml-1 inline text-primary" />
@@ -96,7 +96,9 @@ export function StockTable({
   daysInStockFilter = 'all',
   onDaysInStockFilterChange,
 }: StockTableProps) {
-  const [sortKey, setSortKey] = useState<SortKey>('name');
+  // sortKey null = sin ordenar → respeta el orden de inserción (primero el más
+  // antiguo que añadiste, último el más reciente).
+  const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>('asc');
 
   const handleSort = (key: SortKey) => {
@@ -116,6 +118,8 @@ export function StockTable({
           const days = getDaysInStock(item.purchase_date, item.estado);
           return getDaysFilterCategory(days) === daysInStockFilter;
         });
+
+    if (sortKey === null) return list;  // sin ordenar → orden de inserción
 
     list = [...list].sort((a, b) => {
       let va: any, vb: any;
