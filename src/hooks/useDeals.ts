@@ -101,6 +101,26 @@ export function useDeals(
     },
   });
 
+  // Actividad de los últimos 7 días — consulta ligera (created_at, score) SIN el
+  // límite de 200 ni el filtro de archivadas, para que el gráfico sea fiel.
+  const weeklyQuery = useQuery({
+    queryKey: ['deals-weekly'],
+    enabled: !!user,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+      start.setDate(start.getDate() - 6);
+      const { data, error } = await supabase
+        .from('deals' as any)
+        .select('created_at,score')
+        .gte('created_at', start.toISOString())
+        .limit(5000);
+      if (error) throw error;
+      return (data as unknown as { created_at: string; score: string }[]) ?? [];
+    },
+  });
+
   // Realtime: invalidate cache and fire callbacks on status changes
   useEffect(() => {
     if (!user) return;
@@ -183,6 +203,7 @@ export function useDeals(
     isLoading: query.isLoading,
     // Real counts from DB — not limited by the display cap
     realStats: statsQuery.data ?? { todayTotal: 0, sentTotal: 0, pendingTotal: 0, fireTodayTotal: 0 },
+    weeklyActivity: weeklyQuery.data ?? [],
     markSent,
     archive,
     queueSend,

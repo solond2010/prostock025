@@ -77,7 +77,7 @@ export default function Dashboard() {
   const { data: items = [], isLoading: loadingStock } = useStockItems();
   const { tasks, isLoading: loadingTasks } = useTasks();
   // Load all deals (no filter) for bot stats
-  const { deals, isLoading: loadingDeals, realStats: dealRealStats } = useDeals();
+  const { deals, isLoading: loadingDeals, realStats: dealRealStats, weeklyActivity } = useDeals();
   const greeting = getGreeting();
   // Name from email (before @)
   const firstName = user?.email?.split('@')[0] ?? 'Mohamed';
@@ -203,26 +203,23 @@ export default function Dashboard() {
     const fire  = dealRealStats.fireTodayTotal;
     const sent  = dealRealStats.sentTotal;
     const today = dealRealStats.todayTotal;
-    const good  = deals.filter(d => d.score === 'good').length; // approx from loaded
+    // Ofertas "buenas" de los últimos 7 días (desde la consulta semanal completa)
+    const good  = weeklyActivity.filter(d => d.score === 'good').length;
 
-    // Últimas 7 días: nuevas ofertas por día
+    // Últimos 7 días: ofertas encontradas por día (desde la consulta semanal,
+    // sin el límite de 200 → los días antiguos ya no salen a 0).
     const last7 = eachDayOfInterval({ start: subDays(now, 6), end: now }).map(day => {
       const label = format(day, 'EEE', { locale: es });
-      const count = deals.filter(d => {
-        const dd = new Date(d.created_at);
-        return dd.toDateString() === day.toDateString();
-      }).length;
-      const fireCount = deals.filter(d => {
-        const dd = new Date(d.created_at);
-        return dd.toDateString() === day.toDateString() && d.score === 'fire';
-      }).length;
+      const sameDay = (iso: string) => new Date(iso).toDateString() === day.toDateString();
+      const count = weeklyActivity.filter(d => sameDay(d.created_at)).length;
+      const fireCount = weeklyActivity.filter(d => d.score === 'fire' && sameDay(d.created_at)).length;
       return { label, deals: count, fire: fireCount };
     });
 
     const fireRate = today > 0 ? Math.round((fire / today) * 100) : 0;
 
     return { fire, good, sent, today, last7, fireRate, total: dealRealStats.todayTotal };
-  }, [deals, now]);
+  }, [deals, weeklyActivity, now]);
 
   const isLoading = loadingStock || loadingTasks || loadingDeals;
 
