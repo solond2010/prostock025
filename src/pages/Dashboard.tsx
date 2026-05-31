@@ -110,6 +110,19 @@ export default function Dashboard() {
     const benDelta = benPrev !== 0 ? ((benMes - benPrev) / Math.abs(benPrev)) * 100 : 0;
     const benYear  = soldYear.reduce((a, i) => a + beneficioReal(i), 0);
 
+    // ── Comparativa mes actual vs mes anterior ──
+    const facturacionMes  = soldThis.reduce((a, i) => a + Number(i.precio_venta_real), 0);
+    const facturacionPrev = soldPrev.reduce((a, i) => a + Number(i.precio_venta_real), 0);
+    const ventasMes = soldThis.length;
+    const ventasPrev = soldPrev.length;
+    const pct = (cur: number, prev: number) => (prev !== 0 ? ((cur - prev) / Math.abs(prev)) * 100 : (cur > 0 ? 100 : 0));
+    const comparativa = {
+      prevMonthLabel: format(subMonths(now, 1), 'MMMM', { locale: es }),
+      facturacion: { cur: facturacionMes, prev: facturacionPrev, delta: pct(facturacionMes, facturacionPrev) },
+      beneficio:   { cur: benMes, prev: benPrev, delta: benDelta },
+      ventas:      { cur: ventasMes, prev: ventasPrev, delta: pct(ventasMes, ventasPrev) },
+    };
+
     const inStock = items.filter(i => i.estado === 'En stock');
     const invertido = inStock.reduce((a, i) => a + coste(i), 0);
 
@@ -191,6 +204,7 @@ export default function Dashboard() {
       avgDaysToSell,
       atRisk, dead,
       capitalDormido, euroPerDay, roiRealizado, pctDormido,
+      comparativa,
       recentSales, bestSale,
       monthlyChart, catChart,
       pendingTasks, urgentTasks,
@@ -403,6 +417,42 @@ export default function Dashboard() {
               </p>
               <p className="text-[10px] text-muted-foreground mt-0.5">~{Math.round(stats.avgDaysToSell)}d rotación media</p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Comparativa mes vs mes ─────────────────────────────────────── */}
+      {!isLoading && (
+        <div className="rounded-xl border border-border/60 bg-card p-4 animate-slide-up-4"
+          style={{ borderTop: '3px solid hsl(160,84%,38%)' }}>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg" style={{ background: 'hsl(160 84% 38% / 0.12)' }}>
+              <BarChart2 className="h-3.5 w-3.5" style={{ color: 'hsl(160,84%,38%)' }} />
+            </div>
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Este mes vs {stats.comparativa.prevMonthLabel}</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              { label: 'Facturación', cur: `${stats.comparativa.facturacion.cur.toFixed(0)}€`, prev: `${stats.comparativa.facturacion.prev.toFixed(0)}€`, delta: stats.comparativa.facturacion.delta },
+              { label: 'Beneficio',   cur: `${stats.comparativa.beneficio.cur >= 0 ? '+' : ''}${stats.comparativa.beneficio.cur.toFixed(0)}€`, prev: `${stats.comparativa.beneficio.prev.toFixed(0)}€`, delta: stats.comparativa.beneficio.delta },
+              { label: 'Ventas',      cur: String(stats.comparativa.ventas.cur), prev: String(stats.comparativa.ventas.prev), delta: stats.comparativa.ventas.delta },
+            ].map((m) => {
+              const up = m.delta >= 0;
+              const deltaColor = up ? 'hsl(160,84%,38%)' : 'hsl(0,72%,51%)';
+              return (
+                <div key={m.label} className="rounded-lg bg-muted/30 p-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-[10px] text-muted-foreground">{m.label}</p>
+                    <span className="inline-flex items-center gap-0.5 text-[10px] font-bold tabular-nums" style={{ color: deltaColor }}>
+                      {up ? <TrendingUp className="h-2.5 w-2.5" /> : <TrendingDown className="h-2.5 w-2.5" />}
+                      {up ? '+' : ''}{m.delta.toFixed(0)}%
+                    </span>
+                  </div>
+                  <p className="text-xl font-bold tabular-nums leading-none">{m.cur}</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">mes anterior: {m.prev}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
