@@ -17,6 +17,7 @@ export interface StockItem {
   almacenamiento: string | null;
   bateria_porcentaje: number | null;
   reparaciones: string[] | null;
+  reparaciones_hechas: string[] | null;
   color: string | null;
   // Campos específicos de ropa
   talla: string | null;

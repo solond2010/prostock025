@@ -1,12 +1,15 @@
+import { useState, useEffect } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { StockItemWithCalculations } from '@/types/stock';
-import { Pencil, Trash2, Calendar, Package, TrendingUp, Smartphone, Shirt, Sparkles } from 'lucide-react';
+import { Pencil, Trash2, Calendar, Package, TrendingUp, Smartphone, Shirt, Sparkles, Wrench } from 'lucide-react';
 import { format, differenceInDays, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { getPriceInsight } from '@/lib/priceInsight';
+import { useUpdateStockItem } from '@/hooks/useStockItems';
 
 interface ProductDetailSheetProps {
   item: StockItemWithCalculations | null;
@@ -42,6 +45,19 @@ export function ProductDetailSheet({
   onDelete,
   allItems = [],
 }: ProductDetailSheetProps) {
+  const updateItem = useUpdateStockItem();
+  const [doneRepairs, setDoneRepairs] = useState<string[]>([]);
+  useEffect(() => { setDoneRepairs(item?.reparaciones_hechas ?? []); }, [item?.id, item?.reparaciones_hechas]);
+
+  const toggleRepair = (rep: string) => {
+    if (!item) return;
+    const next = doneRepairs.includes(rep)
+      ? doneRepairs.filter((r) => r !== rep)
+      : [...doneRepairs, rep];
+    setDoneRepairs(next);
+    updateItem.mutate({ id: item.id, item: { reparaciones_hechas: next } as any });
+  };
+
   if (!item) return null;
 
   const insight = getPriceInsight(item, allItems);
@@ -221,18 +237,45 @@ export function ProductDetailSheet({
                       <span className="font-medium">{item.color}</span>
                     </div>
                   )}
-                  {item.reparaciones && item.reparaciones.length > 0 && (
-                    <div className="mt-2">
-                      <p className="text-muted-foreground mb-2">Reparaciones necesarias</p>
-                      <div className="flex flex-wrap gap-1">
-                        {item.reparaciones.map((rep) => (
-                          <Badge key={rep} variant="outline" className="text-xs">
-                            {rep}
-                          </Badge>
-                        ))}
+                  {item.reparaciones && item.reparaciones.length > 0 && (() => {
+                    const total = item.reparaciones!.length;
+                    const hechas = item.reparaciones!.filter((r) => doneRepairs.includes(r)).length;
+                    const pct = Math.round((hechas / total) * 100);
+                    const allDone = hechas === total;
+                    return (
+                      <div className="mt-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-muted-foreground flex items-center gap-1.5">
+                            <Wrench className="h-3.5 w-3.5" /> Checklist de reparación
+                          </p>
+                          <span className="text-xs font-bold tabular-nums" style={{ color: allDone ? 'hsl(var(--success))' : 'hsl(38,92%,46%)' }}>
+                            {hechas}/{total}
+                          </span>
+                        </div>
+                        {/* Barra de progreso */}
+                        <div className="h-1.5 w-full rounded-full bg-muted/50 overflow-hidden mb-2.5">
+                          <div className="h-full rounded-full transition-all duration-300"
+                            style={{ width: `${pct}%`, background: allDone ? 'hsl(var(--success))' : 'hsl(38,92%,46%)' }} />
+                        </div>
+                        <div className="space-y-1.5">
+                          {item.reparaciones!.map((rep) => {
+                            const checked = doneRepairs.includes(rep);
+                            return (
+                              <label key={rep} className="flex items-center gap-2.5 cursor-pointer rounded-lg px-2 py-1.5 hover:bg-muted/40 transition-colors">
+                                <Checkbox checked={checked} onCheckedChange={() => toggleRepair(rep)} />
+                                <span className={`text-sm ${checked ? 'line-through text-muted-foreground' : ''}`}>{rep}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                        {allDone && (
+                          <p className="text-[11px] font-semibold mt-2" style={{ color: 'hsl(var(--success))' }}>
+                            ✅ Reparación completa — listo para vender
+                          </p>
+                        )}
                       </div>
-                    </div>
-                  )}
+                    );
+                  })()}
                 </div>
               </section>
             </>
