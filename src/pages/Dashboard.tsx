@@ -4,7 +4,7 @@ import { MonthlyGoal } from '@/components/dashboard/MonthlyGoal';
 import {
   TrendingUp, TrendingDown, Package, CheckCircle2, Target,
   ArrowRight, AlertTriangle, Trophy, Flame, Clock, ShoppingCart,
-  Zap, BarChart2, Calendar, Bot, Sparkles
+  Zap, BarChart2, Calendar, Bot, Sparkles, Wallet
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -130,6 +130,18 @@ export default function Dashboard() {
     const atRisk = inStock.filter(i => differenceInDays(now, parseISO(i.purchase_date)) >= 21);
     const dead   = inStock.filter(i => differenceInDays(now, parseISO(i.purchase_date)) >= 35);
 
+    // ── Velocidad de capital ──
+    // Capital "dormido": coste del stock parado 21+ días (dinero que no se mueve).
+    const capitalDormido = atRisk.reduce((a, i) => a + coste(i), 0);
+    // €/día de capital: beneficio generado por cada día que el dinero estuvo invertido.
+    const sumProfit = withBothDates.reduce((a, i) => a + beneficioReal(i), 0);
+    const sumCost   = withBothDates.reduce((a, i) => a + coste(i), 0);
+    const sumDays   = withBothDates.reduce((a, i) =>
+      a + Math.max(1, differenceInDays(parseISO(i.fecha_venta!), parseISO(i.purchase_date))), 0);
+    const euroPerDay   = sumDays > 0 ? sumProfit / sumDays : 0;        // €/día (histórico)
+    const roiRealizado = sumCost > 0 ? (sumProfit / sumCost) * 100 : 0; // % retorno medio
+    const pctDormido   = invertido > 0 ? (capitalDormido / invertido) * 100 : 0;
+
     // últimas 5 ventas
     const recentSales = [...items]
       .filter(i => i.estado === 'Vendido' && i.fecha_venta)
@@ -178,6 +190,7 @@ export default function Dashboard() {
       margenMedio,
       avgDaysToSell,
       atRisk, dead,
+      capitalDormido, euroPerDay, roiRealizado, pctDormido,
       recentSales, bestSale,
       monthlyChart, catChart,
       pendingTasks, urgentTasks,
@@ -357,6 +370,45 @@ export default function Dashboard() {
 
       {/* ── Monthly goal ─────────────────────────────────────────────── */}
       {!isLoading && <MonthlyGoal benMes={stats.benMes} />}
+
+      {/* ── Velocidad de capital ─────────────────────────────────────── */}
+      {!isLoading && (
+        <div className="rounded-xl border border-border/60 bg-card p-4 animate-slide-up-3"
+          style={{ borderTop: '3px solid hsl(217,91%,54%)' }}>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg" style={{ background: 'hsl(217 91% 54% / 0.12)' }}>
+              <Wallet className="h-3.5 w-3.5" style={{ color: 'hsl(217,91%,54%)' }} />
+            </div>
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Velocidad de capital</span>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div>
+              <p className="text-[10px] text-muted-foreground mb-1">Capital en stock</p>
+              <p className="text-xl font-bold tabular-nums" style={{ color: 'hsl(217,91%,54%)' }}>{stats.invertido.toFixed(0)}€</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{stats.inStockCount} productos</p>
+            </div>
+            <div>
+              <p className="text-[10px] text-muted-foreground mb-1">Capital dormido (21d+)</p>
+              <p className="text-xl font-bold tabular-nums" style={{ color: stats.pctDormido >= 40 ? 'hsl(0 72% 51%)' : stats.pctDormido >= 20 ? 'hsl(38 92% 46%)' : 'hsl(var(--success))' }}>
+                {stats.capitalDormido.toFixed(0)}€
+              </p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{stats.pctDormido.toFixed(0)}% de tu capital</p>
+            </div>
+            <div>
+              <p className="text-[10px] text-muted-foreground mb-1">Rinde por día</p>
+              <p className="text-xl font-bold tabular-nums text-success">+{stats.euroPerDay.toFixed(1)}€<span className="text-xs font-medium text-muted-foreground">/día</span></p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">por € invertido en circulación</p>
+            </div>
+            <div>
+              <p className="text-[10px] text-muted-foreground mb-1">ROI medio realizado</p>
+              <p className="text-xl font-bold tabular-nums" style={{ color: stats.roiRealizado >= 0 ? 'hsl(var(--success))' : 'hsl(0 72% 51%)' }}>
+                {stats.roiRealizado.toFixed(0)}%
+              </p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">~{Math.round(stats.avgDaysToSell)}d rotación media</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Charts row ──────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
