@@ -15,7 +15,8 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { useStockItems } from '@/hooks/useStockItems';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, differenceInDays } from 'date-fns';
+import { detectModel } from '@/lib/iphoneModels';
 import { es } from 'date-fns/locale';
 import { HistoricSummaryCards } from '@/components/stock/HistoricSummaryCards';
 import { StockSummary } from '@/types/stock';
@@ -104,6 +105,35 @@ const EstadisticasAvanzadas = () => {
       .sort((a, b) => b._ben - a._ben);
     return { best: sorted[0], worst: sorted[sorted.length - 1], top5: sorted.slice(0, 5) };
   }, [filteredSold]);
+
+  // Rentabilidad por MODELO de iPhone — histórico (todas las ventas), para
+  // decidir qué modelos comprar. Independiente del mes seleccionado.
+  const modelStats = useMemo(() => {
+    const sold = stockItems.filter(i => i.estado === 'Vendido' && Number(i.precio_venta_real) > 0);
+    const map: Record<string, { label: string; count: number; ben: number; mrgSum: number; daysSum: number; daysN: number }> = {};
+    sold.forEach(i => {
+      const m = detectModel(i.name);
+      const label = m ? m.label : 'Otros';
+      if (!map[label]) map[label] = { label, count: 0, ben: 0, mrgSum: 0, daysSum: 0, daysN: 0 };
+      map[label].count += 1;
+      map[label].ben += calcBenReal(i);
+      map[label].mrgSum += calcMargen(i);
+      if (i.fecha_venta && i.purchase_date) {
+        map[label].daysSum += Math.max(0, differenceInDays(parseISO(i.fecha_venta), parseISO(i.purchase_date)));
+        map[label].daysN += 1;
+      }
+    });
+    return Object.values(map)
+      .map(m => ({
+        label: m.label,
+        count: m.count,
+        ben: m.ben,
+        avgBen: m.ben / m.count,
+        avgMrg: m.mrgSum / m.count,
+        avgDays: m.daysN ? m.daysSum / m.daysN : null,
+      }))
+      .sort((a, b) => b.ben - a.ben);
+  }, [stockItems]);
 
   const categoryStats = useMemo(() => {
     const map: Record<string, { count: number; ben: number }> = {};
@@ -506,6 +536,68 @@ const EstadisticasAvanzadas = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* ── Rentabilidad por modelo (histórico) ── */}
+      <Card className="border-border/60 animate-slide-up">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/12">
+              <Package className="h-[15px] w-[15px] text-primary" />
+            </div>
+            <div>
+              <CardTitle className="text-sm font-bold">Rentabilidad por modelo</CardTitle>
+              <p className="text-[10px] text-muted-foreground">Histórico de todas tus ventas · qué iPhone te renta más</p>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          {modelStats.length > 0 ? (
+            <div className="overflow-x-auto">
+              <Table className="min-w-[520px]">
+                <TableHeader>
+                  <TableRow className="border-border/40">
+                    <TableHead className="pl-5 text-[11px]">Modelo</TableHead>
+                    <TableHead className="text-right text-[11px]">Uds</TableHead>
+                    <TableHead className="text-right text-[11px]">Beneficio total</TableHead>
+                    <TableHead className="text-right text-[11px]">Ben. medio</TableHead>
+                    <TableHead className="text-right text-[11px]">Margen</TableHead>
+                    <TableHead className="text-right pr-5 text-[11px] whitespace-nowrap">Días venta</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {modelStats.map((m, idx) => (
+                    <TableRow key={m.label} className="table-row-premium">
+                      <TableCell className="pl-5 py-3">
+                        <div className="flex items-center gap-2">
+                          {idx === 0 && <Trophy className="h-3.5 w-3.5 text-amber-500 shrink-0" />}
+                          <span className="text-xs font-semibold">{m.label}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right py-3 text-xs tabular-nums">{m.count}</TableCell>
+                      <TableCell className="text-right py-3">
+                        <span className="text-xs font-bold tabular-nums" style={{ color: m.ben >= 0 ? 'hsl(160 84% 38%)' : 'hsl(0 72% 51%)' }}>
+                          {m.ben >= 0 ? '+' : ''}{fmtEur0(m.ben)}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right py-3 text-xs tabular-nums text-muted-foreground">
+                        {m.avgBen >= 0 ? '+' : ''}{fmtEur0(m.avgBen)}
+                      </TableCell>
+                      <TableCell className="text-right py-3 text-xs tabular-nums" style={{ color: m.avgMrg >= 0 ? 'hsl(160 84% 38%)' : 'hsl(0 72% 51%)' }}>
+                        {m.avgMrg.toFixed(0)}%
+                      </TableCell>
+                      <TableCell className="text-right pr-5 py-3 text-xs tabular-nums text-muted-foreground">
+                        {m.avgDays !== null ? `~${Math.round(m.avgDays)}d` : '—'}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-10 px-5">Aún no hay ventas para analizar por modelo</p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* ── Facturación mensual ── */}
       <Card className="border-border/60 animate-slide-up">

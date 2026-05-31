@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
+import { differenceInDays } from 'date-fns';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -28,7 +29,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { StockItem, StockItemFormData } from '@/types/stock';
-import { TrendingUp, TrendingDown, Calculator } from 'lucide-react';
+import { TrendingUp, TrendingDown, Calculator, Sparkles } from 'lucide-react';
+import { detectModel, looksBroken } from '@/lib/iphoneModels';
 
 const STORAGE_OPTIONS = ['64GB', '128GB', '256GB', '512GB', '1TB'];
 const REPAIR_OPTIONS = [
@@ -84,6 +86,7 @@ interface StockItemDialogProps {
   item: StockItem | null;
   onSubmit: (data: StockItemFormData) => void;
   isLoading: boolean;
+  historicalItems?: StockItem[];
 }
 
 export function StockItemDialog({
@@ -92,6 +95,7 @@ export function StockItemDialog({
   item,
   onSubmit,
   isLoading,
+  historicalItems = [],
 }: StockItemDialogProps) {
   const form = useForm<StockItemFormData>({
     resolver: zodResolver(formSchema),
@@ -133,6 +137,41 @@ export function StockItemDialog({
   const liveBeneficio = referencePrice - liveCoste;
   const liveMargen = liveCoste > 0 ? (liveBeneficio / liveCoste) * 100 : 0;
   const showCalculator = !isReparacion && liveCoste > 0;
+
+  // ── Sugerencia por modelo de iPhone ──
+  const watchName = form.watch('name');
+  const watchReparaciones = form.watch('reparaciones');
+  const model = useMemo(() => detectModel(watchName), [watchName]);
+  const isBroken = useMemo(
+    () => looksBroken(`${watchName} ${(watchReparaciones || []).join(' ')}`),
+    [watchName, watchReparaciones]
+  );
+  // Media de venta REAL del usuario para ese modelo (histórico).
+  const modelHistory = useMemo(() => {
+    if (!model) return null;
+    const sold = historicalItems.filter(
+      (h) => h.estado === 'Vendido' && Number(h.precio_venta_real) > 0 && detectModel(h.name)?.key === model.key
+    );
+    if (sold.length === 0) return null;
+    const avgSale = sold.reduce((s, h) => s + Number(h.precio_venta_real), 0) / sold.length;
+    const days = sold.filter((h) => h.fecha_venta && h.purchase_date);
+    const avgDays = days.length
+      ? days.reduce((s, h) => s + Math.max(0, differenceInDays(new Date(h.fecha_venta!), new Date(h.purchase_date))), 0) / days.length
+      : null;
+    return { count: sold.length, avgSale, avgDays };
+  }, [model, historicalItems]);
+  // Evaluación del precio de compra vs referencia.
+  const buyRef = model ? (isBroken ? model.refRoto : model.refBueno) : 0;
+  const buyEval =
+    !model || !watchPurchase
+      ? null
+      : Number(watchPurchase) <= buyRef * 0.7
+      ? { txt: '🔥 Chollo — muy buen precio de compra', color: 'hsl(var(--success))' }
+      : Number(watchPurchase) <= buyRef
+      ? { txt: '👍 Buen precio de compra', color: 'hsl(160,70%,42%)' }
+      : Number(watchPurchase) <= buyRef * 1.2
+      ? { txt: '≈ Precio ajustado', color: 'hsl(38,92%,46%)' }
+      : { txt: '⚠️ Caro respecto a la referencia', color: 'hsl(var(--destructive))' };
 
   useEffect(() => {
     if (open) {
@@ -536,6 +575,39 @@ export function StockItemDialog({
                     </FormItem>
                   )}
                 />
+              </div>
+            )}
+
+            {/* ── Sugerencia por modelo de iPhone ─────────────────────── */}
+            {model && !isReparacion && (
+              <div className="rounded-xl border border-primary/25 bg-primary/5 p-3 space-y-1.5">
+                <div className="flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-[11px] font-bold text-primary uppercase tracking-wide">
+                    {model.label} detectado
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Compra de referencia: hasta <b className="text-foreground">{model.refRoto}€</b> si está roto ·{' '}
+                  <b className="text-foreground">{model.refBueno}€</b> si está bien
+                  {isBroken && <span className="text-[10px] ml-1 opacity-70">(detectado: roto)</span>}
+                </p>
+                {buyEval && (
+                  <p className="text-[11px] font-semibold" style={{ color: buyEval.color }}>
+                    {buyEval.txt}
+                  </p>
+                )}
+                {modelHistory ? (
+                  <p className="text-[11px] text-muted-foreground border-t border-border/40 pt-1.5 mt-0.5">
+                    📊 Tu media de venta: <b className="text-foreground">{modelHistory.avgSale.toFixed(0)}€</b>
+                    {modelHistory.avgDays !== null && <> · vendido en ~{Math.round(modelHistory.avgDays)} días</>}
+                    {' '}<span className="opacity-60">({modelHistory.count} {modelHistory.count === 1 ? 'venta' : 'ventas'})</span>
+                  </p>
+                ) : (
+                  <p className="text-[11px] text-muted-foreground/60 border-t border-border/40 pt-1.5 mt-0.5">
+                    Aún no tienes ventas de este modelo para comparar.
+                  </p>
+                )}
               </div>
             )}
 

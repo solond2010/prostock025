@@ -441,6 +441,7 @@ const Index = () => {
           item={editingItem}
           onSubmit={handleSubmit}
           isLoading={createMutation.isPending || updateMutation.isPending}
+          historicalItems={items}
         />
 
         {/* Delete Confirmation */}
