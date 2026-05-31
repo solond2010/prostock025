@@ -1,5 +1,5 @@
 import { AppSidebar } from './AppSidebar';
-import { Zap } from 'lucide-react';
+import { Zap, Search } from 'lucide-react';
 
 export function AppHeader() {
   return (
@@ -13,6 +13,13 @@ export function AppHeader() {
           </div>
           <span className="text-base font-bold tracking-tight">Flipr</span>
         </div>
+        <button
+          onClick={() => window.dispatchEvent(new Event('flipr:open-search'))}
+          className="ml-auto flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+          aria-label="Buscar"
+        >
+          <Search className="h-[18px] w-[18px]" />
+        </button>
       </div>
     </header>
   );

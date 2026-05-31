@@ -60,7 +60,7 @@ const Index = () => {
   // IDs ocultados temporalmente mientras dura la ventana de "Deshacer".
   const [pendingDeleteIds, setPendingDeleteIds] = useState<Set<string>>(new Set());
   const deleteTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(() => new URLSearchParams(window.location.search).get('q') ?? '');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'En stock' | 'Vendido'>('all');
   const [daysInStockFilter, setDaysInStockFilter] = useState<'all' | 'recent' | 'atrisk' | 'dead'>('all');

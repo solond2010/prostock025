@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { AppHeader } from './AppHeader';
 import { DesktopSidebar } from './DesktopSidebar';
 import { BottomNav } from './BottomNav';
+import { GlobalSearch } from '@/components/GlobalSearch';
 import { AIChat } from '@/components/AIChat';
 
 interface MainLayoutProps {
@@ -24,6 +25,9 @@ export function MainLayout({ children }: MainLayoutProps) {
 
       {/* Navegación inferior — solo en móvil */}
       <BottomNav />
+
+      {/* Búsqueda global (⌘K) — disponible en toda la app */}
+      <GlobalSearch />
 
       {/* Chat IA flotante — visible en todas las páginas */}
       <AIChat />
