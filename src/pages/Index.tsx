@@ -432,6 +432,7 @@ const Index = () => {
           onOpenChange={setDetailOpen}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          allItems={processedItems}
         />
 
         {/* Add/Edit Dialog */}

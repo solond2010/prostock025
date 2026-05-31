@@ -3,9 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { StockItemWithCalculations } from '@/types/stock';
-import { Pencil, Trash2, Calendar, Package, TrendingUp, Smartphone, Shirt } from 'lucide-react';
+import { Pencil, Trash2, Calendar, Package, TrendingUp, Smartphone, Shirt, Sparkles } from 'lucide-react';
 import { format, differenceInDays, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { getPriceInsight } from '@/lib/priceInsight';
 
 interface ProductDetailSheetProps {
   item: StockItemWithCalculations | null;
@@ -13,6 +14,7 @@ interface ProductDetailSheetProps {
   onOpenChange: (open: boolean) => void;
   onEdit: (item: StockItemWithCalculations) => void;
   onDelete: (id: string) => void;
+  allItems?: StockItemWithCalculations[];
 }
 
 const formatCurrency = (value: number) => {
@@ -38,8 +40,14 @@ export function ProductDetailSheet({
   onOpenChange,
   onEdit,
   onDelete,
+  allItems = [],
 }: ProductDetailSheetProps) {
   if (!item) return null;
+
+  const insight = getPriceInsight(item, allItems);
+  const insightColor = insight
+    ? insight.level === 'high' ? 'hsl(0,72%,51%)' : insight.level === 'low' ? 'hsl(160,84%,38%)' : 'hsl(38,92%,46%)'
+    : '';
 
   const isVendido = item.estado === 'Vendido';
   const isTelefonia = item.category === 'Telefonía';
@@ -125,6 +133,27 @@ export function ProductDetailSheet({
               </div>
             </div>
           </section>
+
+          {/* Inteligencia de precio (solo en stock, con histórico del modelo) */}
+          {insight && (
+            <section>
+              <div className="rounded-xl border p-3.5" style={{ borderColor: `${insightColor}55`, background: `${insightColor}14` }}>
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <Sparkles className="h-3.5 w-3.5" style={{ color: insightColor }} />
+                  <span className="text-[11px] font-bold uppercase tracking-wide" style={{ color: insightColor }}>
+                    {insight.level === 'high' ? 'Precio alto' : insight.level === 'low' ? 'Precio competitivo' : 'Precio de mercado'} · {insight.model}
+                  </span>
+                </div>
+                <p className="text-sm text-foreground/80 leading-snug">{insight.message}</p>
+                <div className="flex items-center gap-4 mt-2 text-[11px] text-muted-foreground">
+                  <span>Pides: <b className="text-foreground">{Math.round(insight.asking)}€</b></span>
+                  <span>Tu media: <b className="text-foreground">{Math.round(insight.avgSale)}€</b></span>
+                  {insight.avgDays !== null && <span>Venta media: <b className="text-foreground">~{Math.round(insight.avgDays)}d</b></span>}
+                  <span className="opacity-70">({insight.count} ventas)</span>
+                </div>
+              </div>
+            </section>
+          )}
 
           <Separator />
 

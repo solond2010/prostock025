@@ -27,6 +27,7 @@ import {
 import { StockItemWithCalculations } from '@/types/stock';
 import { differenceInDays } from 'date-fns';
 import { ProductNameTooltip } from './ProductNameTooltip';
+import { getPriceInsight } from '@/lib/priceInsight';
 
 export type DaysInStockFilter = 'all' | 'recent' | 'atrisk' | 'dead';
 type SortKey = 'name' | 'estado' | 'category' | 'days' | 'coste' | 'beneficio' | 'margen';
@@ -275,6 +276,7 @@ export function StockTable({
                 const daysInStock = getDaysInStock(item.purchase_date, item.estado);
                 const daysVariant = getDaysInStockVariant(daysInStock);
                 const margen = calcMargen(beneficio, item.coste_total);
+                const priceLevel = isEnStock ? getPriceInsight(item, items)?.level : null;
 
                 // Row accent color by status
                 const rowAccent = isEnStock ? 'hsl(160,84%,38%)' : 'hsl(262,73%,55%)';
@@ -291,7 +293,23 @@ export function StockTable({
                     onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderLeftColor = 'transparent'; }}
                   >
                     <TableCell>
-                      <ProductNameTooltip item={item} onClick={() => onItemClick(item)} />
+                      <div className="flex items-center gap-1.5">
+                        <ProductNameTooltip item={item} onClick={() => onItemClick(item)} />
+                        {priceLevel === 'high' && (
+                          <span title="Por encima de tu media — baja el precio para vender antes"
+                            className="inline-flex items-center gap-0.5 h-4 px-1 rounded text-[9px] font-bold whitespace-nowrap shrink-0"
+                            style={{ color: 'hsl(0,72%,51%)', background: 'hsl(0 72% 51% / 0.12)' }}>
+                            <ArrowDown className="h-2.5 w-2.5" />caro
+                          </span>
+                        )}
+                        {priceLevel === 'low' && (
+                          <span title="Por debajo de tu media — se venderá rápido"
+                            className="inline-flex items-center gap-0.5 h-4 px-1 rounded text-[9px] font-bold whitespace-nowrap shrink-0"
+                            style={{ color: 'hsl(160,84%,38%)', background: 'hsl(160 84% 38% / 0.12)' }}>
+                            <ArrowDown className="h-2.5 w-2.5 rotate-180" />chollo
+                          </span>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       {isEnStock ? (
