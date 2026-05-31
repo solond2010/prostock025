@@ -19,12 +19,17 @@ export interface BotStatus {
   updated_at: string;
 }
 
-/** Considera el bot offline si no actualizó su estado en >5 min */
+const FRESH_MS = 5 * 60 * 1000;
+
+/** El proceso del bot ha dado señales de vida hace menos de 5 min. */
+export function isBotFresh(status: BotStatus | null | undefined): boolean {
+  if (!status || !status.updated_at) return false;
+  return Date.now() - new Date(status.updated_at).getTime() < FRESH_MS;
+}
+
+/** Online = vivo Y buscando (no pausado). */
 export function isBotOnline(status: BotStatus | null | undefined): boolean {
-  if (!status || !status.is_running) return false;
-  if (!status.updated_at) return false;
-  const diff = Date.now() - new Date(status.updated_at).getTime();
-  return diff < 5 * 60 * 1000;
+  return !!status?.is_running && isBotFresh(status);
 }
 
 export function useBotStatus() {
@@ -62,20 +67,28 @@ export function useBotStatus() {
 
   // Enviar comando al bot
   const sendCommand = useMutation({
-    mutationFn: async (command: 'stop') => {
+    mutationFn: async (command: 'pause' | 'resume' | 'stop') => {
       const { error } = await supabase
         .from('bot_commands' as any)
         .insert({ user_id: user!.id, command, status: 'pending' });
       if (error) throw error;
     },
+    onSuccess: () => {
+      // refresco rápido para reflejar el cambio en cuanto el bot responda
+      setTimeout(() => queryClient.invalidateQueries({ queryKey: ['bot-status'] }), 1500);
+    },
   });
 
+  const fresh = isBotFresh(query.data);
   const online = isBotOnline(query.data);
+  const paused = fresh && !query.data?.is_running; // vivo pero sin buscar
 
   return {
     status: query.data ?? null,
     isLoading: query.isLoading,
     online,
+    paused,
+    fresh,
     sendCommand,
   };
 }

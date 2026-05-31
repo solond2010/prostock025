@@ -1,20 +1,9 @@
-import { useState } from 'react';
-import { Bot, Square, Search, MessageCircle, Eye, Clock, Terminal, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Bot, Pause, Play, Search, MessageCircle, Eye, Clock, Terminal, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { useBotStatus } from '@/hooks/useBotStatus';
 import { useToast } from '@/hooks/use-toast';
@@ -28,14 +17,19 @@ const SEARCHES_INFO = [
 const BLACKLIST = ['watch', 'airpod', 'funda', 'cargador', 'cable', 'auricular', 'ipad', 'pencil', 'macbook', 'accesor', 'correa', 'carcasa'];
 
 export default function BotControl() {
-  const { status, isLoading, online, sendCommand } = useBotStatus();
+  const { status, isLoading, online, paused, fresh, sendCommand } = useBotStatus();
   const { toast } = useToast();
-  const [confirmStop, setConfirmStop] = useState(false);
 
-  const handleStop = async () => {
-    setConfirmStop(false);
-    sendCommand.mutate('stop', {
-      onSuccess: () => toast({ title: '🛑 Comando enviado', description: 'El bot se detendrá en menos de 20 segundos.' }),
+  const handlePause = () => {
+    sendCommand.mutate('pause', {
+      onSuccess: () => toast({ title: '⏸️ Bot pausado', description: 'Dejará de buscar en unos segundos. Puedes reactivarlo cuando quieras.' }),
+      onError: () => toast({ title: 'Error', description: 'No se pudo enviar el comando al bot.', variant: 'destructive' }),
+    });
+  };
+
+  const handleResume = () => {
+    sendCommand.mutate('resume', {
+      onSuccess: () => toast({ title: '▶️ Bot reactivado', description: 'Volverá a buscar en unos segundos.' }),
       onError: () => toast({ title: 'Error', description: 'No se pudo enviar el comando al bot.', variant: 'destructive' }),
     });
   };
@@ -63,6 +57,10 @@ export default function BotControl() {
     <Badge className="bg-success/15 text-success border-success/30 text-[10px] font-bold">
       <span className="status-dot-online mr-1.5" />
       ONLINE
+    </Badge>
+  ) : paused ? (
+    <Badge className="text-[10px] font-bold" style={{ background: 'hsl(38 92% 46% / 0.15)', color: 'hsl(38,92%,46%)', borderColor: 'hsl(38 92% 46% / 0.3)' }}>
+      ⏸ PAUSADO
     </Badge>
   ) : (
     <Badge variant="outline" className="text-muted-foreground text-[10px]">OFFLINE</Badge>
@@ -106,19 +104,29 @@ export default function BotControl() {
         icon={Bot}
         title="Panel del Bot"
         subtitle={lastSeen ? `Última actividad ${lastSeen}` : 'Sin datos del bot aún'}
-        iconColor={online ? 'green' : 'violet'}
+        iconColor={online ? 'green' : paused ? 'amber' : 'violet'}
         badge={statusBadge}
         actions={
           online ? (
             <Button
               variant="outline"
               size="sm"
-              className="border-destructive/30 text-destructive hover:bg-destructive/10"
-              onClick={() => setConfirmStop(true)}
+              className="border-amber-500/40 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10"
+              onClick={handlePause}
               disabled={sendCommand.isPending}
             >
-              <Square className="h-3.5 w-3.5 mr-1.5" />
-              Parar bot
+              <Pause className="h-3.5 w-3.5 mr-1.5" />
+              Pausar bot
+            </Button>
+          ) : paused ? (
+            <Button
+              size="sm"
+              className="btn-primary-gradient text-white"
+              onClick={handleResume}
+              disabled={sendCommand.isPending}
+            >
+              <Play className="h-3.5 w-3.5 mr-1.5" />
+              Activar bot
             </Button>
           ) : undefined
         }
@@ -210,13 +218,25 @@ export default function BotControl() {
                   </div>
                 ))}
 
-                {!online && status.updated_at && (
+                {paused && (
                   <div className="flex items-start gap-2.5 p-3 rounded-xl mt-3" style={{ background: 'hsl(38 92% 46% / 0.08)', border: '1px solid hsl(38 92% 46% / 0.25)' }}>
-                    <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: 'hsl(38,92%,46%)' }} />
+                    <Pause className="h-4 w-4 shrink-0 mt-0.5" style={{ color: 'hsl(38,92%,46%)' }} />
                     <div>
-                      <p className="text-xs font-semibold" style={{ color: 'hsl(38,92%,46%)' }}>Bot detenido o sin conexión</p>
+                      <p className="text-xs font-semibold" style={{ color: 'hsl(38,92%,46%)' }}>Bot pausado</p>
                       <p className="text-[11px] text-muted-foreground mt-0.5">
-                        Arranca desde tu Mac: <code className="bg-muted px-1 rounded text-[10px]">node check_deals.js</code>
+                        No está buscando ofertas. Pulsa <b>Activar bot</b> arriba para reanudarlo.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {!online && !paused && status.updated_at && (
+                  <div className="flex items-start gap-2.5 p-3 rounded-xl mt-3" style={{ background: 'hsl(0 72% 51% / 0.08)', border: '1px solid hsl(0 72% 51% / 0.25)' }}>
+                    <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: 'hsl(0,72%,51%)' }} />
+                    <div>
+                      <p className="text-xs font-semibold" style={{ color: 'hsl(0,72%,51%)' }}>Bot apagado o sin conexión</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        El Mac que ejecuta el bot está apagado. Enciéndelo (el bot arranca solo); o desde el Mac: <code className="bg-muted px-1 rounded text-[10px]">pm2 restart bot-wallapop</code>
                       </p>
                     </div>
                   </div>
@@ -263,25 +283,6 @@ export default function BotControl() {
           </div>
         </div>
       )}
-
-      {/* Confirm stop */}
-      <AlertDialog open={confirmStop} onOpenChange={setConfirmStop}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>¿Parar el bot?</AlertDialogTitle>
-            <AlertDialogDescription>
-              El bot dejará de buscar anuncios. Para volver a arrancarlo tendrás que hacerlo desde tu Mac:{' '}
-              <code className="bg-muted px-1 rounded text-xs">node check_deals.js</code>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleStop} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Sí, parar bot
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
