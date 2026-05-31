@@ -1,4 +1,4 @@
-import { lazy, Suspense, ReactNode } from "react";
+import { lazy, Suspense, ReactNode, ComponentType } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,22 +13,43 @@ import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 // Cada página se carga solo cuando se entra en su ruta (code-splitting).
 // Esto reduce el bundle inicial de ~1,6 MB a unos cientos de KB.
-const Index = lazy(() => import("./pages/Index"));
-const MonthlyCharts = lazy(() => import("./pages/MonthlyCharts"));
-const GastoMaterial = lazy(() => import("./pages/GastoMaterial"));
-const EstadisticasAvanzadas = lazy(() => import("./pages/EstadisticasAvanzadas"));
-const FinanzasPersonales = lazy(() => import("./pages/FinanzasPersonales"));
-const Auth = lazy(() => import("./pages/Auth"));
-const ResetPassword = lazy(() => import("./pages/ResetPassword"));
-const RegistroAdmin = lazy(() => import("./pages/RegistroAdmin"));
-const InventarioPiezas = lazy(() => import("./pages/InventarioPiezas"));
-const OfertasLive = lazy(() => import("./pages/OfertasLive"));
-const Tareas = lazy(() => import("./pages/Tareas"));
-const Agenda = lazy(() => import("./pages/Agenda"));
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const BotControl = lazy(() => import("./pages/BotControl"));
-const Pipeline = lazy(() => import("./pages/Pipeline"));
-const NotFound = lazy(() => import("./pages/NotFound"));
+//
+// lazyWithRetry: si falla la carga de un chunk (típico cuando hay un deploy
+// nuevo y la pestaña abierta tiene los nombres de chunk viejos), recargamos la
+// página UNA vez para coger la versión nueva, en vez de mostrar el error.
+function lazyWithRetry<T extends ComponentType<any>>(factory: () => Promise<{ default: T }>) {
+  return lazy(async () => {
+    try {
+      return await factory();
+    } catch (err) {
+      const KEY = 'chunk-reload-ts';
+      const last = Number(sessionStorage.getItem(KEY) || 0);
+      if (Date.now() - last > 10000) {
+        sessionStorage.setItem(KEY, String(Date.now()));
+        window.location.reload();
+        return await new Promise<{ default: T }>(() => {}); // se recarga la página
+      }
+      throw err;
+    }
+  });
+}
+
+const Index = lazyWithRetry(() => import("./pages/Index"));
+const MonthlyCharts = lazyWithRetry(() => import("./pages/MonthlyCharts"));
+const GastoMaterial = lazyWithRetry(() => import("./pages/GastoMaterial"));
+const EstadisticasAvanzadas = lazyWithRetry(() => import("./pages/EstadisticasAvanzadas"));
+const FinanzasPersonales = lazyWithRetry(() => import("./pages/FinanzasPersonales"));
+const Auth = lazyWithRetry(() => import("./pages/Auth"));
+const ResetPassword = lazyWithRetry(() => import("./pages/ResetPassword"));
+const RegistroAdmin = lazyWithRetry(() => import("./pages/RegistroAdmin"));
+const InventarioPiezas = lazyWithRetry(() => import("./pages/InventarioPiezas"));
+const OfertasLive = lazyWithRetry(() => import("./pages/OfertasLive"));
+const Tareas = lazyWithRetry(() => import("./pages/Tareas"));
+const Agenda = lazyWithRetry(() => import("./pages/Agenda"));
+const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"));
+const BotControl = lazyWithRetry(() => import("./pages/BotControl"));
+const Pipeline = lazyWithRetry(() => import("./pages/Pipeline"));
+const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
