@@ -19,10 +19,45 @@ export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
-  const [mode, setMode] = useState<'login' | 'reset'>('login');
-  const { signIn, resetPassword, user, loading } = useAuth();
+  const [mode, setMode] = useState<'login' | 'register' | 'reset'>('login');
+  const { signIn, signUp, resetPassword, user, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors({});
+    const result = authSchema.safeParse({ email, password });
+    if (!result.success) {
+      const fe: { email?: string; password?: string } = {};
+      result.error.errors.forEach((err) => {
+        if (err.path[0] === 'email') fe.email = err.message;
+        if (err.path[0] === 'password') fe.password = err.message;
+      });
+      setErrors(fe);
+      return;
+    }
+    setIsLoading(true);
+    const { error } = await signUp(email, password);
+    setIsLoading(false);
+    if (error) {
+      let message = 'No se pudo crear la cuenta';
+      if (error.message.toLowerCase().includes('already registered') || error.message.toLowerCase().includes('already exists')) {
+        message = 'Ese email ya tiene cuenta. Inicia sesión.';
+      } else if (error.message.toLowerCase().includes('signups not allowed') || error.message.toLowerCase().includes('disabled')) {
+        message = 'El registro está desactivado ahora mismo.';
+      }
+      toast({ title: 'Error', description: message, variant: 'destructive' });
+    } else {
+      toast({
+        title: '📧 Revisa tu email',
+        description: 'Te hemos enviado un enlace para confirmar tu cuenta. Confírmalo y ya podrás entrar.',
+        duration: 8000,
+      });
+      setMode('login');
+      setPassword('');
+    }
+  };
 
   const handleResetRequest = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,11 +147,13 @@ export default function Auth() {
                 style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 55%)' }} />
             </div>
             <h1 className="text-2xl font-bold tracking-tight">Flipr</h1>
-            <p className="text-sm text-muted-foreground mt-1">Tu panel de compra-venta</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {mode === 'register' ? 'Crea tu cuenta gratis' : 'Tu panel de compra-venta'}
+            </p>
           </div>
 
           {/* Form */}
-          <form onSubmit={mode === 'login' ? handleSubmit : handleResetRequest} className="space-y-4">
+          <form onSubmit={mode === 'login' ? handleSubmit : mode === 'register' ? handleRegister : handleResetRequest} className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="email" className="text-sm font-medium">Email</Label>
               <Input
@@ -132,17 +169,19 @@ export default function Auth() {
               {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
             </div>
 
-            {mode === 'login' && (
+            {mode !== 'reset' && (
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password" className="text-sm font-medium">Contraseña</Label>
-                  <button
-                    type="button"
-                    onClick={() => { setMode('reset'); setErrors({}); }}
-                    className="text-xs text-primary hover:underline font-medium"
-                  >
-                    ¿Olvidaste tu contraseña?
-                  </button>
+                  {mode === 'login' && (
+                    <button
+                      type="button"
+                      onClick={() => { setMode('reset'); setErrors({}); }}
+                      className="text-xs text-primary hover:underline font-medium"
+                    >
+                      ¿Olvidaste tu contraseña?
+                    </button>
+                  )}
                 </div>
                 <Input
                   id="password"
@@ -152,8 +191,11 @@ export default function Auth() {
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isLoading}
                   className="h-11 rounded-xl border-border/60 focus-visible:ring-primary/30"
-                  autoComplete="current-password"
+                  autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
                 />
+                {mode === 'register' && !errors.password && (
+                  <p className="text-[11px] text-muted-foreground">Mínimo 6 caracteres.</p>
+                )}
                 {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
               </div>
             )}
@@ -171,12 +213,29 @@ export default function Auth() {
               disabled={isLoading}
             >
               {isLoading ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{mode === 'login' ? 'Iniciando sesión...' : 'Enviando...'}</>
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{mode === 'login' ? 'Iniciando sesión...' : mode === 'register' ? 'Creando cuenta...' : 'Enviando...'}</>
               ) : (
-                mode === 'login' ? 'Entrar' : 'Enviar enlace de recuperación'
+                mode === 'login' ? 'Entrar' : mode === 'register' ? 'Crear cuenta' : 'Enviar enlace de recuperación'
               )}
             </Button>
 
+            {/* Cambio de modo */}
+            {mode === 'login' && (
+              <p className="text-center text-xs text-muted-foreground pt-1">
+                ¿No tienes cuenta?{' '}
+                <button type="button" onClick={() => { setMode('register'); setErrors({}); }} className="text-primary hover:underline font-semibold">
+                  Crear una cuenta
+                </button>
+              </p>
+            )}
+            {mode === 'register' && (
+              <p className="text-center text-xs text-muted-foreground pt-1">
+                ¿Ya tienes cuenta?{' '}
+                <button type="button" onClick={() => { setMode('login'); setErrors({}); }} className="text-primary hover:underline font-semibold">
+                  Inicia sesión
+                </button>
+              </p>
+            )}
             {mode === 'reset' && (
               <button
                 type="button"
