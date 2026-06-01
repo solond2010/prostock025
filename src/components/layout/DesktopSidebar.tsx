@@ -29,6 +29,7 @@ const menuSections = [
     label: 'DIRECTO',
     items: [
       { title: 'En directo', url: '/ofertas',  icon: Target,              badge: 'DIRECTO' },
+      { title: 'Mis búsquedas', url: '/mis-busquedas', icon: Search,       badge: 'NUEVO' },
       { title: 'Pipeline',   url: '/pipeline', icon: GitCommitHorizontal, badge: 'NUEVO' },
       { title: 'Tareas',     url: '/tareas',   icon: CheckCircle2,        badge: 'NUEVO' },
       { title: 'Agenda',     url: '/agenda',   icon: Calendar,            badge: 'NUEVO' },

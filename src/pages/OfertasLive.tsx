@@ -16,6 +16,10 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { DealImage } from '@/components/ui/DealImage';
 import { useDeals, Deal } from '@/hooks/useDeals';
 import { useToast } from '@/hooks/use-toast';
+import { toast as sonnerToast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
+import { OWNER_ID } from '@/lib/owner';
+import { Lock } from 'lucide-react';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 // ─── Score config ──────────────────────────────────────────────────────────
@@ -124,6 +128,36 @@ function DealActions({ deal, onContact, onArchive, queuePending, size = 'sm' }: 
   const txt       = isLg ? 'text-xs' : 'text-[11px]';
   const px        = isLg ? 'px-4'   : 'px-3';
   const iconCls   = isLg ? 'h-3.5 w-3.5' : 'h-3 w-3';
+
+  const { user } = useAuth();
+  const locked = user?.id !== OWNER_ID; // el contacto automático aún no está abierto a clientes
+
+  if (locked) {
+    return (
+      <div className="flex flex-wrap gap-1.5">
+        <button
+          className={`flex items-center gap-1.5 ${h} ${px} rounded-lg ${txt} font-semibold border border-border/60 bg-muted/40 text-muted-foreground cursor-not-allowed`}
+          onClick={() => sonnerToast('Contacto automático — Próximamente 🔒', {
+            description: 'Por ahora contacta tú desde el enlace de Wallapop. El envío automático llegará pronto.',
+          })}
+        >
+          <Lock className={iconCls} /> Contactar
+        </button>
+        <Button size="sm" variant="outline" className={`${h} ${txt} ${px} rounded-lg`} asChild>
+          <a href={deal.item_url} target="_blank" rel="noreferrer">
+            <ExternalLink className={`${iconCls} mr-1`} /> Wallapop
+          </a>
+        </Button>
+        <button
+          className={`flex items-center justify-center ${h} w-8 rounded-lg text-muted-foreground/50 hover:text-destructive hover:bg-destructive/8 transition-colors`}
+          onClick={onArchive}
+          title="Archivar"
+        >
+          <Archive className={iconCls} />
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-wrap gap-1.5">
