@@ -105,3 +105,16 @@ export function refSalePrice(key: string): number | null {
 export function refRepairCost(key: string): number | null {
   return REF_REPAIR[key.trim()] ?? null;
 }
+
+export interface ModelOption { key: string; label: string; refSale: number; refRepair: number; }
+
+/** Lista de modelos para selectores (más nuevos primero). */
+export function listModels(): ModelOption[] {
+  const order = ['16 pro max','16 pro','16 plus','16','15 pro max','15 pro','15 plus','15',
+    '14 pro max','14 pro','14 plus','14','13 pro max','13 pro','13','13 mini',
+    '12 pro max','12 pro','12','12 mini','11 pro max','11 pro','11',
+    'xs max','xs','xr','x','se 3','se 2','se 1','8','7','6s'];
+  return order
+    .filter((k) => REF_SALE[k] != null)
+    .map((k) => ({ key: k, label: labelFor(k), refSale: REF_SALE[k], refRepair: REF_REPAIR[k] ?? 0 }));
+}
