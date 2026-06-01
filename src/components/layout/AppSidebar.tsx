@@ -1,5 +1,6 @@
-import { Receipt, PieChart, BarChart3, Menu, LogOut, Moon, Sun, Wallet, Wrench, Target, CheckCircle2, Calendar, Bot, LayoutDashboard, GitCommitHorizontal, Package, Zap } from 'lucide-react';
+import { Receipt, PieChart, BarChart3, Menu, LogOut, Moon, Sun, Wallet, Wrench, Target, CheckCircle2, Calendar, Bot, LayoutDashboard, GitCommitHorizontal, Package, Zap, Search, ShieldCheck } from 'lucide-react';
 import { useBotStatus, isBotOnline } from '@/hooks/useBotStatus';
+import { OWNER_ID } from '@/lib/owner';
 import { NavLink } from '@/components/NavLink';
 import {
   Sheet,
@@ -33,6 +34,7 @@ const menuSections = [
     label: 'DIRECTO',
     items: [
       { title: 'En directo', url: '/ofertas',  icon: Target,              badge: 'DIRECTO' },
+      { title: 'Mis búsquedas', url: '/mis-busquedas', icon: Search,       badge: 'NUEVO' },
       { title: 'Pipeline',   url: '/pipeline', icon: GitCommitHorizontal, badge: 'NUEVO' },
       { title: 'Tareas',     url: '/tareas',   icon: CheckCircle2,        badge: 'NUEVO' },
       { title: 'Agenda',     url: '/agenda',   icon: Calendar,            badge: 'NUEVO' },
@@ -133,6 +135,12 @@ export function AppSidebar() {
                 {botOnline ? 'Activo' : 'Parado'}
               </span>
             </NavLink>
+            {user?.id === OWNER_ID && (
+              <NavLink to="/admin" onClick={() => setOpen(false)} className={navBase} activeClassName={navActive}>
+                <ShieldCheck className="h-4 w-4 shrink-0" />
+                <span className="flex-1">Admin · Clientes</span>
+              </NavLink>
+            )}
           </div>
         </nav>
 
