@@ -77,3 +77,31 @@ const BROKEN_RE = /pant.+rot|no enciende|para piezas|roto|averi|sin face.?id|wat
 export function looksBroken(text: string | null | undefined): boolean {
   return BROKEN_RE.test(text || '');
 }
+
+// ── Tablas de referencia de MERCADO (aprox.) — solo como respaldo cuando el
+//    usuario aún no tiene historial propio de ese modelo. Su media real manda.
+// Precio típico de reventa de una unidad funcional (€).
+const REF_SALE: Record<string, number> = {
+  'se 1': 50, 'se 2': 70, 'se 3': 110, '6s': 40, '7': 60, '8': 80, 'x': 120,
+  'xr': 130, 'xs': 140, 'xs max': 160, '11': 150, '11 pro': 200, '11 pro max': 240,
+  '12 mini': 170, '12': 200, '12 pro': 270, '12 pro max': 320, '13 mini': 240,
+  '13': 280, '13 pro': 360, '13 pro max': 420, '14': 350, '14 plus': 380,
+  '14 pro': 480, '14 pro max': 560, '15': 450, '15 plus': 480, '15 pro': 620,
+  '15 pro max': 720, '16': 550, '16 plus': 600, '16 pro': 750, '16 pro max': 900,
+};
+// Coste típico de reparación más común (pantalla) (€).
+const REF_REPAIR: Record<string, number> = {
+  'se 1': 20, 'se 2': 25, 'se 3': 30, '6s': 20, '7': 25, '8': 30, 'x': 50,
+  'xr': 45, 'xs': 55, 'xs max': 60, '11': 45, '11 pro': 60, '11 pro max': 70,
+  '12 mini': 55, '12': 60, '12 pro': 75, '12 pro max': 85, '13 mini': 65,
+  '13': 70, '13 pro': 90, '13 pro max': 100, '14': 80, '14 plus': 85,
+  '14 pro': 110, '14 pro max': 120, '15': 90, '15 plus': 95, '15 pro': 130,
+  '15 pro max': 150, '16': 100, '16 plus': 110, '16 pro': 150, '16 pro max': 170,
+};
+
+export function refSalePrice(key: string): number | null {
+  return REF_SALE[key.trim()] ?? null;
+}
+export function refRepairCost(key: string): number | null {
+  return REF_REPAIR[key.trim()] ?? null;
+}

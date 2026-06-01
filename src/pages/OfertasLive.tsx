@@ -20,6 +20,8 @@ import { toast as sonnerToast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { OWNER_ID } from '@/lib/owner';
 import { Lock } from 'lucide-react';
+import { useStockItems } from '@/hooks/useStockItems';
+import { estimateDealProfit } from '@/lib/dealProfit';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 // ─── Score config ──────────────────────────────────────────────────────────
@@ -233,11 +235,13 @@ function DealDetailSheet({ deal, open, onClose, onContact, onArchive, queuePendi
   onArchive: () => void;
   queuePending: boolean;
 }) {
+  const { data: stockItems = [] } = useStockItems();
   if (!deal) return null;
   const score     = SCORE_CONFIG[deal.score];
   const searchCfg = getSearchConfig(deal.search_keyword);
   const isFresh   = Date.now() - new Date(deal.created_at).getTime() < 5 * 60 * 1000;
   const timeAgo   = formatDistanceToNow(new Date(deal.created_at), { locale: es, addSuffix: true });
+  const est = estimateDealProfit(deal.title, deal.description, deal.price, stockItems);
 
   return (
     <Dialog open={open} onOpenChange={v => { if (!v) onClose(); }}>
@@ -292,6 +296,34 @@ function DealDetailSheet({ deal, open, onClose, onContact, onArchive, queuePendi
             {deal.location && <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" />{deal.location}</span>}
           </div>
 
+          {/* Beneficio estimado */}
+          {est && (() => {
+            const col = est.profit >= 0 ? 'hsl(160,84%,38%)' : 'hsl(0,72%,51%)';
+            return (
+              <div className="rounded-xl border p-3.5" style={{ borderColor: `${col}55`, background: `${col}12` }}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[11px] font-bold uppercase tracking-wide" style={{ color: col }}>
+                    Beneficio estimado · {est.model}
+                  </span>
+                  {est.broken && <span className="text-[10px] font-bold" style={{ color: 'hsl(38,92%,46%)' }}>🔧 roto</span>}
+                </div>
+                <div className="flex items-end gap-1.5 mb-2">
+                  <span className="text-2xl font-extrabold tabular-nums leading-none" style={{ color: col }}>
+                    {est.profit >= 0 ? '+' : ''}{est.profit}€
+                  </span>
+                  <span className="text-sm font-semibold mb-0.5" style={{ color: col }}>· {est.marginPct}%</span>
+                </div>
+                <div className="text-[11px] text-muted-foreground space-y-0.5">
+                  <div className="flex justify-between"><span>Compra (anuncio)</span><span className="tabular-nums">−{est.buyPrice}€</span></div>
+                  {est.repairEst > 0 && (
+                    <div className="flex justify-between"><span>Reparación est. <span className="opacity-60">({est.repairSource === 'historial' ? 'tu media' : 'aprox.'})</span></span><span className="tabular-nums">−{est.repairEst}€</span></div>
+                  )}
+                  <div className="flex justify-between"><span>Venta est. <span className="opacity-60">({est.saleSource === 'historial' ? 'tu media' : 'aprox. mercado'})</span></span><span className="tabular-nums">+{est.saleEst}€</span></div>
+                </div>
+              </div>
+            );
+          })()}
+
           <Separator />
 
           {deal.description ? (
@@ -334,6 +366,8 @@ function DealCard({ deal, onContact, onArchive, queuePending, showSourceBadge = 
   const searchCfg = getSearchConfig(deal.search_keyword);
   const isFresh   = Date.now() - new Date(deal.created_at).getTime() < 5 * 60 * 1000;
   const timeAgo   = formatDistanceToNow(new Date(deal.created_at), { locale: es });
+  const { data: stockItems = [] } = useStockItems();
+  const est = useMemo(() => estimateDealProfit(deal.title, deal.description, deal.price, stockItems), [deal.title, deal.description, deal.price, stockItems]);
 
   return (
     <div
@@ -363,6 +397,15 @@ function DealCard({ deal, onContact, onArchive, queuePending, showSourceBadge = 
 
             {/* Score + source + fresh */}
             <div className="flex flex-wrap items-center gap-1 mb-2">
+              {est && (
+                <span
+                  className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md whitespace-nowrap"
+                  style={{ color: est.profit >= 0 ? 'hsl(160,84%,38%)' : 'hsl(0,72%,51%)', background: est.profit >= 0 ? 'hsl(160 84% 38% / 0.12)' : 'hsl(0 72% 51% / 0.12)' }}
+                  title={`Venta ${est.saleSource === 'historial' ? 'tu media' : 'aprox.'} ${est.saleEst}€${est.repairEst > 0 ? ` − reparar ~${est.repairEst}€` : ''}`}
+                >
+                  💰 {est.profit >= 0 ? '+' : ''}{est.profit}€ · {est.marginPct}%
+                </span>
+              )}
               <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md border ${score.className}`}>
                 <span className={`h-1.5 w-1.5 rounded-full ${score.dot}`} />
                 {score.label}
