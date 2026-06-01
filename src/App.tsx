@@ -49,6 +49,7 @@ const Agenda = lazyWithRetry(() => import("./pages/Agenda"));
 const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"));
 const BotControl = lazyWithRetry(() => import("./pages/BotControl"));
 const Pipeline = lazyWithRetry(() => import("./pages/Pipeline"));
+const Admin = lazyWithRetry(() => import("./pages/Admin"));
 const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -96,6 +97,7 @@ const App = () => (
               <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
               <Route path="/bot" element={<Protected><BotControl /></Protected>} />
               <Route path="/pipeline" element={<Protected><Pipeline /></Protected>} />
+              <Route path="/admin" element={<Protected><Admin /></Protected>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

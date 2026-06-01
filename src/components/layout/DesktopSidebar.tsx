@@ -1,12 +1,13 @@
 import {
   Receipt, PieChart, BarChart3, LogOut, Moon, Sun, Wallet, Wrench,
   Target, CheckCircle2, Calendar, Bot, LayoutDashboard, GitCommitHorizontal,
-  Package, Zap, ChevronRight, Search
+  Package, Zap, ChevronRight, Search, ShieldCheck
 } from 'lucide-react';
 import { useBotStatus, isBotOnline } from '@/hooks/useBotStatus';
 import { NavLink } from '@/components/NavLink';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
+import { OWNER_ID } from '@/lib/owner';
 import { useTheme } from '@/hooks/useTheme';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -156,6 +157,12 @@ export function DesktopSidebar() {
               </span>
             </span>
           </NavLink>
+          {user?.id === OWNER_ID && (
+            <NavLink to="/admin" className={navBase} activeClassName={navActive}>
+              <ShieldCheck className="h-[15px] w-[15px] shrink-0" />
+              <span className="flex-1">Admin · Clientes</span>
+            </NavLink>
+          )}
         </div>
       </nav>
 
