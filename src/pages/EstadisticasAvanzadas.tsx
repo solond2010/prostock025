@@ -7,7 +7,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { generateMonthlyReport } from '@/lib/monthlyReport';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid, LineChart, Line, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -20,6 +20,9 @@ import { detectModel } from '@/lib/iphoneModels';
 import { es } from 'date-fns/locale';
 import { HistoricSummaryCards } from '@/components/stock/HistoricSummaryCards';
 import { StockSummary } from '@/types/stock';
+
+// Colores para las líneas de la tendencia por modelo
+const TREND_COLORS = ['hsl(262,73%,55%)', 'hsl(160,84%,38%)', 'hsl(38,92%,46%)', 'hsl(217,91%,54%)'];
 
 // ── formatters ────────────────────────────────────────────────────────────────
 const fmtEur = (v: number) =>
@@ -133,6 +136,42 @@ const EstadisticasAvanzadas = () => {
         avgDays: m.daysN ? m.daysSum / m.daysN : null,
       }))
       .sort((a, b) => b.ben - a.ben);
+  }, [stockItems]);
+
+  // Tendencia del precio medio de venta por modelo (últimos 6 meses).
+  const priceTrend = useMemo(() => {
+    const sold = stockItems.filter(i => i.estado === 'Vendido' && Number(i.precio_venta_real) > 0 && i.fecha_venta);
+    // Top 4 modelos por nº de ventas
+    const counts: Record<string, number> = {};
+    sold.forEach(i => { const m = detectModel(i.name); if (m) counts[m.label] = (counts[m.label] || 0) + 1; });
+    const topModels = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 4).map(e => e[0]);
+    if (topModels.length === 0) return { data: [], models: [] };
+
+    const now = new Date();
+    const monthsArr = Array.from({ length: 6 }, (_, k) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - (5 - k), 1);
+      return { key: `${d.getFullYear()}-${d.getMonth()}`, label: format(d, 'MMM', { locale: es }) };
+    });
+    // acumular sum/n por mes y modelo
+    const acc: Record<string, Record<string, { sum: number; n: number }>> = {};
+    sold.forEach(i => {
+      const m = detectModel(i.name); if (!m || !topModels.includes(m.label)) return;
+      const d = parseISO(i.fecha_venta!);
+      const key = `${d.getFullYear()}-${d.getMonth()}`;
+      if (!acc[key]) acc[key] = {};
+      if (!acc[key][m.label]) acc[key][m.label] = { sum: 0, n: 0 };
+      acc[key][m.label].sum += Number(i.precio_venta_real);
+      acc[key][m.label].n += 1;
+    });
+    const data = monthsArr.map(mo => {
+      const row: any = { mes: mo.label };
+      topModels.forEach(label => {
+        const cell = acc[mo.key]?.[label];
+        row[label] = cell ? Math.round(cell.sum / cell.n) : null;
+      });
+      return row;
+    });
+    return { data, models: topModels };
   }, [stockItems]);
 
   const categoryStats = useMemo(() => {
@@ -598,6 +637,37 @@ const EstadisticasAvanzadas = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* ── Tendencia de precio por modelo ── */}
+      {priceTrend.models.length > 0 && (
+        <Card className="border-border/60 animate-slide-up">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/12">
+                <TrendingUp className="h-[15px] w-[15px] text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-sm font-bold">Tendencia de precio por modelo</CardTitle>
+                <p className="text-[10px] text-muted-foreground">Tu precio medio de venta por mes (últimos 6 meses)</p>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={240}>
+              <LineChart data={priceTrend.data} margin={{ top: 6, right: 8, left: -18, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                <XAxis dataKey="mes" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} width={48} tickFormatter={(v) => `${v}€`} />
+                <Tooltip formatter={(v: any) => v != null ? `${v}€` : '—'} contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 12, fontSize: 12 }} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                {priceTrend.models.map((label, i) => (
+                  <Line key={label} type="monotone" dataKey={label} stroke={TREND_COLORS[i % TREND_COLORS.length]} strokeWidth={2} dot={{ r: 3 }} connectNulls />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
 
       {/* ── Facturación mensual ── */}
       <Card className="border-border/60 animate-slide-up">
