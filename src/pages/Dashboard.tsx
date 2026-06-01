@@ -155,6 +155,20 @@ export default function Dashboard() {
     const roiRealizado = sumCost > 0 ? (sumProfit / sumCost) * 100 : 0; // % retorno medio
     const pctDormido   = invertido > 0 ? (capitalDormido / invertido) * 100 : 0;
 
+    // ── Salud del negocio (0-100) ──
+    // Combina margen (40), rotación (30) y capital no-dormido (30).
+    const hasSales = withBothDates.length > 0;
+    const marginPts   = Math.max(0, Math.min(40, (roiRealizado / 50) * 40));        // 50% ROI = pleno
+    const rotationPts = avgDaysToSell <= 10 ? 30 : avgDaysToSell >= 40 ? 0 : (30 * (40 - avgDaysToSell)) / 30;
+    const dormidoPts  = Math.max(0, Math.min(30, 30 * (1 - pctDormido / 50)));       // 0% dormido = pleno
+    const health = {
+      score: hasSales ? Math.round(marginPts + rotationPts + dormidoPts) : null,
+      hasSales,
+      marginPts: Math.round(marginPts),
+      rotationPts: Math.round(rotationPts),
+      dormidoPts: Math.round(dormidoPts),
+    };
+
     // últimas 5 ventas
     const recentSales = [...items]
       .filter(i => i.estado === 'Vendido' && i.fecha_venta)
@@ -204,7 +218,7 @@ export default function Dashboard() {
       avgDaysToSell,
       atRisk, dead,
       capitalDormido, euroPerDay, roiRealizado, pctDormido,
-      comparativa,
+      comparativa, health,
       recentSales, bestSale,
       monthlyChart, catChart,
       pendingTasks, urgentTasks,
@@ -381,6 +395,57 @@ export default function Dashboard() {
 
       {/* ── Monthly goal ─────────────────────────────────────────────── */}
       {!isLoading && <MonthlyGoal benMes={stats.benMes} />}
+
+      {/* ── Salud del negocio ────────────────────────────────────────── */}
+      {!isLoading && stats.health.hasSales && (() => {
+        const s = stats.health.score!;
+        const cfg = s >= 80 ? { label: 'Excelente', color: 'hsl(160,84%,38%)' }
+          : s >= 60 ? { label: 'Buena', color: 'hsl(160,70%,42%)' }
+          : s >= 40 ? { label: 'Mejorable', color: 'hsl(38,92%,46%)' }
+          : { label: 'Atención', color: 'hsl(0,72%,51%)' };
+        const factors = [
+          { label: 'Margen', pts: stats.health.marginPts, max: 40 },
+          { label: 'Rotación', pts: stats.health.rotationPts, max: 30 },
+          { label: 'Capital activo', pts: stats.health.dormidoPts, max: 30 },
+        ];
+        return (
+          <div className="rounded-xl border border-border/60 bg-card p-4 flex flex-col sm:flex-row items-center gap-5 animate-slide-up-2"
+            style={{ borderTop: `3px solid ${cfg.color}` }}>
+            {/* Gauge */}
+            <div className="relative shrink-0">
+              <svg width="96" height="96" viewBox="0 0 96 96">
+                <circle cx="48" cy="48" r="40" fill="none" stroke="hsl(var(--border))" strokeWidth="8" />
+                <circle cx="48" cy="48" r="40" fill="none" stroke={cfg.color} strokeWidth="8" strokeLinecap="round"
+                  strokeDasharray={`${(s / 100) * 2 * Math.PI * 40} ${2 * Math.PI * 40}`}
+                  transform="rotate(-90 48 48)" style={{ transition: 'stroke-dasharray .7s ease' }} />
+                <text x="48" y="45" textAnchor="middle" dominantBaseline="middle" fontSize="22" fontWeight="800" fill={cfg.color}>{s}</text>
+                <text x="48" y="62" textAnchor="middle" fontSize="9" fill="hsl(var(--muted-foreground))" fontWeight="600">/ 100</text>
+              </svg>
+            </div>
+            {/* Detalle */}
+            <div className="flex-1 w-full">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Salud del negocio</span>
+                <span className="text-xs font-bold px-2 py-0.5 rounded-md" style={{ color: cfg.color, background: `${cfg.color}1f` }}>{cfg.label}</span>
+              </div>
+              <div className="space-y-1.5">
+                {factors.map(f => (
+                  <div key={f.label} className="flex items-center gap-2">
+                    <span className="text-[11px] text-muted-foreground w-24 shrink-0">{f.label}</span>
+                    <div className="flex-1 h-1.5 rounded-full bg-muted/50 overflow-hidden">
+                      <div className="h-full rounded-full" style={{ width: `${(f.pts / f.max) * 100}%`, background: cfg.color }} />
+                    </div>
+                    <span className="text-[10px] text-muted-foreground tabular-nums w-10 text-right">{f.pts}/{f.max}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-muted-foreground/70 mt-2">
+                Combina tu margen, lo rápido que vendes y cuánto capital tienes parado.
+              </p>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── Velocidad de capital ─────────────────────────────────────── */}
       {!isLoading && (
