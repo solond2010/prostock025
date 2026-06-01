@@ -562,6 +562,8 @@ const OfertasLive = () => {
   const [onlyFire, setOnlyFire] = useState(false);
   const [maxPrice, setMaxPrice] = useState<number | undefined>(undefined);
   const [activeSource, setActiveSource] = useState<string | null | 'all'>('all');
+  const [profitableOnly, setProfitableOnly] = useState(false);
+  const { data: stockItems = [] } = useStockItems();
 
   const onDealFailed = useCallback((deal: import('@/hooks/useDeals').Deal) => {
     toast({
@@ -613,6 +615,16 @@ const OfertasLive = () => {
     return Array.from(set).sort((a, b) => getSearchConfig(a).priority - getSearchConfig(b).priority);
   }, [deals]);
 
+  // Filtro/orden por beneficio estimado (cuando "Rentables" está activo).
+  const applyProfit = useMemo(() => (list: Deal[]) => {
+    if (!profitableOnly) return list;
+    return list
+      .map(d => ({ d, est: estimateDealProfit(d.title, d.description, d.price, stockItems) }))
+      .filter(x => x.est && x.est.profit > 0)
+      .sort((a, b) => (b.est!.profit) - (a.est!.profit))
+      .map(x => x.d);
+  }, [profitableOnly, stockItems]);
+
   const grouped = useMemo(() => {
     const keys = Object.keys(SEARCH_CONFIG) as (string | null)[];
     sources.forEach(s => { if (s && !keys.includes(s)) keys.push(s); });
@@ -622,14 +634,14 @@ const OfertasLive = () => {
         if (activeSource !== 'all') return match && (d.search_keyword ?? null) === activeSource;
         return match;
       });
-      return [keyword, filtered] as [string | null, Deal[]];
+      return [keyword, applyProfit(filtered)] as [string | null, Deal[]];
     });
-  }, [deals, activeSource, sources]);
+  }, [deals, activeSource, sources, applyProfit]);
 
   const mobileDeals = useMemo(() => {
-    if (activeSource === 'all') return deals;
-    return deals.filter(d => (d.search_keyword ?? null) === activeSource);
-  }, [deals, activeSource]);
+    const base = activeSource === 'all' ? deals : deals.filter(d => (d.search_keyword ?? null) === activeSource);
+    return applyProfit(base);
+  }, [deals, activeSource, applyProfit]);
 
   // Use real DB counts (not capped by display limit)
   const stats = {
@@ -716,16 +728,19 @@ const OfertasLive = () => {
         <FilterPill active={onlyFire} onClick={() => setOnlyFire(v => !v)}>
           <Flame className="h-3 w-3" /> Solo fuego
         </FilterPill>
+        <FilterPill active={profitableOnly} onClick={() => setProfitableOnly(v => !v)}>
+          💎 Rentables
+        </FilterPill>
         <FilterPill active={maxPrice === 100} onClick={() => setMaxPrice(maxPrice === 100 ? undefined : 100)}>
           ≤ 100€
         </FilterPill>
         <FilterPill active={maxPrice === 200} onClick={() => setMaxPrice(maxPrice === 200 ? undefined : 200)}>
           ≤ 200€
         </FilterPill>
-        {(onlyFire || maxPrice) && (
+        {(onlyFire || maxPrice || profitableOnly) && (
           <button
             className="h-8 px-3 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors"
-            onClick={() => { setOnlyFire(false); setMaxPrice(undefined); }}
+            onClick={() => { setOnlyFire(false); setMaxPrice(undefined); setProfitableOnly(false); }}
           >
             ✕ Limpiar filtros
           </button>
