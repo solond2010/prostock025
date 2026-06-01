@@ -11,6 +11,7 @@ export interface DealProfit {
   repairSource: 'historial' | 'mercado' | 'none';
   profit: number;
   marginPct: number; // beneficio / (compra + reparación)
+  level: 'good' | 'ok' | 'bad'; // good = chollo claro, ok = justo, bad = no merece
 }
 
 function avg(nums: number[]): number {
@@ -73,6 +74,10 @@ export function estimateDealProfit(
   const base = buyPrice + repairEst;
   const marginPct = base > 0 ? (profit / base) * 100 : 0;
 
+  // Nivel: chollo claro (verde) / justo (ámbar) / no merece (gris)
+  const level: DealProfit['level'] =
+    profit >= 40 && marginPct >= 25 ? 'good' : profit >= 15 ? 'ok' : 'bad';
+
   return {
     model: m.label,
     broken,
@@ -83,5 +88,6 @@ export function estimateDealProfit(
     repairSource,
     profit: Math.round(profit),
     marginPct: Math.round(marginPct),
+    level,
   };
 }

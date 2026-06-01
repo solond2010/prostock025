@@ -82,12 +82,12 @@ export function looksBroken(text: string | null | undefined): boolean {
 //    usuario aún no tiene historial propio de ese modelo. Su media real manda.
 // Precio típico de reventa de una unidad funcional (€).
 const REF_SALE: Record<string, number> = {
-  'se 1': 50, 'se 2': 70, 'se 3': 110, '6s': 40, '7': 60, '8': 80, 'x': 120,
-  'xr': 130, 'xs': 140, 'xs max': 160, '11': 150, '11 pro': 200, '11 pro max': 240,
-  '12 mini': 170, '12': 200, '12 pro': 270, '12 pro max': 320, '13 mini': 240,
-  '13': 280, '13 pro': 360, '13 pro max': 420, '14': 350, '14 plus': 380,
-  '14 pro': 480, '14 pro max': 560, '15': 450, '15 plus': 480, '15 pro': 620,
-  '15 pro max': 720, '16': 550, '16 plus': 600, '16 pro': 750, '16 pro max': 900,
+  'se 1': 55, 'se 2': 80, 'se 3': 125, '6s': 50, '7': 70, '8': 95, 'x': 145,
+  'xr': 155, 'xs': 165, 'xs max': 190, '11': 180, '11 pro': 235, '11 pro max': 285,
+  '12 mini': 200, '12': 235, '12 pro': 315, '12 pro max': 375, '13 mini': 280,
+  '13': 325, '13 pro': 420, '13 pro max': 490, '14': 410, '14 plus': 440,
+  '14 pro': 560, '14 pro max': 650, '15': 520, '15 plus': 550, '15 pro': 720,
+  '15 pro max': 840, '16': 640, '16 plus': 700, '16 pro': 870, '16 pro max': 1050,
 };
 // Coste típico de reparación más común (pantalla) (€).
 const REF_REPAIR: Record<string, number> = {

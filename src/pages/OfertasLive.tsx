@@ -298,7 +298,7 @@ function DealDetailSheet({ deal, open, onClose, onContact, onArchive, queuePendi
 
           {/* Beneficio estimado */}
           {est && (() => {
-            const col = est.profit >= 0 ? 'hsl(160,84%,38%)' : 'hsl(0,72%,51%)';
+            const col = est.level === 'good' ? 'hsl(160,84%,38%)' : est.level === 'ok' ? 'hsl(38,92%,46%)' : 'hsl(var(--muted-foreground))';
             return (
               <div className="rounded-xl border p-3.5" style={{ borderColor: `${col}55`, background: `${col}12` }}>
                 <div className="flex items-center justify-between mb-2">
@@ -397,15 +397,19 @@ function DealCard({ deal, onContact, onArchive, queuePending, showSourceBadge = 
 
             {/* Score + source + fresh */}
             <div className="flex flex-wrap items-center gap-1 mb-2">
-              {est && (
-                <span
-                  className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md whitespace-nowrap"
-                  style={{ color: est.profit >= 0 ? 'hsl(160,84%,38%)' : 'hsl(0,72%,51%)', background: est.profit >= 0 ? 'hsl(160 84% 38% / 0.12)' : 'hsl(0 72% 51% / 0.12)' }}
-                  title={`Venta ${est.saleSource === 'historial' ? 'tu media' : 'aprox.'} ${est.saleEst}€${est.repairEst > 0 ? ` − reparar ~${est.repairEst}€` : ''}`}
-                >
-                  💰 {est.profit >= 0 ? '+' : ''}{est.profit}€ · {est.marginPct}%
-                </span>
-              )}
+              {est && (() => {
+                const c = est.level === 'good' ? 'hsl(160,84%,38%)' : est.level === 'ok' ? 'hsl(38,92%,46%)' : 'hsl(var(--muted-foreground))';
+                const bg = est.level === 'good' ? 'hsl(160 84% 38% / 0.12)' : est.level === 'ok' ? 'hsl(38 92% 46% / 0.12)' : 'hsl(var(--muted)/0.5)';
+                return (
+                  <span
+                    className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md whitespace-nowrap"
+                    style={{ color: c, background: bg }}
+                    title={`Venta ${est.saleSource === 'historial' ? 'tu media' : 'aprox.'} ${est.saleEst}€${est.repairEst > 0 ? ` − reparar ~${est.repairEst}€` : ''}`}
+                  >
+                    {est.level === 'good' ? '🔥' : '💰'} {est.profit >= 0 ? '+' : ''}{est.profit}€ · {est.marginPct}%
+                  </span>
+                );
+              })()}
               <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md border ${score.className}`}>
                 <span className={`h-1.5 w-1.5 rounded-full ${score.dot}`} />
                 {score.label}
