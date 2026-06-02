@@ -9,11 +9,15 @@ interface NavLinkCompatProps extends Omit<NavLinkProps, "className"> {
 }
 
 const NavLink = forwardRef<HTMLAnchorElement, NavLinkCompatProps>(
-  ({ className, activeClassName, pendingClassName, to, ...props }, ref) => {
+  ({ className, activeClassName, pendingClassName, to, end, ...props }, ref) => {
+    // La ruta "/" debe activarse solo en coincidencia EXACTA; si no, queda
+    // siempre resaltada porque "/" es prefijo de todas las rutas (React Router v6).
+    const exact = end ?? (to === '/');
     return (
       <RouterNavLink
         ref={ref}
         to={to}
+        end={exact}
         className={({ isActive, isPending }) =>
           cn(className, isActive && activeClassName, isPending && pendingClassName)
         }

@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { useLocation } from 'react-router-dom';
 import { AppHeader } from './AppHeader';
 import { DesktopSidebar } from './DesktopSidebar';
 import { BottomNav } from './BottomNav';
@@ -11,6 +12,7 @@ interface MainLayoutProps {
 }
 
 export function MainLayout({ children }: MainLayoutProps) {
+  const location = useLocation();
   return (
     <div className="min-h-dvh bg-background flex">
       {/* Sidebar fijo — solo en desktop (lg+) */}
@@ -23,7 +25,9 @@ export function MainLayout({ children }: MainLayoutProps) {
         {/* Header con hamburger — solo en móvil */}
         <AppHeader />
         {/* Padding inferior en móvil para que la barra de navegación no tape el contenido */}
-        <main className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0">{children}</main>
+        <main className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0">
+          <div key={location.pathname} className="page-enter">{children}</div>
+        </main>
       </div>
 
       {/* Bloqueo a pantalla completa si el trial caducó y no hay suscripción */}

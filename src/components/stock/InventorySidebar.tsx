@@ -207,10 +207,10 @@ export function InventorySidebar({ items, className }: InventorySidebarProps) {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                  <Receipt className="h-3.5 w-3.5 text-blue-500" />
+                  <Receipt className="h-3.5 w-3.5" style={{ color: 'hsl(217,91%,54%)' }} />
                   <p className="text-xs text-muted-foreground">Facturado</p>
                 </div>
-                <p className="text-sm font-bold text-blue-500">
+                <p className="text-sm font-bold" style={{ color: 'hsl(217,91%,54%)' }}>
                   {stats.facturacionMes.toLocaleString('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })}
                 </p>
               </div>
