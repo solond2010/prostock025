@@ -1,7 +1,7 @@
 import {
   Receipt, PieChart, BarChart3, LogOut, Moon, Sun, Wallet, Wrench,
   Target, CheckCircle2, Calendar, Bot, LayoutDashboard, GitCommitHorizontal,
-  Package, Zap, ChevronRight, Search, ShieldCheck, Calculator
+  Package, Zap, ChevronRight, Search, ShieldCheck, Calculator, MessageSquare
 } from 'lucide-react';
 import { useBotStatus, isBotOnline } from '@/hooks/useBotStatus';
 import { NavLink } from '@/components/NavLink';
@@ -158,6 +158,10 @@ export function DesktopSidebar() {
                 {botOnline ? 'ON' : 'OFF'}
               </span>
             </span>
+          </NavLink>
+          <NavLink to="/mensajes-bot" className={navBase} activeClassName={navActive}>
+            <MessageSquare className="h-[15px] w-[15px] shrink-0" />
+            <span className="flex-1">Mensajes del bot</span>
           </NavLink>
           {user?.id === OWNER_ID && (
             <NavLink to="/admin" className={navBase} activeClassName={navActive}>

@@ -1,4 +1,4 @@
-import { Receipt, PieChart, BarChart3, Menu, LogOut, Moon, Sun, Wallet, Wrench, Target, CheckCircle2, Calendar, Bot, LayoutDashboard, GitCommitHorizontal, Package, Zap, Search, ShieldCheck, Calculator } from 'lucide-react';
+import { Receipt, PieChart, BarChart3, Menu, LogOut, Moon, Sun, Wallet, Wrench, Target, CheckCircle2, Calendar, Bot, LayoutDashboard, GitCommitHorizontal, Package, Zap, Search, ShieldCheck, Calculator, MessageSquare } from 'lucide-react';
 import { useBotStatus, isBotOnline } from '@/hooks/useBotStatus';
 import { OWNER_ID } from '@/lib/owner';
 import { NavLink } from '@/components/NavLink';
@@ -135,6 +135,10 @@ export function AppSidebar() {
                 <span className={`h-1.5 w-1.5 rounded-full ${botOnline ? 'bg-success animate-pulse' : 'bg-muted-foreground/30'}`} />
                 {botOnline ? 'Activo' : 'Parado'}
               </span>
+            </NavLink>
+            <NavLink to="/mensajes-bot" onClick={() => setOpen(false)} className={navBase} activeClassName={navActive}>
+              <MessageSquare className="h-4 w-4 shrink-0" />
+              <span className="flex-1">Mensajes del bot</span>
             </NavLink>
             {user?.id === OWNER_ID && (
               <NavLink to="/admin" onClick={() => setOpen(false)} className={navBase} activeClassName={navActive}>

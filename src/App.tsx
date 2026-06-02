@@ -51,6 +51,7 @@ const BotControl = lazyWithRetry(() => import("./pages/BotControl"));
 const Pipeline = lazyWithRetry(() => import("./pages/Pipeline"));
 const MisBusquedas = lazyWithRetry(() => import("./pages/MisBusquedas"));
 const Calculadora = lazyWithRetry(() => import("./pages/Calculadora"));
+const MensajesBot = lazyWithRetry(() => import("./pages/MensajesBot"));
 const Admin = lazyWithRetry(() => import("./pages/Admin"));
 const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
 
@@ -98,6 +99,7 @@ const App = () => (
               <Route path="/agenda" element={<Protected><Agenda /></Protected>} />
               <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
               <Route path="/bot" element={<Protected><BotControl /></Protected>} />
+              <Route path="/mensajes-bot" element={<Protected><MensajesBot /></Protected>} />
               <Route path="/pipeline" element={<Protected><Pipeline /></Protected>} />
               <Route path="/mis-busquedas" element={<Protected><MisBusquedas /></Protected>} />
               <Route path="/calculadora" element={<Protected><Calculadora /></Protected>} />
