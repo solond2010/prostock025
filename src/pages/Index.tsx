@@ -180,7 +180,7 @@ const Index = () => {
     setSellItem(item);
   };
 
-  const handleSellConfirm = (id: string, fechaVenta: string, precioVentaReal: number) => {
+  const handleSellConfirm = (id: string, fechaVenta: string, precioVentaReal: number, metodoCobro: string, cobroNota: string) => {
     updateMutation.mutate(
       {
         id,
@@ -188,6 +188,8 @@ const Index = () => {
           estado: 'Vendido',
           fecha_venta: fechaVenta,
           precio_venta_real: precioVentaReal,
+          metodo_cobro: metodoCobro,
+          cobro_nota: cobroNota || null,
         } as Partial<StockItemFormData>,
       },
       {

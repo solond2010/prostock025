@@ -101,6 +101,20 @@ const EstadisticasAvanzadas = () => {
     return { n, totBen, avgBen, avgTkt, avgMrg, purchased: purchasedThisMonth.length };
   }, [filteredSold, purchasedThisMonth]);
 
+  // Desglose de cobros del mes por método (efectivo / banco / otro)
+  const cobros = useMemo(() => {
+    const acc = { efectivo: 0, banco: 0, otro: 0, sin: 0 };
+    filteredSold.forEach(i => {
+      const v = Number(i.precio_venta_real) || 0;
+      const m = (i as any).metodo_cobro as string | null;
+      if (m === 'efectivo') acc.efectivo += v;
+      else if (m === 'banco') acc.banco += v;
+      else if (m === 'otro') acc.otro += v;
+      else acc.sin += v;
+    });
+    return acc;
+  }, [filteredSold]);
+
   const ranking = useMemo(() => {
     if (!filteredSold.length) return { best: null, worst: null, top5: [] as any[] };
     const sorted = filteredSold
@@ -414,6 +428,31 @@ const EstadisticasAvanzadas = () => {
           ))}
         </div>
       </div>
+
+      {/* ── Cobros del mes (por método) ── */}
+      {(cobros.efectivo + cobros.banco + cobros.otro + cobros.sin) > 0 && (
+        <div className="rounded-xl border border-border/60 bg-card p-4" style={{ borderTop: '3px solid hsl(160,84%,38%)' }}>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg" style={{ background: 'hsl(160 84% 38% / 0.12)' }}>
+              <DollarSign className="h-3.5 w-3.5" style={{ color: 'hsl(160,84%,38%)' }} />
+            </div>
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Cobros · {getMonthName()} {selectedYear}</span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { label: '💵 Efectivo', val: cobros.efectivo, color: 'hsl(160,84%,38%)' },
+              { label: '🏦 Banco', val: cobros.banco, color: 'hsl(217,91%,54%)' },
+              { label: '🔀 Otro / mixto', val: cobros.otro, color: 'hsl(262,73%,55%)' },
+              { label: '❓ Sin especificar', val: cobros.sin, color: 'hsl(var(--muted-foreground))' },
+            ].map(c => (
+              <div key={c.label}>
+                <p className="text-[10px] text-muted-foreground mb-0.5">{c.label}</p>
+                <p className="text-lg font-bold tabular-nums" style={{ color: c.color }}>{fmtEur0(c.val)}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Ranking del mes ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

@@ -15,17 +15,18 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, Banknote, Landmark, Wallet } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { StockItemWithCalculations } from '@/types/stock';
 
 interface SellProductDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   item: StockItemWithCalculations | null;
-  onConfirm: (id: string, fechaVenta: string, precioVentaReal: number) => void;
+  onConfirm: (id: string, fechaVenta: string, precioVentaReal: number, metodoCobro: string, cobroNota: string) => void;
   isLoading?: boolean;
 }
 
@@ -38,6 +39,8 @@ export function SellProductDialog({
 }: SellProductDialogProps) {
   const [fechaVenta, setFechaVenta] = useState<Date>(new Date());
   const [precioVentaReal, setPrecioVentaReal] = useState<string>('');
+  const [metodoCobro, setMetodoCobro] = useState<string>('efectivo');
+  const [cobroNota, setCobroNota] = useState<string>('');
 
   // Rellenar el formulario cada vez que el diálogo se abre (también al abrirlo
   // programáticamente desde el botón "Vender", donde onOpenChange no se dispara).
@@ -47,6 +50,8 @@ export function SellProductDialog({
       setPrecioVentaReal(
         item.sale_price_per_unit ? item.sale_price_per_unit.toString() : ''
       );
+      setMetodoCobro(item.metodo_cobro || 'efectivo');
+      setCobroNota(item.cobro_nota || '');
     }
   }, [open, item]);
 
@@ -57,7 +62,7 @@ export function SellProductDialog({
   const handleConfirm = () => {
     if (!item) return;
     const precio = precioVentaReal ? parseFloat(precioVentaReal) : 0;
-    onConfirm(item.id, format(fechaVenta, 'yyyy-MM-dd'), precio);
+    onConfirm(item.id, format(fechaVenta, 'yyyy-MM-dd'), precio, metodoCobro, cobroNota.trim());
   };
 
   if (!item) return null;
@@ -129,6 +134,26 @@ export function SellProductDialog({
                 Precio esperado: {item.sale_price_per_unit.toFixed(2)} €
               </p>
             )}
+          </div>
+
+          {/* Cobro */}
+          <div className="grid gap-2">
+            <Label>Cobro</Label>
+            <Select value={metodoCobro} onValueChange={setMetodoCobro}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="efectivo"><span className="flex items-center gap-2"><Banknote className="h-3.5 w-3.5" /> Efectivo</span></SelectItem>
+                <SelectItem value="banco"><span className="flex items-center gap-2"><Landmark className="h-3.5 w-3.5" /> Banco / transferencia</span></SelectItem>
+                <SelectItem value="otro"><span className="flex items-center gap-2"><Wallet className="h-3.5 w-3.5" /> Otro / mixto</span></SelectItem>
+              </SelectContent>
+            </Select>
+            <Input
+              placeholder="Detalle (opcional, ej: mitad efectivo, mitad banco)"
+              value={cobroNota}
+              onChange={(e) => setCobroNota(e.target.value)}
+            />
           </div>
         </div>
 

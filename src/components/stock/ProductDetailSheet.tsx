@@ -147,6 +147,15 @@ export function ProductDetailSheet({
                   {isVendido ? (diasHastaVenta ?? '-') : (diasEnStock ?? '-')}
                 </p>
               </div>
+              {isVendido && item.metodo_cobro && (
+                <div className="rounded-lg bg-secondary/50 p-3 col-span-2">
+                  <p className="text-xs text-muted-foreground">Cobro</p>
+                  <p className="text-sm font-semibold capitalize">
+                    {item.metodo_cobro === 'banco' ? '🏦 Banco' : item.metodo_cobro === 'otro' ? '🔀 Otro / mixto' : '💵 Efectivo'}
+                    {item.cobro_nota ? <span className="font-normal text-muted-foreground"> · {item.cobro_nota}</span> : null}
+                  </p>
+                </div>
+              )}
             </div>
           </section>
 

@@ -21,6 +21,9 @@ export interface StockItem {
   color: string | null;
   // Campos específicos de ropa
   talla: string | null;
+  // Cobro al vender
+  metodo_cobro: string | null; // 'efectivo' | 'banco' | 'otro'
+  cobro_nota: string | null;
 }
 
 export interface StockItemFormData {
@@ -42,6 +45,9 @@ export interface StockItemFormData {
   color: string;
   // Campos específicos de ropa
   talla: string;
+  // Cobro al vender (opcionales)
+  metodo_cobro?: string;
+  cobro_nota?: string | null;
 }
 
 export interface StockItemWithCalculations extends StockItem {
