@@ -50,7 +50,7 @@ export async function generateMonthlyReport(data: MonthlyReportData) {
   const gap = 16;
   const cardW = (W - M * 2 - gap) / 2;
   const cardH = 78;
-  let y = 130;
+  const y = 130;
   cards.forEach((c, i) => {
     const col = i % 2;
     const row = Math.floor(i / 2);
