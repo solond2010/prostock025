@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Target, Pencil, Check, X, Trophy, Flame, TrendingUp, Zap } from 'lucide-react';
-
-const LS_KEY = 'flipr_monthly_goal';
+import { useNumericSetting } from '@/hooks/useSetting';
 
 function CircleRing({ pct, color }: { pct: number; color: string }) {
   const r = 38;
