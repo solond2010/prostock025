@@ -63,10 +63,7 @@ interface Props {
 }
 
 export function MonthlyGoal({ benMes }: Props) {
-  const [goal, setGoal] = useState<number>(() => {
-    const raw = localStorage.getItem(LS_KEY);
-    return raw ? Number(raw) : 500;
-  });
+  const { value: goal, setValue: setGoal } = useNumericSetting('monthly_goal', 500);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -82,7 +79,6 @@ export function MonthlyGoal({ benMes }: Props) {
     const v = parseFloat(draft);
     if (!isNaN(v) && v > 0) {
       setGoal(v);
-      localStorage.setItem(LS_KEY, String(v));
     }
     setEditing(false);
   };
