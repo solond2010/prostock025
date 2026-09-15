@@ -22,7 +22,7 @@ export function useSubscription() {
         .from('profiles' as any)
         .select('id,status,trial_ends_at,plan,current_period_end')
         .eq('id', user!.id)
-        .single();
+        .maybeSingle();
       if (error && error.code !== 'PGRST116') throw error;
       return (data as unknown as Profile) ?? null;
     },
