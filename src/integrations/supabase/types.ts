@@ -32,6 +32,270 @@ export type Database = {
         }
         Relationships: []
       }
+      bot_commands: {
+        Row: {
+          command: string
+          created_at: string
+          id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          command: string
+          created_at?: string
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Update: {
+          command?: string
+          created_at?: string
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      bot_messages: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          text: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          text: string
+          user_id?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          text?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      bot_searches: {
+        Row: {
+          active: boolean
+          created_at: string
+          distance_km: number | null
+          id: string
+          keywords: string
+          lat: number | null
+          lng: number | null
+          max_price: number | null
+          min_price: number | null
+          name: string
+          order_by: string
+          time_filter: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          distance_km?: number | null
+          id?: string
+          keywords: string
+          lat?: number | null
+          lng?: number | null
+          max_price?: number | null
+          min_price?: number | null
+          name: string
+          order_by?: string
+          time_filter?: string
+          user_id?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          distance_km?: number | null
+          id?: string
+          keywords?: string
+          lat?: number | null
+          lng?: number | null
+          max_price?: number | null
+          min_price?: number | null
+          name?: string
+          order_by?: string
+          time_filter?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      bot_status: {
+        Row: {
+          current_search: string | null
+          id: string
+          is_running: boolean
+          items_seen_today: number
+          last_logs: string | null
+          last_search_at: string | null
+          messages_today: number
+          next_search_at: string | null
+          pid: number | null
+          searches_today: number
+          started_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          current_search?: string | null
+          id?: string
+          is_running?: boolean
+          items_seen_today?: number
+          last_logs?: string | null
+          last_search_at?: string | null
+          messages_today?: number
+          next_search_at?: string | null
+          pid?: number | null
+          searches_today?: number
+          started_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          current_search?: string | null
+          id?: string
+          is_running?: boolean
+          items_seen_today?: number
+          last_logs?: string | null
+          last_search_at?: string | null
+          messages_today?: number
+          next_search_at?: string | null
+          pid?: number | null
+          searches_today?: number
+          started_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      deals: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_archived: boolean
+          item_id: string
+          item_url: string
+          location: string | null
+          message_sent_at: string | null
+          message_status: string
+          pipeline_status: string | null
+          price: number | null
+          score: string
+          search_keyword: string | null
+          seller_id: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_archived?: boolean
+          item_id: string
+          item_url: string
+          location?: string | null
+          message_sent_at?: string | null
+          message_status?: string
+          pipeline_status?: string | null
+          price?: number | null
+          score?: string
+          search_keyword?: string | null
+          seller_id?: string | null
+          title: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_archived?: boolean
+          item_id?: string
+          item_url?: string
+          location?: string | null
+          message_sent_at?: string | null
+          message_status?: string
+          pipeline_status?: string | null
+          price?: number | null
+          score?: string
+          search_keyword?: string | null
+          seller_id?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      events: {
+        Row: {
+          amount: number | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          description: string | null
+          ends_at: string | null
+          event_type: string
+          google_event_id: string | null
+          id: string
+          linked_deal_id: string | null
+          linked_stock_id: string | null
+          location: string | null
+          starts_at: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          event_type?: string
+          google_event_id?: string | null
+          id?: string
+          linked_deal_id?: string | null
+          linked_stock_id?: string | null
+          location?: string | null
+          starts_at: string
+          title: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          amount?: number | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          event_type?: string
+          google_event_id?: string | null
+          id?: string
+          linked_deal_id?: string | null
+          linked_stock_id?: string | null
+          location?: string | null
+          starts_at?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       gastos_material: {
         Row: {
           categoria: string
@@ -95,6 +359,33 @@ export type Database = {
           id?: string
           type?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          current_period_end: string | null
+          id: string
+          plan: string | null
+          status: string
+          trial_ends_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_period_end?: string | null
+          id: string
+          plan?: string | null
+          status?: string
+          trial_ends_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          plan?: string | null
+          status?: string
+          trial_ends_at?: string
         }
         Relationships: []
       }
@@ -194,6 +485,51 @@ export type Database = {
           sale_price_per_unit?: number
           talla?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          due_date: string | null
+          id: string
+          is_done: boolean
+          linked_deal_id: string | null
+          linked_stock_id: string | null
+          notes: string | null
+          priority: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          is_done?: boolean
+          linked_deal_id?: string | null
+          linked_stock_id?: string | null
+          notes?: string | null
+          priority?: string
+          title: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          is_done?: boolean
+          linked_deal_id?: string | null
+          linked_stock_id?: string | null
+          notes?: string | null
+          priority?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
