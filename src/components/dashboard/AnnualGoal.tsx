@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Target, Pencil, Check, X, TrendingUp } from 'lucide-react';
-
-const LS_KEY = 'flipr_annual_goal';
+import { useNumericSetting } from '@/hooks/useSetting';
 
 interface Props {
   benYear: number; // beneficio acumulado en lo que va de año
@@ -9,10 +8,7 @@ interface Props {
 
 /** Objetivo anual de beneficio + proyección a fin de año según el ritmo actual. */
 export function AnnualGoal({ benYear }: Props) {
-  const [goal, setGoal] = useState<number>(() => {
-    const raw = localStorage.getItem(LS_KEY);
-    return raw ? Number(raw) : 6000;
-  });
+  const { value: goal, setValue: setGoal } = useNumericSetting('annual_goal', 6000);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -23,7 +19,7 @@ export function AnnualGoal({ benYear }: Props) {
 
   const confirm = () => {
     const v = parseFloat(draft);
-    if (!isNaN(v) && v > 0) { setGoal(v); localStorage.setItem(LS_KEY, String(v)); }
+    if (!isNaN(v) && v > 0) { setGoal(v); }
     setEditing(false);
   };
 
