@@ -44,7 +44,7 @@ export function useBotStatus() {
         .from('bot_status' as any)
         .select('*')
         .eq('user_id', user!.id)
-        .single();
+        .maybeSingle();
       if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows
       return (data as unknown as BotStatus) ?? null;
     },
