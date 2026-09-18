@@ -15,6 +15,13 @@
       "when": 1789512335851,
       "tag": "0001_create_bot_and_agenda_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789769369031,
+      "tag": "0002_add_cobro_columns_to_stock_items",
+      "breakpoints": true
     }
   ]
 }

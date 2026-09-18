@@ -427,12 +427,14 @@ export type Database = {
           almacenamiento: string | null
           bateria_porcentaje: number | null
           category: string
+          cobro_nota: string | null
           color: string | null
           coste_reparacion: number
           created_at: string
           estado: string
           fecha_venta: string | null
           id: string
+          metodo_cobro: string | null
           name: string
           notes: string | null
           precio_envio: number
@@ -448,12 +450,14 @@ export type Database = {
           almacenamiento?: string | null
           bateria_porcentaje?: number | null
           category: string
+          cobro_nota?: string | null
           color?: string | null
           coste_reparacion?: number
           created_at?: string
           estado?: string
           fecha_venta?: string | null
           id?: string
+          metodo_cobro?: string | null
           name: string
           notes?: string | null
           precio_envio?: number
@@ -469,12 +473,14 @@ export type Database = {
           almacenamiento?: string | null
           bateria_porcentaje?: number | null
           category?: string
+          cobro_nota?: string | null
           color?: string | null
           coste_reparacion?: number
           created_at?: string
           estado?: string
           fecha_venta?: string | null
           id?: string
+          metodo_cobro?: string | null
           name?: string
           notes?: string | null
           precio_envio?: number
